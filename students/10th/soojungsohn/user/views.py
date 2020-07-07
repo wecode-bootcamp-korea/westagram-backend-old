@@ -1,40 +1,43 @@
-from django.shortcuts import render
 import json
 from django.views import View 
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-from django.utils.decorators import method_decorator
-from .models import Users, Comment
-# Create your views here.
-@method_decorator(csrf_exempt, name='dispatch')
+from django.http import JsonResponse, HttpResponse
+
+from .models import User
+
 class SignUpView(View):
     def post(self, request):
         data = json.loads(request.body)
-        if Users.objects.filter(name=data['name']).exists():
+        if User.objects.filter(name=data['name']).exists():
             return JsonResponse({'message':'EXISTING_ACCOUNT'}, status=401)
         else:
-            Users(
-            name = data['name'],
-            email = data['email'],
-            password = data['password']
-            ).save()
+            if ('@' in data['email']) and (len(data['password'])>=5) : 
+                User(
+                    name    = data['name'],
+                    email   = data['email'],
+                    password = data['password']
+                ).save()
+            else:
+                return JsonResponse({'message' : 'KEY_ERRORR'}, status=400)
         return JsonResponse({'message':'SUCCESS'}, status=200)
 
-@method_decorator(csrf_exempt, name='dispatch')
+
 class SignInView(View):
     def post(self, request):
         data = json.loads(request.body)
-        username = data['user']
-        password = data['password']
-        
-        if Users.objects.filter(name=username).exists():
-            user = Users.objects.get(name=username)
-        elif Users.objects.filter(email=username).exists():
-            user = Users.objects.get(email=username)
+        try:
+            username = data['user']
+            password = data['password']
+        except KeyError:
+            return JsonResponse({'message':'KEY_ERROR'}, status=400)
+
+        if User.objects.filter(name=username).exists():
+            user = User.objects.get(name=username)
+        elif User.objects.filter(email=username).exists():
+            user = User.objects.get(email=username)
         
         if user.password == password:
-            return JsonResponse({'message':'SUCCESS'}, status=200)
+            return HttpResponse(status=200)
         else:
-            return JsonResponse({"message":'WRONG_PASSWORD'}, status=401)
+            return JsonResponse({"message":'UNAUTHORIZED'}, status=401)
 
 
