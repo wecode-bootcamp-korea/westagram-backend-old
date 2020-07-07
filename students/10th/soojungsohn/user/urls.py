@@ -8,4 +8,4 @@ from .views import (
 urlpatterns = [
     path('',SignUpView.as_view()),
     path('SignIn', SignInView.as_view()),
-    ]
+]

@@ -14,18 +14,18 @@ class PostingView(View):
         data = json.loads(request.body)
         try:
             user_id = data['user_id']
+            text = data['text']
+            if User.objects.filter(id=user_id).exists():
+                user = User.objects.get(id=user_id)
+                Post(
+                    user = user,
+                    text = text
+                ).save()
+                return JsonResponse({'message' : 'POSTING SUCCESS'}, status=200)
+            else:
+                return JsonResponse({'message' : 'NO EXISTING USER'}, status = 401)
         except KeyError:
             return JsonResponse({'message' : 'KEY_ERROR'}, status=400)
-        
-        if User.objects.filter(id=user_id).exists():
-            user = User.objects.get(id=user_id)
-            Post(
-                user = user,
-                text = data['text']
-            ).save()
-        else:
-            return JsonResponse({'message' : 'KEY_ERROR'}, status=400)
-        return JsonResponse({'message' : 'POSTING SUCCESS'}, status=200)
 
 class CommentView(View):
     def post(self, request):
@@ -33,17 +33,17 @@ class CommentView(View):
         try:
             user_id = data['user_id']
             post_id = data['post_id']
+            text = data['text']
+            if (User.objects.filter(id=user_id).exists()) and (Post.objects.filter(id=post_id).exists()):
+                user = User.objects.get(id = user_id)
+                post = Post.objects.get(id = post_id)
+                Comment(
+                    user = user,
+                    post = post,
+                    text = text
+                    ).save()
+                return JsonResponser({'message' : 'ADD COMMENT SUCCESS'}, status=200)
+            else:
+                return JsonResponse({'message' : 'NO EXISTING USER OR POST'}, status=401)
         except KeyError:
-            return JsonResponse({'message' : 'KEY_ERROR'}, status=400)
-
-        if (User.objects.filter(id=user_id).exists()) and (Post.objects.filter(id=post_id).exists()):
-            user = User.objects.get(id = user_id)
-            post = Post.objects.get(id = post_id)
-            Comment(
-                user = user,
-                post = post,
-                text = data['text']
-                ).save()
-        else:
-            return JsonResponse({'message' : 'KEY_ERROR'}, status=400)
-        return JsonResponse({'message' : 'ADD COMMENT SUCCESS'}, status=200)
+            return JsonResponse({'message' : 'KEY_ERROR'}, status=200)
