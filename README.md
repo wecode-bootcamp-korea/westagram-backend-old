@@ -1,7 +1,5 @@
 # westagram-backend
 
-> 디테일한 가이드는 guide 폴더에 있는 md 파일 내용을 확인해주세요.
-
 ## 초기 세팅 및 진행 방법
 - 원하는 directory 이동 후 해당 repo를 clone 받아주세요.
 - master 브랜치를 기준으로 `feature/본인이름` 브랜치를 만들어주세요. (ex. `feature/joonsikyang`)
@@ -17,15 +15,19 @@
 - [User] 회원가입 엔드포인트(SignUp): 
     - 회원가입 로직 작성
     - url 연결
-    - 이미 가입한 회원인지 확인하여 적절한 에러메세지 반환 (ex. EXISTING_ACCOUNT)
+    - 이메일이나 패스워드 키가 전달되지 않았을 시, {"message": "KEY_ERROR"}, status code 400 반환
+
 - [User] 로그인 엔드포인트(SignIn):
     - 로그인 로직 작성
     - url 연결
-    - 로그인시 계정이 틀렸거나 비밀번호가 틀렸을 때 적절한 에러메세지 반환 (ex. WRONG_PASSWORD) 
+    - 로그인 성공시 {"message": "SUCCESS"}, status code 200 return
+    - 실패시 {"message": "INVALID_USER"}, status code 401 에러 return
 
 ## 보너스 구현 사항
 - [Posting] 특정 유저의 게시물에 댓글 달기 엔드포인트
+    - 유저 아이디, 댓글 내용, 최초 댓글 단 시간, 수정 시간 포함될 것
 - [Posting] 특정 유저의 게시물에 '좋아요' 누르기 엔드포인트 
+- [Posting] 게시물 올리기
 - [User] 회원가입시 email, password validation
     - email: '@' 포함하였는지 검사
     - password: 5글자 이상인지 검사
