@@ -7,10 +7,10 @@ class MainView(View):
     def post(self, request):
         data = json.loads(request.body)
         Users(
-        name = data['name'],
-        email = data['email'],
-        password = data['password']
-    ).save()
+            name = data['name'],
+            email = data['email'],
+            password = data['password']
+        ).save()
 
         return JsonResponse({'message':'SUCCESS'}, status = 200)
 
