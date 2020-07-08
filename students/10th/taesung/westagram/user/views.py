@@ -1,11 +1,12 @@
-from django.shortcuts import render
 import json
 from django.views import View
 from django.http import JsonResponse
 from .models import User
 
 class signUp(View):
+
     def post(self, request):
+
         try:
             data = json.loads(request.body)
             User(
@@ -13,25 +14,28 @@ class signUp(View):
                     email = data['email'],
                     password = data['password']
                     ).save()
-        except Exception as e:
-            return JsonResponse({"message": f"{e}"}, status=400)
 
-        return JsonResponse({'message':'SUCCESS'}, status=200)
+            return JsonResponse({'message': 'SUCCESS'}, status=200)
+
+        except KeyError:
+
+            return JsonResponse({"message":"KEY_ERROR"}, status=400)
+
+
     def get(self, request):
         user_data = user.objects.values()
         return JsonResponse({'user':list(user_data)}, status=200)
 
 class signIn(View):
+
     def post(self, request):
+
         try:
             data = json.loads(request.body)
 
-            i = data['name']
-            p = data['password']
+            if User.objects.get(name=data['name']) and User.objects.get(password=data['password']):
+                return JsonResponse({'message':'SUCCESS'}, status=200)
 
-            if (User.objects.get(name=i)):
-                if (User.objects.get(password=p)):
-                    return JsonResponse({'message':'SUCCESS'}, status=200)
+        except User.DoesNotExist:
 
-        except Exception as e:
-            return JsonResponse({"message": f"{e}"}, status=401)
+            return JsonResponse({"message": "INVALID_USER"}, status=401)
