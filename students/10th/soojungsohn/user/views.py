@@ -11,16 +11,14 @@ class SignUpView(View):
         try:
             if User.objects.filter(name=data['name']).exists():
                 return JsonResponse({'message':'EXISTING_ACCOUNT'}, status=401)
-            else:
-                if ('@' in data['email']) and (len(data['password'])>=5) : 
-                    User(
-                        name        = data['name'],
-                        email       = data['email'],
-                        password    = data['password']
-                    ).save()
-                    return JsonResponse({'message' : 'SUCCESS'}, status=200)
-                else:
-                    return JsonResponse({'message' : 'VALIDATION_ERROR'}, status=401)
+            if ('@' in data['email']) and (len(data['password'])>=5) : 
+                User(
+                    name        = data['name'],
+                    email       = data['email'],
+                    password    = data['password']
+                ).save()
+                return JsonResponse({'message' : 'SUCCESS'}, status=200)
+            return JsonResponse({'message' : 'VALIDATION_ERROR'}, status=401)
         except KeyError:
             return JsonResponse({'message' : 'KEY_ERROR'}, status=400)
 
@@ -35,8 +33,7 @@ class SignInView(View):
         
             if user.password == data['password']:
                 return JsonResponse({'message' : 'SUCCESS'}, status=200)
-            else:
-                return JsonResponse({"message":'UNAUTHORIZED'}, status=401)
+            return JsonResponse({"message":'UNAUTHORIZED'}, status=401)
         except KeyError:
             return JsonResponse({'message' : 'KEY_ERROR'}, status=400)
 

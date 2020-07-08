@@ -20,8 +20,7 @@ class PostingView(View):
                     text = data['text']
                 ).save()
                 return JsonResponse({'message' : 'SUCCESS'}, status=200)
-            else:
-                return JsonResponse({'message' : 'UNAUTHORIZED'}, status = 401)
+            return JsonResponse({'message' : 'UNAUTHORIZED'}, status = 401)
         except KeyError:
             return JsonResponse({'message' : 'KEY_ERROR'}, status=400)
 
@@ -38,7 +37,6 @@ class CommentView(View):
                     text = data['text']
                 ).save()
                 return JsonResponser({'message' : 'SUCCESS'}, status=200)
-            else:
-                return JsonResponse({'message' : 'UNAUTHORIZED'}, status=401)
+            return JsonResponse({'message' : 'UNAUTHORIZED'}, status=401)
         except KeyError:
             return JsonResponse({'message' : 'KEY_ERROR'}, status=200)
