@@ -1,10 +1,9 @@
 from django.shortcuts import render
 from django.views import View
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from . import models
-import json
 
-# Create your views here.
+
 class UserView(View):
     def get(self, request):
         user = models.User.objects.values()
@@ -12,6 +11,7 @@ class UserView(View):
 
     def post(self, request):
         data = json.loads(request.body)
+        print(data)
         models.User(
             name=data["name"],
             email=data["email"],
@@ -23,6 +23,13 @@ class UserView(View):
 
 class LoginView(View):
     def get(self, request):
-        name = request.GET.get("name")
-        # return JsonResponse({"message": "SUCESS!!"})
-        return render(request, "user/login.html", {"room": "room"})
+        return render(request, "user/login.html")
+
+    def post(self, request):
+        userid = request.POST.get("userid", None)
+        password = request.POST.get("password", None)
+
+        if models.User.objects.filter(userid=userid, password=password).exists():
+            return HttpResponse(status=200)
+        else:
+            return JsonResponse({"message": "INVALID_USER"}, status=401)
