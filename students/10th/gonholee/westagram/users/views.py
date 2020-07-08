@@ -1,7 +1,7 @@
 import json
-from django.http import JsonResponse
-from django.views import View
-from .models import User
+from django.http    import JsonResponse
+from django.views   import View
+from .models        import User
 
 class SignUpView(View):
     def post(self,request):
@@ -10,9 +10,9 @@ class SignUpView(View):
             return JsonResponse({'message':'email or password or name is vacant'},status=401)
         else:
             User(
-                name = data['name'],
-                email = data['email'],
-                password = data['password']
+                name        = data['name'],
+                email       = data['email'],
+                password    = data['password']
             ).save()
             return JsonResponse({'message':'Register Success'},status=200)
 
@@ -20,7 +20,7 @@ class SignInView(View):
     def post(self,request):
         data = json.loads(request.body)
         try:
-            if User.objects.get(email=data['email']):
+            if User.objects.filter(email=data['email']).exists():
                 login_user = User.objects.get(email=data['email'])
                 if login_user.password == data['password']:
                     return JsonResponse({'message':'SUCCESS'},status=200)
