@@ -1,7 +1,7 @@
 import json
 
 from django.views import View
-from django.http import JsonResponse, HttpResponse
+from django.http import JsonResponse
 
 from .models import (
     Post,
@@ -14,7 +14,8 @@ class PostingView(View):
         data = json.loads(request.body)
         try:
             user_id = data['user_id']
-            text = data['text']
+            text    = data['text']
+            
             if User.objects.filter(id=user_id).exists():
                 user = User.objects.get(id=user_id)
                 Post(
@@ -33,7 +34,8 @@ class CommentView(View):
         try:
             user_id = data['user_id']
             post_id = data['post_id']
-            text = data['text']
+            text    = data['text']
+            
             if (User.objects.filter(id=user_id).exists()) and (Post.objects.filter(id=post_id).exists()):
                 user = User.objects.get(id = user_id)
                 post = Post.objects.get(id = post_id)
