@@ -14,7 +14,7 @@ class PostingView(View):
         data = json.loads(request.body)
         try:
             if User.objects.filter(id=data['user_id']).exists():
-                user = User.objects.get(id=['user_id'])
+                user = User.objects.get(id=data['user_id'])
                 Post(
                     user = user,
                     text = data['text']
