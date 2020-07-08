@@ -28,5 +28,5 @@ class SignInView(View):
                 return JsonResponse({'message': 'SIGN_IN SUCCESS'}, status=200)
             else:
                 return JsonResponse({'message':'INVALID_USER'}, status=401)
-        else:
-            return JsonResponse({'message':'NO_EXISTS_USER'}, status=401)
+
+        return JsonResponse({'message':'NO_EXISTS_USER'}, status=401)
