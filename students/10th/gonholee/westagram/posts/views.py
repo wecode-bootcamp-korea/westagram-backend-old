@@ -38,7 +38,7 @@ class CommentRegister(View):
             Comment(
                 comment_text    =   data['comment_text'],
                 post_id         =   data['id']
-                ).save()
+            ).save()
             return JsonResponse({'message':'Comment Regist Success'},status=200)
         else:
             return JsonResponse({'message':'INVALID_Post_id'},status=401)
