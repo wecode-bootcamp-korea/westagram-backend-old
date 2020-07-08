@@ -9,18 +9,14 @@ class SignUpView(View):
     def post(self, request):
         data = json.loads(request.body)
         try:
-            new_name        = data['name']
-            new_email       = data['email']
-            new_password    = data['password']
-            
-            if User.objects.filter(name=new_name).exists():
+            if User.objects.filter(name=data['name']).exists():
                 return JsonResponse({'message':'EXISTING_ACCOUNT'}, status=401)
             else:
-                if ('@' in new_email) and (len(new_password)>=5) : 
+                if ('@' in data['email']) and (len(data['password'])>=5) : 
                     User(
-                        name        = new_name,
-                        email       = new_email,
-                        password    = new_password
+                        name        = data['name'],
+                        email       = data['email'],
+                        password    = data['password']
                     ).save()
                     return JsonResponse({'message' : 'SUCCESS'}, status=200)
                 else:
@@ -32,15 +28,12 @@ class SignInView(View):
     def post(self, request):
         data = json.loads(request.body)
         try:
-            username = data['user']
-            password = data['password']
-            
-            if User.objects.filter(name=username).exists():
-                user = User.objects.get(name=username)
-            elif User.objects.filter(email=username).exists():
-                user = User.objects.get(email=username)
+            if User.objects.filter(name=data['user']).exists():
+                user = User.objects.get(name=data['user'])
+            elif User.objects.filter(email=data['user']).exists():
+                user = User.objects.get(email=data['user'])
         
-            if user.password == password:
+            if user.password == data['password']:
                 return JsonResponse({'message' : 'SUCCESS'}, status=200)
             else:
                 return JsonResponse({"message":'UNAUTHORIZED'}, status=401)
