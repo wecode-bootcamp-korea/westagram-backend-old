@@ -33,3 +33,31 @@
     - password: 5글자 이상인지 검사
 - [User] 다른 회원 follow 하기 엔드포인트
 
+## 위코드 파이썬 코딩 컨벤션
+- Import 순서
+    1. Python 모듈
+    2. Django 모듈
+    3. 내가 만든 모듈
+
+    ```python
+    import json
+    # 간격 한 줄 
+    from django.db import models
+    # 간격 한 줄
+    from user.models    import User
+    from product.models import Drink        
+    ```
+
+- Code Align
+    - `import` 를 기준으로 정렬해주세요
+    - `Class`나 `Function` 내부에서 선언하는 변수들의 경우 `=`을 기준으로 정렬해줍니다.
+    ```python
+    from user.models    import User
+    from product.models import Drink
+
+        class Product(models.Model):
+            product_code    = models.CharField(max_length=100, null=True)
+            name            = models.CharField(max_length=50, null=True)
+            price           = models.DecimalField(max_digits=14, decimal_places=4, null=True)
+    ```
+- 보다 자세한 규칙은 노션에서 확인해주세요
