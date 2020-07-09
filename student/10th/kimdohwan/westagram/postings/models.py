@@ -1,4 +1,5 @@
 from django.db import models
+
 from core import models as core_models
 
 
@@ -25,7 +26,7 @@ class Comment(core_models.TempDate):
         return self.userid
 
 class Love(core_models.TempDate):
-    userid = models.ForeignKey("user.User", on_delete=models.CASCADE)
+    user = models.ForeignKey("user.User", on_delete=models.CASCADE)
     posting = models.ForeignKey(Posting, on_delete=models.CASCADE)
     loveTF = models.BooleanField(default=False)
 
