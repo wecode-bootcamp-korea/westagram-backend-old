@@ -1,7 +1,9 @@
 import json
+
 from django.shortcuts import render
 from django.views import View
 from django.http import JsonResponse
+
 from . import models
 
 
@@ -11,7 +13,7 @@ class UserView(View):
         return JsonResponse({"data": list(user)})
 
     def post(self, request):
-        data = json.loads(request.body)  # POST 데이터 가져오기
+        data = json.loads(request.body) 
 
         # 이메일이나 패스워드 키가 전달되지 않았을 시, {"message": "KEY_ERROR"}, status code 400 반환
         try:
@@ -29,7 +31,6 @@ class UserView(View):
         ).save()
         # 회원가입 성공시 {"message": "SUCCESS"}, status code 200 return
         return JsonResponse({"message": "SUCESS!!"}, status=200)
-
 
 class LoginView(View):
     def get(self, request):
