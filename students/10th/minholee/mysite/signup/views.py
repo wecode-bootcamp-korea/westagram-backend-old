@@ -1,37 +1,32 @@
 from django.shortcuts import render
 from django.http import JsonResponse
 from django.views import View
-from .models import Users
+from .models import User
 import json
 
-# Create your views here.
-
-class Signup(View):
+class SignUp(View):
     def post(self, request):
         try:
             bring_data = json.loads(request.body)
-            Users(
+            User(
                     name     = bring_data['name'],
                     email    = bring_data['email'],
                     password = bring_data['password']
             ).save()
             return JsonResponse({"Message":"SUCCESS"}, status=200)
-            
         except KeyError: 
             return JsonResponse({"Message":"KEY_ERROR"}, status=400)
 
     def get(self, request):
-        db_data = Users.objects.values()
-        return JsonResponse({"Users List":list(db_data)}, status=200)
+        db_data = User.objects.values()
+        return JsonResponse({"User List":list(db_data)}, status=200)
 
-
-class Signin(View):
+class SignIn(View):
     def post(self, request):
         bring_data = json.loads(request.body)
         try:
-            #if Users.objects.get(email=bring_data['email']).email == bring_data['email']:
-            if bring_data['email'] in Users.objects.get(email=bring_data['email']).email:
-                user = Users.objects.get(email=bring_data['email'])
+            if bring_data['email'] in User.objects.get(email=bring_data['email']).email:
+                user = User.objects.get(email=bring_data['email'])
                 if user.password == bring_data['password']:
                     return JsonResponse({"Message":"SUCCESS"}, status=200)
                 else:
