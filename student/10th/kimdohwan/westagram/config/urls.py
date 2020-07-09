@@ -1,4 +1,4 @@
-"""DB_test URL Configuration
+"""conifg URL Configuration
 
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/3.0/topics/http/urls/
@@ -19,5 +19,5 @@ from django.urls import path, include
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("", include("user.urls", namespace="user")),
-    path("", include("comments.urls", namespace="comment")),
+    path("user/", include("postings.urls", namespace="posting")),
 ]
