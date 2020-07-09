@@ -8,10 +8,6 @@ from . import models
 
 
 class UserView(View):
-    def get(self, request):
-        user = models.User.objects.values()
-        return JsonResponse({"data": list(user)})
-
     def post(self, request):
         data = json.loads(request.body) 
 
@@ -33,16 +29,13 @@ class UserView(View):
         return JsonResponse({"message": "SUCESS!!"}, status=200)
 
 class LoginView(View):
-    def get(self, request):
-        return render(request, "user/login.html")
-
     def post(self, request):
         # 로그인 로직 작성
         userid = request.POST.get("userid", None)
         password = request.POST.get("password", None)
         if models.User.objects.filter(userid=userid, password=password).exists():
             # 로그인 성공시 {"message": "SUCCESS"}, status code 200 return
-            return JsonResponse({"message": "SUCCESS"})
+            return JsonResponse({"message": "SUCCESS"},status=200)
         else:
             # 실패시 {"message": "INVALID_USER"}, status code 401 에러 return
             return JsonResponse({"message": "INVALID_USER"}, status=401)

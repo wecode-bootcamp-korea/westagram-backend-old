@@ -8,19 +8,14 @@ from . import models
 
 
 class PostingView(View):
-    def get(self, request):
-        return JsonResponse({"page": "posting"})
-
     def post(self, request):
         data = json.loads(request.body)
+        # user정보, title 정보가 없을 경우 예외처리
         try:
-            post_user = data.get("user",None)
-            post_title = data.get("title",None)
+            post_user = data["user"]
+            post_title = data["title"]
         except KeyError:
             return JsonResponse({"message": "KEY_ERROR"}, status=400)
-        # 유효성 검사
-        if post_title == None or post_user == None:
-            return JsonResponse({"message": "INVALID_USER OR TITLE"})
         # 저장 로직
         user = User.objects.get(pk=data["user"])
         models.Posting(
@@ -31,16 +26,16 @@ class PostingView(View):
         return JsonResponse({"message": "SUCESS!!"})
 
 class CommentView(View):
-    def get(self, request):
-        user = models.Comment.objects.values()
-        return JsonResponse({"data": list(user)})
-
     def post(self, request):
         data = json.loads(request.body)
-        user = User.objects.get(id=data["user"])
-        posting = models.Posting.objects.get(id=data["posting"])
+        # user or posting key 없을때 예외처리
+        try:
+            user = User.objects.get(id=data["user"])
+            posting = models.Posting.objects.get(id=data["posting"])
+        except KeyError
+            return JsonResponse({"message": "KEY_ERROR"}, status=400)
         models.Comment(
             user=user, 
-            content=data["content"], 
-            posting=posting).save()
+            posting=posting,
+            content=data["content"], ).save()
         return JsonResponse({"message": "SUCESS!!"})
