@@ -31,5 +31,7 @@ class SignIn(View):
                     return JsonResponse({"Message":"SUCCESS"}, status=200)
                 else:
                     return JsonResponse({"Message":"PASSWORD_ERROR"}, status=201)
+        except KeyError:
+            return JsonResponse({"Message":"KEY_ERROR"}, status=400)
         except Exception as e:
-                return JsonResponse({"Message":f"{e}"}, status=401)
+            return JsonResponse({"Message":f"{e}"}, status=401)
