@@ -8,7 +8,8 @@ from . import models
 
 class UserView(View):
     def post(self, request):
-        data = json.loads(request.body) 
+        data = json.loads(request.body)
+        print(request.path) 
         try:
             email = data["email"]
             password = data["password"]
