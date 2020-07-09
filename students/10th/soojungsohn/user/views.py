@@ -4,8 +4,8 @@ from django.views   import View
 from django.http    import JsonResponse
 
 from .models import (
-        User,
-        Follow
+    User,
+    Follow
 )
 
 class SignUpView(View):
@@ -44,15 +44,15 @@ class FollowView(View):
     def post(self, request):
         data = json.loads(request.body)
         try:
-            if (User.objects.filter(id=data['main_user']).exists()) and (User.objects.filter(id=data['sub_user']).exists()):
-                if Follow.objects.filter(main_user = data['main_user'], sub_user = data['sub_user']).exists():
-                    follow = Follow.objects.get(main_user = data['main_user'], sub_user = data['sub_user'])
+            if (User.objects.filter(id=data['from_user']).exists()) and (User.objects.filter(id=data['to_user']).exists()):
+                if Follow.objects.filter(from_user = data['from_user'], to_user = data['to_user']).exists():
+                    follow = Follow.objects.get(from_user = data['from_user'], to_user = data['to_user'])
                     follow.status = 'follow'
                     follow.save()
                     return JsonResponse({'message' : 'FOLLOW SUCCESS'}, status=200)
                 Follow(
-                        main_user   = User.objects.get(id=data['main_user']),
-                        sub_user    = User.objects.get(id=data['sub_user']),
+                        from_user   = User.objects.get(id=data['from_user']),
+                        to_user     = User.objects.get(id=data['to_user']),
                         status      = 'follow'
                 ).save()
                 return JsonResponse({'message' : 'FOLLOW SUCCESS'}, status=200)
@@ -64,9 +64,9 @@ class UnFollowView(View):
     def post(self, request):
         data = json.loads(request.body)
         try:
-            if (User.objects.filter(id=data['main_user']).exists()) and (User.objects.filter(id=data['sub_user']).exists()):
-                if Follow.objects.filter(main_user = data['main_user'], sub_user = data['sub_user']).exists():
-                    follow = Follow.objects.filter(main_user = data['main_user'], sub_user = data['sub_user'])
+            if (User.objects.filter(id=data['from_user']).exists()) and (User.objects.filter(id=data['to_user']).exists()):
+                if Follow.objects.filter(from_user = data['from_user'], to_user = data['to_user']).exists():
+                    follow = Follow.objects.get(from_user = data['from_user'], to_user = data['to_user'])
                     follow.status = 'unfollow'
                     follow.save()
                     return JsonResponse({'message' : 'UNFOLLOW SUCCESS'}, status=200)
