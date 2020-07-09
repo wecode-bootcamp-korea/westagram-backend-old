@@ -1,5 +1,5 @@
 """
-WSGI config for westagram project.
+WSGI config for westargram project.
 
 It exposes the WSGI callable as a module-level variable named ``application``.
 
