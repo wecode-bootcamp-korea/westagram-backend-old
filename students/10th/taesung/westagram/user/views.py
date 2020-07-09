@@ -9,16 +9,21 @@ class signUp(View):
 
         try:
             data = json.loads(request.body)
-            User(
-                    name = data['name'],
-                    email = data['email'],
-                    password = data['password']
-                    ).save()
 
-            return JsonResponse({'message': 'SUCCESS'}, status=200)
+            if (data['email'] in '@') and (len(data['password']) > 5):
+
+                User(
+                        name = data['name'],
+                        email = data['email'],
+                        password = data['password']
+                        ).save()
+
+                return JsonResponse({'message': 'SUCCESS'}, status=200)
+            
+            else:
+                return JsonResponse({'message':'INVAILD_FORMAT'}, status=400)
 
         except KeyError:
-
             return JsonResponse({"message":"KEY_ERROR"}, status=400)
 
 
