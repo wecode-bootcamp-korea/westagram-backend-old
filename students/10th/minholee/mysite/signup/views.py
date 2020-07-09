@@ -9,9 +9,9 @@ class SignUp(View):
         try:
             bring_data = json.loads(request.body)
             User(
-                    name     = bring_data['name'],
-                    email    = bring_data['email'],
-                    password = bring_data['password']
+                name     = bring_data['name'],
+                email    = bring_data['email'],
+                password = bring_data['password']
             ).save()
             return JsonResponse({"Message":"SUCCESS"}, status=200)
         except KeyError: 
