@@ -3,11 +3,13 @@ from django.urls import path
 from .views import (
     SignUpView,
     SignInView,
-    FollowView
+    FollowView,
+    UnFollowView
 )
 
 urlpatterns = [
     path('',SignUpView.as_view()),
     path('/sign-in', SignInView.as_view()),
     path('/follow', FollowView.as_view()),    
+    path('/unfollow', UnFollowView.as_view()),
 ]

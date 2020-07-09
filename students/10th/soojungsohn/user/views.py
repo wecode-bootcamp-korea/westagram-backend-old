@@ -45,12 +45,8 @@ class FollowView(View):
         data = json.loads(request.body)
         try:
             if (User.objects.filter(id=data['main_user']).exists()) and (User.objects.filter(id=data['sub_user']).exists()):
-                if Follow.objects.filter(main_user = data['main_user'], sub_user = data['sub_user']):
+                if Follow.objects.filter(main_user = data['main_user'], sub_user = data['sub_user']).exists():
                     follow = Follow.objects.get(main_user = data['main_user'], sub_user = data['sub_user'])
-                    if follow.status == 'follow':
-                        follow.status = 'unfollow'
-                        follow.save()
-                        return JsonResponse({'message' : 'UNFOLLOW SUCCESS'}, status=200)
                     follow.status = 'follow'
                     follow.save()
                     return JsonResponse({'message' : 'FOLLOW SUCCESS'}, status=200)
@@ -64,3 +60,17 @@ class FollowView(View):
         except KeyError:
             return JsonResponse({'message' : 'KEY_ERROR'}, status=400)
 
+class UnFollowView(View):
+    def post(self, request):
+        data = json.loads(request.body)
+        try:
+            if (User.objects.filter(id=data['main_user']).exists()) and (User.objects.filter(id=data['sub_user']).exists()):
+                if Follow.objects.filter(main_user = data['main_user'], sub_user = data['sub_user']).exists():
+                    follow = Follow.objects.filter(main_user = data['main_user'], sub_user = data['sub_user'])
+                    follow.status = 'unfollow'
+                    follow.save()
+                    return JsonResponse({'message' : 'UNFOLLOW SUCCESS'}, status=200)
+                return JsonResponse({'message' : 'NOT ALLOWED'}, status=401)
+            return JsonResponse({'message' : 'UNAUTHORIZED'}, status = 401)
+        except KeyError:
+            return JsonResponse({'message' : 'KEY_ERROR'}, status=400)
