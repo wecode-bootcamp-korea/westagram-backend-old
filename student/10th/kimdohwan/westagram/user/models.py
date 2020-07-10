@@ -9,7 +9,7 @@ class User(core_models.TempDate):
     password = models.CharField(max_length=300, default="", null=False)
 
     class Meta:
-        db_table = "user"
+        db_table = "users"
 
     def __str__(self):
         return self.name
