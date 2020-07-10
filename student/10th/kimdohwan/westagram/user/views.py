@@ -20,7 +20,7 @@ class UserView(View):
                 password=data["password"],
                 userid=data["userid"],
             ).save()
-            return JsonResponse({"message": "SUCESS!!"}, status=200)
+            return JsonResponse({"message": "SUCESS"}, status=200)
         except KeyError:
             return JsonResponse({"message": "KEY_ERROR"}, status=400)
 
@@ -31,7 +31,7 @@ class LoginView(View):
             userid = data['userid']
             password = data['password']
             if models.User.objects.filter(userid=userid, password=password).exists():
-                return JsonResponse({"message": "SUCCESS"},status=200)
+                return JsonResponse({"message": "SUCESS"},status=200)
             else:
                 return JsonResponse({"message": "INVALID_USER"}, status=401)
         except KeyError:
@@ -48,13 +48,13 @@ class FollowView(View):
             pk = models.Follow.objects.filter(from_user=from_user, to_user=to_user)
             if pk.exists():
                 pk.update(is_follow=data["is_follow"])
-                return JsonResponse({"message": "SUCESS!! UPDATE "},status=200)
+                return JsonResponse({"message": "SUCESS UPDATE "},status=200)
             else:
                 models.Follow(
                     from_user=from_user,
                     to_user=to_user,
                     is_follow=data["is_follow"]
                 ).save()
-                return JsonResponse({"message": "SUCESS!!"}, status=200)
+                return JsonResponse({"message": "SUCESS"}, status=200)
         except KeyError:
             return JsonResponse({"message": "KEY_ERROR"}, status=400)

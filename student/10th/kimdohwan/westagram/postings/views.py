@@ -18,7 +18,7 @@ class PostingView(View):
                 title=data["title"], 
                 content=data["content"],
             ).save()
-            return JsonResponse({"message": "SUCESS!!"},status=200)
+            return JsonResponse({"message": "SUCESS"},status=200)
         except KeyError:
             return JsonResponse({"message": "KEY_ERROR"}, status=400)
 
@@ -32,7 +32,7 @@ class CommentView(View):
                 user=user, 
                 posting=posting,
                 content=data["content"], ).save()
-            return JsonResponse({"message": "SUCESS!!"},status=200)
+            return JsonResponse({"message": "SUCESS"},status=200)
         except KeyError:
             return JsonResponse({"message": "KEY_ERROR"}, status=400)
             
@@ -45,12 +45,12 @@ class LoveView(View):
             pk = models.Love.objects.filter(user=user, posting=posting)
             if pk.exists():
                 pk.update(is_like=data["is_like"])
-                return JsonResponse({"message": "SUCESS!! UPDATE "},status=200)
+                return JsonResponse({"message": "SUCESS UPDATE "},status=200)
             else:
                 models.Love(
                     user=user, 
                     posting=posting,
                     is_like=data["is_like"]).save()
-                return JsonResponse({"message": "SUCESS!! CREATE "},status=200)
+                return JsonResponse({"message": "SUCESS CREATE "},status=200)
         except KeyError:
             return JsonResponse({"message": "KEY_ERROR"}, status=400)
