@@ -7,6 +7,7 @@ class Post(models.Model):
     image_url       =   models.URLField()
     created_at      =   models.DateTimeField(auto_now_add=True)
     updated_at      =   models.DateTimeField(auto_now=True)
+    
     class Meta:
         db_table = 'posts'
 
@@ -15,5 +16,6 @@ class Comment(models.Model):
     comment_text    =   models.CharField(max_length=300)
     created_at      =   models.DateTimeField(auto_now_add=True)
     updated_at      =   models.DateTimeField(auto_now=True)
+    
     class Meta:
         db_table = 'comments'

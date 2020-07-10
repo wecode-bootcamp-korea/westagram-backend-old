@@ -1,12 +1,8 @@
 import os
 from .db_settings import *
-# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
-# SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = '8p!*#6t3_hpgegfo1e8@do+f7v+2qg5pm=t-_fh=o2f0be+_^q'
-
-# SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
 ALLOWED_HOSTS = []
