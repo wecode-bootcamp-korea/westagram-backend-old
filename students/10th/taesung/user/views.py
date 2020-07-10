@@ -10,7 +10,7 @@ class signUp(View):
         try:
             data = json.loads(request.body)
 
-            if (data['email'] in '@') and (len(data['password']) > 5):
+            if ('@' in data['email']) and (len(data['password']) >= 5):
 
                 User(
                         name = data['name'],

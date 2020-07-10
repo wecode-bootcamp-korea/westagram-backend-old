@@ -1,5 +1,5 @@
 """
-ASGI config for westagram project.
+ASGI config for westagram2 project.
 
 It exposes the ASGI callable as a module-level variable named ``application``.
 
