@@ -14,7 +14,7 @@ class UserView(View):
             email = data["email"]
             password = data["password"]
             if "@" not in email or len(password) <= 4:
-                return JsonResponse({"message": "VALLIDATION ERROR"}, status=400)
+                return JsonResponse({"message": "VALIDATION ERROR"}, status=400)
             models.User(
                 name=data["name"],
                 email=data["email"],
