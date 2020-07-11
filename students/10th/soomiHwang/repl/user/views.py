@@ -31,27 +31,41 @@ class SignIn(View):
     def post(self, request):
         data = json.loads(request.body)
         try:
-            input_email=data['email']
-            input_password=data['password']
-            input_name=data['name']
-
-            if Users.objects.filter(name=input_name).exists():
-                user = Users.objects.get(name=data['users'])
-
-            elif Users.objects.filter(email=input_email).exists():
-                user = Users.objects.get(email=data['users'])
-
-                if user.password == input_password:
-                    return JsonResponse({'message':'Success!'}, status=200)
-                
+            if data['email'] in Users.objects.filter(email = data['email'])[0].email:
+                user = Users.objects.get(email=data['email'])
+                if user.password==data['password']:
+                    return JsonResponse({'Message':'Success!'}, status=200)
                 else:
-                    return JsonResponse({'message':'INVALID_PASSWORD'}, status=400)
+                    return JsonResponse({'Message':'Password error'}, status=404)
 
         except KeyError:
-            return JsonResponse({'message':'INVALID_KEY'}, status=400)
+            return JsonResponse({'Message':'Key_error'}, status=400)
+    
+        
+### reference: soojungSohn        
+##        data = json.loads(request.body)
+##        try:
+##            input_email=data['email']
+##            input_password=data['password']
+##            input_name=data['name']
+##
+##            if Users.objects.filter(name=input_name).exists():
+##                user = Users.objects.get(name=data['users'])
+##
+##            elif Users.objects.filter(email=input_email).exists():
+##                user = Users.objects.get(email=data['users'])
+##
+##                if user.password == input_password:
+##                    return JsonResponse({'message':'Success!'}, status=200)
+##                
+##                else:
+##                    return JsonResponse({'message':'INVALID_PASSWORD'}, status=400)
+##
+##        except KeyError:
+##            return JsonResponse({'message':'INVALID_KEY'}, status=400)
         
             
-
+### reference: anonymous alumni
 ##       if Users.objects.filter(email=data['email']):
 ##            i = Users.objects.get(email=data['email'])
 ##            if i.password == data['password']:
