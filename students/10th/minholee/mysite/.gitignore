@@ -11,6 +11,7 @@ local_settings.py
 db.sqlite3
 db.sqlite3-journal
 media
+mysql_db.py
 
 # If your build process includes running collectstatic, then you probably don't need or want to include staticfiles/
 # in your Git repository. Update and uncomment the following line accordingly.
@@ -204,4 +205,3 @@ dmypy.json
 # pytype static type analyzer
 
 # End of https://www.toptal.com/developers/gitignore/api/python,django
-db_connect.py
