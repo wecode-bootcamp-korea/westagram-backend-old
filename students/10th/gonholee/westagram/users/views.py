@@ -51,7 +51,6 @@ class FollowUserView(View):
             if User.objects.filter(id=data['followed_user_id']).exists() and User.objects.filter(id=data['following_user_id']).exists():
                 following_users = list(Following.objects.filter(followed_user=data['followed_user_id']).values('following_user_id'))
 
-                print(following_users)
                 for following_user in following_users:
                     if int(data['following_user_id']) == following_user['following_user_id']:
                         return JsonResponse({'message':'Already Followed'}, status=401)
@@ -60,7 +59,6 @@ class FollowUserView(View):
                         followed_user_id     =   data['followed_user_id'],
                         following_user_id    =   data['following_user_id']
                 ).save()
-                    
                 return JsonResponse({'message':'SUCCESS'}, status=200)
 
             return JsonResponse({'message':'INVALID_USER'}, status=401)
