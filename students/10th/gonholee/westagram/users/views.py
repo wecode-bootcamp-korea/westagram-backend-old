@@ -1,6 +1,8 @@
 import json
+
 from django.http    import JsonResponse
 from django.views   import View
+
 from users.models   import User,Following
 
 class SignUpView(View):
