@@ -19,12 +19,12 @@ class PostRegister(View):
                         user_id     =   data['user_id']
                     ).save()
                     
-                    return JsonResponse({'message':'Post Regist Success'},status=200)
+                    return JsonResponse({'message':'Post Regist Success'}, status=200)
 
-                return JsonResponse({'message':'INVALID_User_id'},status=401)
+                return JsonResponse({'message':'INVALID_User_id'}, status=401)
 
         except KeyError:
-            return JsonResponse({'message': 'KEY_ERROR'},status=400)
+            return JsonResponse({'message': 'KEY_ERROR'}, status=400)
 
 class CommentRegister(View):
     def post(self,request):
@@ -39,13 +39,13 @@ class CommentRegister(View):
                         post_id         =   data['post_id']
                     ).save()
                     
-                    return JsonResponse({'message':'Comment Regist Success'},status=200)
+                    return JsonResponse({'message':'Comment Regist Success'}, status=200)
                 
-                return JsonResponse({'message':'INVALID_Post_id'},status=401)
+                return JsonResponse({'message':'INVALID_Post_id'}, status=401)
         
         except KeyError:
             
-            return JsonResponse({'message': 'KEY_ERROR'},status=400)
+            return JsonResponse({'message': 'KEY_ERROR'}, status=400)
 
 class PostLike(View):
     def post(self,request):
@@ -64,18 +64,18 @@ class PostLike(View):
                             target_post.save()
                             like_obj            =   Like.objects.filter(post_id=data['post_id'],user_id=data['user_id'])
                             like_obj.delete()
-                            return JsonResponse({'message':f"Unlike post id:{data['post_id']}"},status=200)
+                            return JsonResponse({'message':f"Unlike post id:{data['post_id']}"}, status=200)
                         
                         target_post.likes   +=  1
                         target_post.save()
                         like_obj            =   Like(post_id=data['post_id'],user_id=data['user_id'])
                         like_obj.save()
                         
-                        return JsonResponse({'message':f"Like post id:{data['post_id']}"},status=200)
+                        return JsonResponse({'message':f"Like post id:{data['post_id']}"}, status=200)
 
-                    return JsonResponse({'message':'INVALID_User_id'},status=401)
+                    return JsonResponse({'message':'INVALID_User_id'}, status=401)
                 
-                return JsonResponse({'message':'INVALID_Post_id'},status=401)
+                return JsonResponse({'message':'INVALID_Post_id'}, status=401)
 
         except KeyError:
-            return JsonResponse({'message': 'KEY_ERROR'},status=400)
+            return JsonResponse({'message': 'KEY_ERROR'}, status=400)
