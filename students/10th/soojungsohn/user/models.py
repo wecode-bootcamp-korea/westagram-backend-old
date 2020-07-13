@@ -9,3 +9,12 @@ class User(models.Model):
     
     class Meta:
         db_table = 'users'
+
+class Follow(models.Model):
+    from_user   = models.ForeignKey(User, on_delete=models.CASCADE, related_name='from_user')
+    to_user     = models.ForeignKey(User, on_delete=models.CASCADE, related_name='to_user')  
+    status      = models.CharField(max_length = 50)
+
+    class Meta:
+        db_table = 'follows'
+
