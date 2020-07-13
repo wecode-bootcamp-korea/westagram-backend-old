@@ -1,7 +1,7 @@
 import json
 from django.http    import JsonResponse
 from django.views   import View
-from posts.models   import Post,Comment
+from posts.models   import Post,Comment,Like
 from users.models   import User
 
 class PostRegister(View):
@@ -9,7 +9,7 @@ class PostRegister(View):
         data = json.loads(request.body)
 
         try:
-            if data['user_id'] and data['post_text'] and data['user_id']:
+            if data['post_text'] and data['image_url'] and  data['user_id']:
 
                 if User.objects.filter(id=data['user_id']).exists():
 
@@ -52,14 +52,28 @@ class PostLike(View):
         data = json.loads(request.body)
 
         try:
-            if data['post_id']:
+            if data['post_id'] and data['user_id']:
                 
                 if Post.objects.filter(id=data['post_id']).exists():
-                    target_post         =   Post.objects.get(id=data['post_id'])
-                    target_post.hearts  +=  1
-                    target_post.save()
-                    
-                    return JsonResponse({'message':f"Like post id:{data['post_id']}"},status=200)
+
+                    if User.objects.filter(id=data['user_id']).exists():
+                        target_post =   Post.objects.get(id=data['post_id'])
+
+                        if Like.objects.filter(post_id=data['post_id'],user_id=data['user_id']).exists():
+                            target_post.likes  -=   1
+                            target_post.save()
+                            like_obj            =   Like.objects.filter(post_id=data['post_id'],user_id=data['user_id'])
+                            like_obj.delete()
+                            return JsonResponse({'message':f"Unlike post id:{data['post_id']}"},status=200)
+                        
+                        target_post.likes   +=  1
+                        target_post.save()
+                        like_obj            =   Like(post_id=data['post_id'],user_id=data['user_id'])
+                        like_obj.save()
+                        
+                        return JsonResponse({'message':f"Like post id:{data['post_id']}"},status=200)
+
+                    return JsonResponse({'message':'INVALID_User_id'},status=401)
                 
                 return JsonResponse({'message':'INVALID_Post_id'},status=401)
 
