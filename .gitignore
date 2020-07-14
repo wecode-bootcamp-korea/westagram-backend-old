@@ -1,9 +1,6 @@
-# DB Connection config#
-students/10th/gonholee/westagram/westagram/db_settings.py
 
-
-# Created by https://www.toptal.com/developers/gitignore/api/django,python
-# Edit at https://www.toptal.com/developers/gitignore?templates=django,python
+# Created by https://www.toptal.com/developers/gitignore/api/django
+# Edit at https://www.toptal.com/developers/gitignore?templates=django
 
 ### Django ###
 *.log
@@ -147,63 +144,6 @@ dmypy.json
 # pytype static type analyzer
 .pytype/
 
-### Python ###
-# Byte-compiled / optimized / DLL files
-
-# C extensions
-
-# Distribution / packaging
-
-# PyInstaller
-#  Usually these files are written by a python script from a template
-#  before PyInstaller builds the exe, so as to inject date/other infos into it.
-
-# Installer logs
-
-# Unit test / coverage reports
-
-# Translations
-
-# Django stuff:
-
-# Flask stuff:
-
-# Scrapy stuff:
-
-# Sphinx documentation
-
-# PyBuilder
-
-# Jupyter Notebook
-
-# IPython
-
-# pyenv
-
-# pipenv
-#   According to pypa/pipenv#598, it is recommended to include Pipfile.lock in version control.
-#   However, in case of collaboration, if having platform-specific dependencies or dependencies
-#   having no cross-platform support, pipenv may install dependencies that don't work, or not
-#   install all needed dependencies.
-
-# PEP 582; used by e.g. github.com/David-OConnor/pyflow
-
-# Celery stuff
-
-# SageMath parsed files
-
-# Environments
-
-# Spyder project settings
-
-# Rope project settings
-
-# mkdocs documentation
-
-# mypy
-
-# Pyre type checker
-
-# pytype static type analyzer
-
-# End of https://www.toptal.com/developers/gitignore/api/django,python
+# End of https://www.toptal.com/developers/gitignore/api/django
+DBConnent.py
+.vscode
