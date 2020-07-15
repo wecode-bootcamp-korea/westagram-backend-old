@@ -1,19 +1,20 @@
-import json
+import json, bcrypt, jwt
 
 from django.shortcuts import render
 from django.http      import JsonResponse
 from django.views     import View
 
 from .models          import User
+from mysite.settings  import SECRET_KEY
 
-class SignUp(View):
+class SignUpView(View):
     def post(self, request):
         try:
             data = json.loads(request.body)
             User(
-                name     = data['name'],
+                #name     = data['name'],
                 email    = data['email'],
-                password = data['password']
+                password = bcrypt.hashpw(data['password'].encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
             ).save()
             return JsonResponse({"message":"SUCCESS"}, status = 200)
         except KeyError:
@@ -23,14 +24,14 @@ class SignUp(View):
         db = User.objects.values()
         return JsonResponse({"data":list(db)}, status = 200)
 
-class SignIn(View):
+class SignInView(View):
     def post(self, request):
         data = json.loads(request.body)
         try:
             if data['email'] in User.objects.get(email = data['email']).email:
                 user = User.objects.get(email = data['email'])
                 if user.password == data['password']:
-                    return JsonResponse({"message":"PASSWORD_ERROR"}, status = 201)
+                    return JsonResponse({"message":"WELCOME"}, status = 200)
                 else:
                     return JsonResponse({"message":"PASSWORD_ERROR"}, status = 400)
         except KeyError:

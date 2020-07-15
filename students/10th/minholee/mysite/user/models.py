@@ -1,7 +1,7 @@
 from django.db import models
 
 class User(models.Model):
-    name       = models.CharField(max_length = 255)
+    name       = models.CharField(max_length = 255, default="Anonymous")
     email      = models.CharField(max_length = 511)
     password   = models.CharField(max_length = 255)
     created_at = models.DateTimeField(auto_now_add = True)
