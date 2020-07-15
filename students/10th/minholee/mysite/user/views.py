@@ -14,7 +14,8 @@ class SignUpView(View):
             User(
                 #name     = data['name'],
                 email    = data['email'],
-                password = bcrypt.hashpw(data['password'].encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+                password = data['email']
+                #password = bcrypt.hashpw(data['password'].encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
             ).save()
             return JsonResponse({"message":"SUCCESS"}, status = 200)
         except KeyError:
