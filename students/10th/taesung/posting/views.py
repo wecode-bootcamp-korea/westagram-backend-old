@@ -15,9 +15,9 @@ class ArticleView(View):
     def post(self, request):
         try:
             data = json.loads(request.body)
-            if User.objects.filter(name = data['name']).exists() and not Article.objects.filter(head = data['head']).exists():
+            if User.objects.filter(email = data['email']).exists() and not Article.objects.filter(head = data['head']).exists():
                 Article(
-                    user = User.objects.get(name= data['name']),
+                    email = User.objects.get(name= data['email']),
                     head = data['head'],
                     body = data['body']
                 ).save()
@@ -25,20 +25,20 @@ class ArticleView(View):
             else:
                 return JsonResponse({'message': 'INVALID_INFORMATION'}, status=401)
         except KeyError:
-            return JsonResponse({'messgae' : 'FAIL'}, status=401)
+            return JsonResponse({'messgae' : 'FAIL'}, status=400)
 
-class Comment(View):
+class CommentView(View):
     def post(self, request):
         try:
             data = json.loads(request.body)
-            if User.objects.filter(name=data['name']).exists() and Article.objects.filter(head = data['head']).exists():
+            if User.objects.filter(email=data['email']).exists() and Article.objects.filter(head = data['head']).exists():
                 Comment(
                     content = data['content'],
-                    name    = User.objects.get(name = data['name']),
+                    email   = User.objects.get(name = data['email']),
                     article = Article.objects.get(head = data['head'])
                 ).save()
                 return JsonResponse({'message': 'SUCCESS'}, status=200)
             else:
-                return JsonResponse({'message': 'INVLID_INFORMATION'}, status = 401)
+                return JsonResponse({'message': 'INVALID_INFORMATION'}, status = 401)
         except KeyError:
             return JsonResponse({'message':'ERROR'}, status = 400)

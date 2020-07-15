@@ -15,7 +15,7 @@ class Article(models.Model):
 class Comment(models.Model):
     content = models.CharField(max_length = 2000)
     article = models.ForeignKey('Article', on_delete=models.SET_NULL, null=True)
-    name    = models.ForeignKey('user.User', on_delete=models.SET_NULL, null=True)
+    email   = models.ForeignKey('user.User', on_delete=models.SET_NULL, null=True)
 
     class Meta:
         db_table = 'comments'

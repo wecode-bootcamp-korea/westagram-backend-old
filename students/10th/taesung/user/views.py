@@ -16,7 +16,7 @@ class SignUpView(View):
                 return JsonResponse({'message': "EXIST_EMAIL"}, status=400)
             if ('@' in data['email']) and (len(data['password']) >= 5):
                 User(
-                    name = data['name'],
+                    #name = data['name'],
                     email = data['email'],
                     password = bcrypt.hashpw(data['password'].encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
                 ).save()
@@ -34,10 +34,10 @@ class SignInView(View):
     def post(self, request):
         try:
             data = json.loads(request.body)
-            if User.objects.filter(name=data['name']).exists:
-                user = User.objects.get(name = data['name'])
+            if User.objects.filter(email=data['email']).exists:
+                user = User.objects.get(email = data['email'])
                 if bcrypt.checkpw(data['password'].encode('utf-8'), user.password.encode('utf-8')):    
-                    user = User.objects.get(name = data['name'])
+                    user = User.objects.get(email = data['email'])
                     token = jwt.encode({'user': user.id}, SECRET_KEY, ALGORITHM).decode('utf-8')
                     return JsonResponse({'success': token}, status=200)
                 else:
