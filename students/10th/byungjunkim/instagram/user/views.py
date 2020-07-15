@@ -24,7 +24,6 @@ class SignUpView(View):
             return JsonResponse({'message':'SUCCESS'},status=200)
         except KeyError:
             return JsonResponse({'message':'INVALID_KEYS'},status=400)
-    
     #유저리스트 보여주기
     def get(self,request):
         user=User.objects.values()
@@ -40,19 +39,18 @@ class SignInView(View):
     def post(self, request):
         data = json.loads(request.body)
         try:   
-            if User.objects.get(name=data["name"]).password==data["password"]:
+            if User.objects.get(email=data["email"]).password==data["password"]:
                 return JsonResponse({'message':'SUCCESS'},status=200)
-            elif  User.objects.get(name=data["name"]).password!=data["password"]:
+            elif  User.objects.get(email=data["email"]).password!=data["password"]:
                 return JsonResponse({'message':'WRONG_PASSWORD'},status=401)
         except KeyError:
-            return JsonResponse({'message':'VACANT'},status=400)
+            return JsonResponse({'message':'KEY_ERROR'},status=400)
         except ObjectDoesNotExist:
             return JsonResponse({'message':'INVALID_USER'},status=401)
         except MultipleObjectsReturned :
              return JsonResponse({'message':'Duplicated'},status=401)
         except OperationalError :
-             return JsonResponse({'message':' User Does not exist'},status=400) 
-
+             return JsonResponse({'message':' User Does not exist'},status=400) s
 """팔로우
     1. 존재하지않는 아이디 팔로우하면 ObjectDoesNotExist {'message':'INVALID_USER'},status=401
     2. 존재하지않는 아이디로 팔로우하면 ObjectDoesNotExist {'message':'INVALID_USER'},status=401
@@ -72,4 +70,4 @@ class FollowView(View):
         except KeyError:
             return JsonResponse({'message':'INVALID_KEYS'},status=400)
         except ObjectDoesNotExist:
-            return JsonResponse({'message':'DONT_EXIST'},status=401)
+            return JsonResponse({'message':'DOES_NOT_EXIST'},status=401)

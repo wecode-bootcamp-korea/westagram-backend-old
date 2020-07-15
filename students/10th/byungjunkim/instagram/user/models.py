@@ -9,7 +9,7 @@ class User(models.Model):
     updated_at = models.DateTimeField(auto_now = True)
 
     class Meta:
-        db_table = 'User'
+        db_table = 'users'
 
 
 class Follow(models.Model):
@@ -18,4 +18,4 @@ class Follow(models.Model):
     created_at = models.DateTimeField(auto_now_add = True)
     updated_at = models.DateTimeField(auto_now = True)
     class Meta:
-        db_table ='Follow'
+        db_table ='follows'

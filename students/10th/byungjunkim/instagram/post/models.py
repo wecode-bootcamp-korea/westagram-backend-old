@@ -9,8 +9,8 @@ class Post(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    class meta:
-        db_table = 'Post'
+    class Meta:
+        db_table = 'posts'
 
 class Comment(models.Model):
     user = models.ForeignKey(User,on_delete=models.CASCADE)
@@ -19,11 +19,11 @@ class Comment(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    class meta:
-        db_table='Comment'
+    class Meta:
+        db_table='comments'
 
 class Thumbs(models.Model):
     user = models.ForeignKey(User,on_delete=models.CASCADE)
     post = models.ForeignKey(Post,on_delete=models.CASCADE)
-    class meta:
-        db_table='Thumbs'
+    class Meta:
+        db_table='thumbs'
