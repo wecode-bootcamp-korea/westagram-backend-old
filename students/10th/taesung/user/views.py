@@ -1,9 +1,12 @@
 import json
+import bcrypt
+import jwt
 
-from django.views import View
-from django.http  import JsonResponse
+from django.views       import View
+from django.http        import JsonResponse
 
-from .models      import User
+from .models            import User
+from westagram.settings import SECRET_KEY
 
 class SignUp(View):
     def post(self, request):
@@ -15,7 +18,7 @@ class SignUp(View):
                 User(
                     name = data['name'],
                     email = data['email'],
-                    password = data['password']
+                    password = bcrypt.hashpw(data['password'].encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
                 ).save()
                 return JsonResponse({'message': 'PERMISSION_MEMBERS'}, status=200)
         except KeyError:
@@ -29,7 +32,11 @@ class SignIn(View):
     def post(self, request):
         try:
             data = json.loads(request.body)
-            if User.objects.filter(name=data['name']).exists and User.objects.filter(password=data['password']).exists:
-                return JsonResponse({'message':'LOG_IN_SUCCESS'}, status=200)
+            if User.objects.filter(name=data['name']).exists:
+                user = User.objects.get(name = data['name'])
+                if bcrypt.checkpw(data['password'].encode('utf-8'), user.password.encode('utf-8')):
+                    user = User.objects.get(name = data['name'])
+                    token = jwt.encode({'user': user.id}, SECRET_KEY, algorithm='HS256').decode('utf-8')
+                    return JsonResponse({'success': token}, status=200)
         except:
             return JsonResponse({"message": "INVALID_USER"}, status=401)
