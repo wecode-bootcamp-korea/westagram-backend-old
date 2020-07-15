@@ -6,9 +6,9 @@ from django.views       import View
 from django.http        import JsonResponse
 
 from .models            import User
-from westagram.settings import SECRET_KEY
+from westagram.settings import SECRET_KEY, ALGORITHM
 
-class SignUp(View):
+class SignUpView(View):
     def post(self, request):
         try:
             data = json.loads(request.body)
@@ -21,6 +21,8 @@ class SignUp(View):
                     password = bcrypt.hashpw(data['password'].encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
                 ).save()
                 return JsonResponse({'message': 'PERMISSION_MEMBERS'}, status=200)
+            else:
+                return JsonResponse({'message': 'INVALID_INPUT'}, status=400)
         except KeyError:
             return JsonResponse({"message":"KEY_ERROR"}, status=400)
 
@@ -28,15 +30,19 @@ class SignUp(View):
         user_data = user.objects.values()
         return JsonResponse({'user':list(user_data)}, status=200)
 
-class SignIn(View):
+class SignInView(View):
     def post(self, request):
         try:
             data = json.loads(request.body)
             if User.objects.filter(name=data['name']).exists:
                 user = User.objects.get(name = data['name'])
-                if bcrypt.checkpw(data['password'].encode('utf-8'), user.password.encode('utf-8')):
+                if bcrypt.checkpw(data['password'].encode('utf-8'), user.password.encode('utf-8')):    
                     user = User.objects.get(name = data['name'])
-                    token = jwt.encode({'user': user.id}, SECRET_KEY, algorithm='HS256').decode('utf-8')
+                    token = jwt.encode({'user': user.id}, SECRET_KEY, ALGORITHM).decode('utf-8')
                     return JsonResponse({'success': token}, status=200)
-        except:
+                else:
+                    return JsonResponse({'messgae': 'INALID_PASSWORD'}, status=403)
+            else:
+                return JsonResponse({'message': 'NOT_MEMBERS'}, status=401)
+        except KeyError:
             return JsonResponse({"message": "INVALID_USER"}, status=401)

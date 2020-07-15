@@ -21,10 +21,11 @@ class ArticleView(View):
                     head = data['head'],
                     body = data['body']
                 ).save()
-            return JsonResponse({'message':'SUCCESS'}, status=200)
+                return JsonResponse({'message':'SUCCESS'}, status=200)
+            else:
+                return JsonResponse({'message': 'INVALID_INFORMATION'}, status=401)
         except KeyError:
-            return JsonResponse({'messgae' : 'FAIL'}, status=400)
-
+            return JsonResponse({'messgae' : 'FAIL'}, status=401)
 
 class Comment(View):
     def post(self, request):
@@ -37,5 +38,7 @@ class Comment(View):
                     article = Article.objects.get(head = data['head'])
                 ).save()
                 return JsonResponse({'message': 'SUCCESS'}, status=200)
-        except:
+            else:
+                return JsonResponse({'message': 'INVLID_INFORMATION'}, status = 401)
+        except KeyError:
             return JsonResponse({'message':'ERROR'}, status = 400)
