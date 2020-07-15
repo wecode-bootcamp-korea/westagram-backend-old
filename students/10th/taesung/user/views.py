@@ -16,7 +16,6 @@ class SignUpView(View):
                 return JsonResponse({'message': "EXIST_EMAIL"}, status=400)
             if ('@' in data['email']) and (len(data['password']) >= 5):
                 User(
-                    #name = data['name'],
                     email = data['email'],
                     password = bcrypt.hashpw(data['password'].encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
                 ).save()
@@ -41,7 +40,7 @@ class SignInView(View):
                     token = jwt.encode({'user': user.id}, SECRET_KEY, ALGORITHM).decode('utf-8')
                     return JsonResponse({'success': token}, status=200)
                 else:
-                    return JsonResponse({'messgae': 'INALID_PASSWORD'}, status=403)
+                    return JsonResponse({'message': 'INVALID_PASSWORD'}, status=403)
             else:
                 return JsonResponse({'message': 'NOT_MEMBERS'}, status=401)
         except KeyError:
