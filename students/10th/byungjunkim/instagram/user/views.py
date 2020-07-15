@@ -1,4 +1,5 @@
 import json
+import jwt
 from django.views import View
 from django.http import JsonResponse
 from django.db import OperationalError
@@ -13,8 +14,9 @@ from .models import User, Follow
 class SignUpView(View):
     def post(self,request):
         data = json.loads(request.body)
+        data['name']='temp'
         try:
-            if User.objects.filter(name=data["name"]).exists() or User.objects.filter(email=data["email"]).exists():       
+            if  User.objects.filter(email=data["email"]).exists():       
                 return JsonResponse({'message':'ALREADY'},status=400)
             User(
                 name        = data['name'],
@@ -40,7 +42,12 @@ class SignInView(View):
         data = json.loads(request.body)
         try:   
             if User.objects.get(email=data["email"]).password==data["password"]:
-                return JsonResponse({'message':'SUCCESS'},status=200)
+                SECRET_KEY='비밀이얌'
+                ALGORITHM='HS256'
+                uid={'uid':User.objects.get(email=data["email"]).id}
+                token = jwt.encode(uid,SECRET_KEY,ALGORITHM)
+                decoded_token = token.decode()
+                return JsonResponse({"token":decoded_token,"email":data["email"]},status=200)
             elif  User.objects.get(email=data["email"]).password!=data["password"]:
                 return JsonResponse({'message':'WRONG_PASSWORD'},status=401)
         except KeyError:
@@ -50,7 +57,7 @@ class SignInView(View):
         except MultipleObjectsReturned :
              return JsonResponse({'message':'Duplicated'},status=401)
         except OperationalError :
-             return JsonResponse({'message':' User Does not exist'},status=400) s
+             return JsonResponse({'message':' User Does not exist'},status=400)
 """팔로우
     1. 존재하지않는 아이디 팔로우하면 ObjectDoesNotExist {'message':'INVALID_USER'},status=401
     2. 존재하지않는 아이디로 팔로우하면 ObjectDoesNotExist {'message':'INVALID_USER'},status=401
