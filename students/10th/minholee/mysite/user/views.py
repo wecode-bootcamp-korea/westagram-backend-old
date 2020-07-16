@@ -11,11 +11,18 @@ class SignUpView(View):
     def post(self, request):
         try:
             data = json.loads(request.body)
-            User(
-                email    = data['email'],
-                password = bcrypt.hashpw(data['password'].encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
-            ).save()
-            return JsonResponse({"message":"SUCCESS"}, status = 200)
+            if '@' not in data['email']:
+                return JsonResponse({"message":"Email format is incorrect."}, status = 400)
+            elif User.objects.filter(email = data['email']).exists():
+                return JsonResponse({"message":"This email is already in use."}, status = 400)
+            elif len(data['password']) < 5:
+                return JsonResponse({"message":"Password must be at least 5 characters."}, status = 400)
+            else:
+                User(
+                    email    = data['email'],
+                    password = bcrypt.hashpw(data['password'].encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+                ).save()
+                return JsonResponse({"message":"SUCCESS"}, status = 200)
         except KeyError:
             return JsonResponse({"message":"KEY_ERROR"}, status = 400)
 
