@@ -12,10 +12,8 @@ class SignUpView(View):
         try:
             data = json.loads(request.body)
             User(
-                #name     = data['name'],
                 email    = data['email'],
-                password = data['email']
-                #password = bcrypt.hashpw(data['password'].encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+                password = bcrypt.hashpw(data['password'].encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
             ).save()
             return JsonResponse({"message":"SUCCESS"}, status = 200)
         except KeyError:
@@ -29,13 +27,13 @@ class SignInView(View):
     def post(self, request):
         data = json.loads(request.body)
         try:
-            if data['email'] in User.objects.get(email = data['email']).email:
+            if User.objects.filter(email = data['email']).exists():
                 user = User.objects.get(email = data['email'])
-                if user.password == data['password']:
-                    return JsonResponse({"message":"WELCOME"}, status = 200)
+                if bcrypt.checkpw(data['password'].encode('utf-8'), user.password.encode('utf-8')):
+                    return JsonResponse({"message":"SUCCESS"}, status = 200)
                 else:
                     return JsonResponse({"message":"PASSWORD_ERROR"}, status = 400)
         except KeyError:
             return JsonResponse({"message":"KEY_ERROR"}, status = 400)
-        except Exception as content:
-            return JsonResponse({"message":f"{content}"}, status = 401)
+        except Exception as e:
+            return JsonResponse({"message":f"{e}"}, status = 400)
