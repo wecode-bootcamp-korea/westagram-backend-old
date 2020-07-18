@@ -4,7 +4,7 @@ from django.shortcuts import render
 from django.http      import JsonResponse
 from django.views     import View
 
-from .models          import Post, Comment
+from .models     import Post, Comment
 from user.models import User
 
 class PostView(View):
@@ -14,7 +14,7 @@ class PostView(View):
             if User.objects.filter(id=data['user_id']).exists():
                 user = User.objects.get(id=data['user_id'])
                 Post(
-                    user = user,
+                    user    = user,
                     content = data['content']
                 ).save()
                 return JsonResponse({'message':'SUCCESS'}, status = 200)
