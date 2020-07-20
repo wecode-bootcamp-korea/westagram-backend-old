@@ -4,12 +4,13 @@ from django.views       import View
 from django.http        import JsonResponse
 
 from .models            import User, Follow
+from .utils             import LoginConfirm
 from westagram.settings import SECRET_KEY, ALGORITHM
 
 class SignUpView(View):
     def post(self, request):
         try:
-            data = json.loads(request.body)
+            data = request.body.get(email, password)
             if User.objects.filter(email = data['email']).exists():
                 return JsonResponse({'message': "EXIST_EMAIL"}, status=400)
             if ('@' in data['email']) and (len(data['password']) >= 5):
@@ -23,9 +24,9 @@ class SignUpView(View):
         except KeyError:
             return JsonResponse({"message":"INVLID_INPUT"}, status=400)
 
-    def get(self, request):
-        user_data = user.objects.values()
-        return JsonResponse({'user':list(user_data)}, status=200)
+    #def get(self, request):
+        #user_data = user.objects.values()
+        #return JsonResponse({'user':list(user_data)}, status=200)
 
 class SignInView(View):
     def post(self, request):
@@ -45,11 +46,12 @@ class SignInView(View):
             return JsonResponse({"message": "INVALID_USER"}, status=401)
 
 class FollowView(View):
+    @LoginConfirm
     def post(self, request):
         try:
             data     = json.loads(request.body)
-            follow   = User.objects.filter(email = data['email1'])
-            followee = User.objects.filter(email = data['email2'])
+            follow   = User.objects.filter(email = request.user.email)
+            followee = User.objects.filter(email = data['email'])
             if follow[0] and followee[0]:
                 if Follow.objects.filter(follow_user = follow[0]).exists():
                     follow_user = Follow.objects.get(follow_user = follow[0].id)

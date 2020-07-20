@@ -9,8 +9,6 @@ class Article(models.Model):
     update_at   = models.DateTimeField(auto_now = True)
     user        = models.ForeignKey(User, on_delete = models.SET_NULL, null=True, related_name = 'article_user')
     like        = models.ManyToManyField(User, through='Like', related_name = 'article_like')
-    created_at  = models.DateTimeField(auto_now_add = True)
-    updated_at  = models.DateTimeField(auto_now = True)
 
     class Meta:
         db_table = 'articles'

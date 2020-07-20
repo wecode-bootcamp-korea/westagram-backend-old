@@ -4,33 +4,33 @@ from django.views import View
 from django.http  import JsonResponse
 
 from user.models  import User
+from user.utils   import LoginConfirm
 from .models      import Article, Comment, Like
 
 class ArticleView(View):
+    @LoginConfirm
     def post(self, request):
         try:
             data = json.loads(request.body)
-            if User.objects.filter(email = data['email']).exists() and not Article.objects.filter(head = data['head']).exists():
-                Article(
-                    email = User.objects.get(email = data['email']),
-                    head  = data['head'],
-                    body  = data['body']
-                ).save()
-                return JsonResponse({'message':'SUCCESS'}, status=200)
-            else:
-                return JsonResponse({'message': 'INVALID_INFORMATION'}, status=401)
+            Article(
+                head  = data['head'],
+                body  = data['body'],
+                user = User.objects.get(email = request.user.email)
+            ).save()
+            return JsonResponse({'message':'SUCCESS'}, status=200)
         except KeyError:
             return JsonResponse({'messgae' : 'INVLID_INPUT'}, status=400)
 
 class CommentView(View):
+    @LoginConfirm
     def post(self, request):
         try:
             data = json.loads(request.body)
-            if User.objects.filter(email=data['email']).exists() and Article.objects.filter(head = data['head']).exists():
+            if Article.objects.filter(head = data['head']).exists():
                 Comment(
                     content = data['content'],
-                    email   = User.objects.get(email = data['email']),
-                    article = Article.objects.get(head = data['head'])
+                    article = Article.objects.get(head = data['head']),
+                    user    = User.objects.get(email = request.user.email)
                 ).save()
                 return JsonResponse({'message': 'SUCCESS'}, status=200)
             else:
@@ -39,10 +39,11 @@ class CommentView(View):
             return JsonResponse({'message':'INVLID_INPUT'}, status = 400)
 
 class LikeView(View):
+    @LoginConfirm
     def post(self, request):
         try:
             data    = json.loads(request.body)
-            user    = User.objects.filter(email = data['email'])
+            user    = User.objects.filter(email = request.user.email)
             article = Article.objects.filter(head = data['head'])
             if user[0] and article[0]:
                 if Like.objects.filter(user = user[0]).exists():
