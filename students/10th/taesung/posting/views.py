@@ -5,7 +5,11 @@ from django.http  import JsonResponse
 
 from user.models  import User
 from user.utils   import LoginConfirm
-from .models      import Article, Comment, Like
+from .models      import (
+    Article,
+    Comment,
+    Like
+)
 
 class ArticleView(View):
     @LoginConfirm
@@ -44,8 +48,8 @@ class LikeView(View):
         try:
             data    = json.loads(request.body)
             user    = User.objects.filter(email = request.user.email)
-            article = Article.objects.filter(head = data['head'])
-            if user[0] and article[0]:
+            if user[0] and Article.objects.filter(head = data['head']).exists():
+                article = Article.objects.filter(head = data['head'])
                 if Like.objects.filter(user = user[0]).exists():
                     like_user = Like.objects.get(user = user[0].id)
                     if like_user.article == article[0]:
@@ -61,6 +65,6 @@ class LikeView(View):
                     ).save()
                     return JsonResponse({'message': 'LIKE'}, status=200)
             else:
-                return JsonResponse({'message': 'NOT_EXISTS_MEMBER'}, status=401)
+                return JsonResponse({'message': 'NOT_EXISTS'}, status=401)
         except KeyError:
             return JsonResponse({'message': 'INVALID_INPUT'}, status=400)

@@ -16,7 +16,7 @@ class Article(models.Model):
 class Comment(models.Model):
     content = models.CharField(max_length = 1000)
     article = models.ForeignKey('Article', on_delete=models.SET_NULL, null=True)
-    user   = models.ForeignKey('user.User', on_delete=models.SET_NULL, null=True, related_name = 'comment_user')
+    user    = models.ForeignKey('user.User', on_delete=models.SET_NULL, null=True, related_name = 'comment_user')
 
     class Meta:
         db_table = 'comments'
