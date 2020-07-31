@@ -98,4 +98,4 @@ CORS_ALLOW_HEADERS = (
 )
 ```
 
-자, 이제 westagram 프로젝트를 위한 기본 설정이 완료 되었습니다. westagram을 위한 첫 앱을 생성해보세요! 앱을 만드신 뒤에는 다음 안내 사항인 02_views_guide.md 파일을 확인해주세요.
+자, 이제 westagram 프로젝트를 위한 기본 설정이 완료 되었습니다. westagram을 위한 첫 앱을 생성해보세요! 앱을 만드신 뒤에는 다음 안내 사항인 [02_urls_guide.md 파일](https://github.com/wecode-bootcamp-korea/westagram-backend/blob/master/guide/02_urls_guide.md)을 확인해주세요.
