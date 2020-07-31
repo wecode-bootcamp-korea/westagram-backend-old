@@ -1,8 +1,5 @@
-.DS_STORE
-=======
-
-# Created by https://www.toptal.com/developers/gitignore/api/python,django,git
-# Edit at https://www.toptal.com/developers/gitignore?templates=python,django,git
+# Created by https://www.toptal.com/developers/gitignore/api/django,python
+# Edit at https://www.toptal.com/developers/gitignore?templates=django,python
 
 ### Django ###
 *.log
@@ -146,21 +143,6 @@ dmypy.json
 # pytype static type analyzer
 .pytype/
 
-### Git ###
-# Created by git for backups. To disable backups in Git:
-# $ git config --global mergetool.keepBackup false
-*.orig
-
-# Created by git when using merge tools for conflicts
-*.BACKUP.*
-*.BASE.*
-*.LOCAL.*
-*.REMOTE.*
-*_BACKUP_*.txt
-*_BASE_*.txt
-*_LOCAL_*.txt
-*_REMOTE_*.txt
-
 ### Python ###
 # Byte-compiled / optimized / DLL files
 
@@ -220,4 +202,5 @@ dmypy.json
 
 # pytype static type analyzer
 
-# End of https://www.toptal.com/developers/gitignore/api/python,django,git
+# End of https://www.toptal.com/developers/gitignore/api/django,python
+.DS_Store
