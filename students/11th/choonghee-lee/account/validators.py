@@ -14,8 +14,8 @@ KEY_USERNAME        = 'username'
 KEY_PASSWORD        = 'password'
 
 def is_valid_name(name):
-    REGEX_USERNAME = '^[a-zA-Z0-9]{2,30}$'
-    result = False
+    REGEX_USERNAME  = '^[a-zA-Z0-9]{2,30}$'
+    result          = False
 
     if not name:
         return result
@@ -25,8 +25,8 @@ def is_valid_name(name):
     return result
 
 def is_valid_username(username):
-    REGEX_USERNAME = '^[a-zA-Z0-9]{6,30}$'
-    result = False
+    REGEX_USERNAME  = '^[a-zA-Z0-9]{6,30}$'
+    result          = False
 
     if not username:
         return result
@@ -36,8 +36,8 @@ def is_valid_username(username):
     return result
 
 def is_valid_email(email):
-    REGEX_EMAIL = '^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*\.[a-zA-Z]{2,3}$'
-    result = False
+    REGEX_EMAIL     = '^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*\.[a-zA-Z]{2,3}$'
+    result          = False
 
     if not email:
         return result
@@ -47,9 +47,8 @@ def is_valid_email(email):
     return result
 
 def is_valid_phone_number(phone_number):
-    # TODO: support world wide phone numbers
-    REGEX_PHONE_NUMBER = '^\d{3}\d{3,4}\d{4}$'
-    result = False
+    REGEX_PHONE_NUMBER  = '^\d{3}\d{3,4}\d{4}$'
+    result              = False
 
     if not phone_number:
         return result
@@ -59,8 +58,8 @@ def is_valid_phone_number(phone_number):
     return result
 
 def is_valid_password(password):
-    REGEX_PASSWORD = '^[a-zA-Z0-9@#$%^&+=]{8,128}$'
-    result = False
+    REGEX_PASSWORD  = '^[a-zA-Z0-9@#$%^&+=]{8,128}$'
+    result          = False
 
     if not password:
         return result
@@ -71,8 +70,8 @@ def is_valid_password(password):
     return result
 
 def is_number_string(number_string):
-    REGEX_ONLY_NUMBER = '^\d+$'
-    result = False
+    REGEX_ONLY_NUMBER   = '^\d+$'
+    result              = False
 
     if not number_string:
         return result
@@ -87,18 +86,18 @@ class UserRegisterValidator:
         self.post = post
 
     def __call__(self, request, **kwargs):
-        result_code = SUCCESS_VALID_REQUEST
-        phone_or_email = ''
-        name = ''
-        username = ''
-        password = ''
+        result_code     = SUCCESS_VALID_REQUEST
+        phone_or_email  = ''
+        name            = ''
+        username        = ''
+        password        = ''
 
         json_data = json.loads(request.body)
         try:
-            phone_or_email = json_data[KEY_PHONE_OR_EMAIL]
-            name = json_data[KEY_NAME]
-            username = json_data[KEY_USERNAME]
-            password = json_data[KEY_PASSWORD]
+            phone_or_email      = json_data[KEY_PHONE_OR_EMAIL]
+            name                = json_data[KEY_NAME]
+            username            = json_data[KEY_USERNAME]
+            password            = json_data[KEY_PASSWORD]
         except KeyError:
             result_code = ERROR_INVALID_INPUT
 

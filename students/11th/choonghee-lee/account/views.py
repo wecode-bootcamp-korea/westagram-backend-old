@@ -1,26 +1,26 @@
 import bcrypt
 import json
 
-from django.http import JsonResponse
-from django.views.generic import View
+from django.http            import JsonResponse
+from django.views.generic   import View
 
-from .codes import (
+from .codes         import (
     ERROR_INVALID_INPUT,
     ERROR_INVALID_PHONE,
     ERROR_INVALID_EMAIL,
     SUCCESS_VALID_REQUEST,
 )
-from .models import User
-from .validators import UserRegisterValidator
+from .models        import User
+from .validators    import UserRegisterValidator
 
 class UserRegisterView(View):
     @UserRegisterValidator
     def post(self, request, **kwargs):
-        phone_or_email = kwargs['phone_or_email']
-        name = kwargs['name']
-        username = kwargs['username']
-        password = kwargs['password']
-        result_code = kwargs['result_code']
+        phone_or_email  = kwargs['phone_or_email']
+        name            = kwargs['name']
+        username        = kwargs['username']
+        password        = kwargs['password']
+        result_code     = kwargs['result_code']
 
         if result_code == ERROR_INVALID_INPUT:
             return JsonResponse({'message':'KEY_ERROR'}, status=400)
