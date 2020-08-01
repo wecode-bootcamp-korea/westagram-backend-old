@@ -8,10 +8,10 @@ from .codes import (
     SUCCESS_VALID_REQUEST,
 )
 
-KEY_PHONE_OR_EMAIL = 'phone_or_email'
-KEY_NAME = 'name'
-KEY_USERNAME = 'username'
-KEY_PASSWORD = 'password'
+KEY_PHONE_OR_EMAIL  = 'phone_or_email'
+KEY_NAME            = 'name'
+KEY_USERNAME        = 'username'
+KEY_PASSWORD        = 'password'
 
 def is_valid_name(name):
     REGEX_USERNAME = '^[a-zA-Z0-9]{2,30}$'
@@ -59,7 +59,7 @@ def is_valid_phone_number(phone_number):
     return result
 
 def is_valid_password(password):
-    REGEX_PASSWORD = '^[a-zA-Z0-9]{8,128}$'
+    REGEX_PASSWORD = '^[a-zA-Z0-9@#$%^&+=]{8,128}$'
     result = False
 
     if not password:
@@ -94,19 +94,20 @@ class UserRegisterValidator:
         password = ''
 
         json_data = json.loads(request.body)
-        if KEY_PHONE_OR_EMAIL in json_data:
+        try:
             phone_or_email = json_data[KEY_PHONE_OR_EMAIL]
-        if KEY_NAME in json_data:
             name = json_data[KEY_NAME]
-        if KEY_USERNAME in json_data:
             username = json_data[KEY_USERNAME]
-        if KEY_PASSWORD in json_data:
             password = json_data[KEY_PASSWORD]
-
-        if not phone_or_email or not is_valid_name(name) or not is_valid_username(username) or not is_valid_password(password):
+        except KeyError:
             result_code = ERROR_INVALID_INPUT
-        
-        if not is_valid_email(phone_or_email) and not is_valid_phone_number(phone_or_email):
+
+        if (not is_valid_name(name) or
+            not is_valid_username(username) or
+            not is_valid_password(password)):
+            result_code = ERROR_INVALID_INPUT
+        if (not is_valid_email(phone_or_email) and 
+            not is_valid_phone_number(phone_or_email)):
             if is_number_string(phone_or_email):
                 result_code = ERROR_INVALID_PHONE
             else:
