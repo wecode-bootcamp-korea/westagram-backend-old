@@ -6,10 +6,7 @@ from django.http      import JsonResponse
 
 from .models import User
 
-class UserView(View):
-    def get(self, request):
-        return JsonResponse({'message':'Try Django'}, status = 200)
-
+class SingUpView(View):
     def post(self, request):
         data = json.loads(request.body)
 
@@ -52,3 +49,38 @@ class UserView(View):
         ).save()
 
         return JsonResponse({'message':'SUCCESS'}, status=200)
+
+class SignInView(View):
+    del post(self, request):
+        data = json.loads(request.body)
+
+        if not (
+            (
+            'name'         in data.keys() or
+            'email'        in data.keys() or
+            'phone_number' in data.keys()
+            ) and
+            'password'     in data.keys()
+        ):
+            return JsonResponse({'message':'KEY_ERROR'}, status = 400)
+
+        if 'name' in data.keys() or 'email' in data.keys() or 'phone_number' in data.keys():
+            if not (
+                (
+                User.objects.get(name = data['name']) or
+                User.objects.get(email = data['email']) or
+                User.objects.get(phone_nuber = data['phone_number'])
+                ) and
+                User.objects.get(password= data['password'])
+            ):
+                return JsonResponse({"message":"INVALID_USER"}, status = 401)
+            elif (
+                (
+                User.objects.get(name = data['name']) or
+                User.objects.get(email = data['email']) or
+                User.objects.get(phone_nuber = data['phone_number'])
+                ) and
+                User.objects.get(password = data['password'])
+            ):
+                return JsonResponse({'message':'SUCCESS'}, status = 200)
+

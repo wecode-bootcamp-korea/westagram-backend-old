@@ -1,7 +1,7 @@
 from django.urls import path
 
-from .views import UserView
+from .views import SingUpView
 
 urlpatterns = [
-	path('', UserView.as_view())
+	path('', SingUpView.as_view())
 ]
