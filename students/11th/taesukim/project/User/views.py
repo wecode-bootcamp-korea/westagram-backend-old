@@ -14,29 +14,41 @@ class UserView(View):
         data = json.loads(request.body)
 
         try:
-            if not re.search('.+[@].+[.].+', data['email']):
-                return JsonResponse({'message':'Email is not correct'}, status = 400)
-
-            elif not re.search(".{8,}", data['password']):
-                return JsonResponse({'message':'Password is not correct'}, status = 400)
-
-            elif User.objects.filter(phone_number = data['phone_number']):
-                return JsonRespose({'message':'Phone_number is already used'}, status = 400)
-
-            elif User.objects.filter(name = data['name']):
-                return JsonRespose({'mesaage':'Name is already used'}, status = 400)
-
-            elif User.objects.filter(email = data['email']):
-                return JsonResponse({'message':'Email is already used'}, status = 400)
-
+            _email    = data['email']
+            _password = data['password']
         except KeyError:
             return JsonResponse({'message':'KEY_ERROR'}, status = 400)
 
+        try:
+            _phone_number = data['phone_number']
+        except KeyError:
+            _phone_number = ""
+        else:
+            if User.objects.filter(phone_number = _phone_number):
+                return JsonResponse({'message':'Phone_number is already used'}, status = 400)
+
+        try:
+            _name = data['name']
+        except KeyError:
+            _name = ""
+        else:
+            if User.objects.filter(name = _name):
+                return JsonRespose({'mesaage':'Name is already used'}, status = 400)
+
+        if not re.search('.+[@].+[.].+', _email):
+            return JsonResponse({'message':'Email is not correct'}, status = 400)
+
+        if not re.search(".{8,}", _password):
+            return JsonResponse({'message':'Password is not correct'}, status = 400)
+
+        if User.objects.filter(email = _email):
+            return JsonResponse({'message':'Email is already used'}, status = 400)
+
         User(
-            phone_number = data['phone_number'],
-            name         = data['name'],
-            email        = data['email'],
-            password     = data['password']
+            phone_number = _phone_number,
+            name         = _name,
+            email        = _email,
+            password     = _password
         ).save()
 
         return JsonResponse({'message':'SUCCESS'}, status=200)
