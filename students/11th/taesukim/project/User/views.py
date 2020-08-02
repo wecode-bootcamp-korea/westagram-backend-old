@@ -33,7 +33,7 @@ class SignUpView(View):
             _name = ""
         else:
             if User.objects.filter(name = _name):
-                return JsonRespose({'mesaage':'Name is already used'}, status = 400)
+                return JsonResponse({'mesaage':'Name is already used'}, status = 400)
 
         if not re.search('.+[@].+[.].+', _email):
             return JsonResponse({'message':'Email is not correct'}, status = 400)
