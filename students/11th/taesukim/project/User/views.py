@@ -6,7 +6,10 @@ from django.http      import JsonResponse
 
 from .models import User
 
-class SingUpView(View):
+class SignUpView(View):
+    def get(self, request):
+        return JsonResponse({"message":"Test SignUpView"})
+
     def post(self, request):
         data = json.loads(request.body)
 
@@ -51,7 +54,10 @@ class SingUpView(View):
         return JsonResponse({'message':'SUCCESS'}, status=200)
 
 class SignInView(View):
-    del post(self, request):
+    def get(self, request):
+        return JsonResponse({"message":"Test SignInView"})
+
+    def post(self, request):
         data = json.loads(request.body)
 
         if not (
