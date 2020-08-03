@@ -1,4 +1,5 @@
 import json
+import re
 
 from django.db.models     import Q
 from django.http          import JsonResponse
@@ -25,10 +26,11 @@ class SignUpView(View):
 
         # value 체크
         if not username and not email and not phone:
-            return JsonResponse({'message': 'INVALID_ID'}, status=400)
+            return JsonResponse({'message': 'INVALID_USERNAME'}, status=400)
 
         # 이메일 체크
-        if email and (not '@' in email) and (not '.' in email):
+        EMAIL_REGEX = "^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*.[a-zA-Z]{2,3}$"
+        if email and re.search(EMAIL_REGEX, email):
             return JsonResponse({'message': 'INVALID_EMAIL'}, status=400)
 
         # 패스워드 체크
