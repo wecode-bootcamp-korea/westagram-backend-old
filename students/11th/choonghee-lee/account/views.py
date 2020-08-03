@@ -7,83 +7,113 @@ from django.views.generic import View
 
 from .models import User
 
-# 회원가입
+def get_user(name=None, email=None, phone=None):
+    if name and email and phone:
+        return User.objects.filter(
+            Q(name = name) |
+            Q(email = email) | 
+            Q(phone = phone)
+        )
+    if name and email:
+        return User.objects.filter(Q(name = name) | Q(email = email))
+    if name and phone:
+        return User.objects.filter(Q(name = name) | Q(phone = phone))
+    if email and phone:
+        return User.objects.filter(Q(email = email) | Q(phone = phone))
+    if name:
+        return User.objects.filter(name = name)
+    if email:
+        return User.objects.filter(email = email)
+    if phone:
+        return User.objects.filter(phone = phone)
+    return None
+
 class SignUpView(View):
     def post(self, request):
-        # json 형식 체크
         try:
-            data = json.loads(request.body)
+            data     = json.loads(request.body)
+            name     = None
+            email    = None
+            phone    = None
+            password = None
+
+            if 'name' in data:
+                name = data['name']
+            if 'email' in data:
+                email = data['email']
+            if 'phone' in data:
+                phone = data['phone']
+            password = data['password']
+
+            if not name and not email and not phone:
+                return JsonResponse({
+                    'message': 'INVALID_USERNAME'}, 
+                    status = 400
+                )
+
+            EMAIL_REGEX = "^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*\.[a-zA-Z]{2,3}$"
+            if email and not re.search(EMAIL_REGEX, email):
+               return JsonResponse(
+                   {'message': 'INVALID_EMAIL'}, 
+                   status = 400
+                )
+            
+            if len(password) < 8:
+                return JsonResponse(
+                    {'message': 'INVALID_PASSWORD'},
+                    status = 400
+                )
+
+            duplicated_user = get_user(
+                name = name, 
+                email = email, 
+                phone = phone,
+            )
+            if duplicated_user:
+                return JsonResponse(
+                    {'message': 'ALREADY_SIGNED_UP_USER'}, 
+                    status = 400,
+                )
+            else:
+                User(
+                    name     = name,
+                    email    = email,
+                    phone    = phone,
+                    password = password,
+                ).save()
+                return JsonResponse({'message': 'SUCCESS'}, status = 200)
+
         except json.decoder.JSONDecodeError:
             return JsonResponse({'message': 'INVALID_JSON'}, status = 400)
-
-        # key 체크
-        try:
-            username = data['username']
-            email    = data['email']
-            phone    = data['phone']
-            password = data['password']
         except KeyError:
-            return JsonResponse({'message': 'KEY_ERROR'}, status = 400)
-
-        # value 체크
-        if not username and not email and not phone:
-            return JsonResponse({'message': 'INVALID_USERNAME'}, status = 400)
-
-        # 이메일 체크
-        EMAIL_REGEX = "^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*.[a-zA-Z]{2,3}$"
-        if email and re.search(EMAIL_REGEX, email):
-            return JsonResponse({'message': 'INVALID_EMAIL'}, status = 400)
-
-        # 패스워드 체크
-        if len(password) < 8:
-            return JsonResponse({'message': 'INVALID_PASSWORD'}, status = 400)
-
-        # 중복 체크
-        try:
-            duplicated_user = User.objects.get(
-                Q(username = username) | Q(email = email) | Q(phone = phone)
-            )
-        except:
-            User(
-                username = username,
-                email    = email,
-                phone    = phone,
-                password = password,
-            ).save()
-            return JsonResponse({'message': 'SUCCESS'}, status = 200)
-        else:
-            return JsonResponse(
-                {'message': 'ALREADY_SIGNED_UP_USER'}, 
-                status = 401
-            )
+            return JsonResponse({'message': 'KEY_ERROR'}, status = 400)            
 
 class SignInView(View):
     def post(self, request):
-        # json 형식 체크
         try:
-            data = json.loads(request.body)
+            data     = json.loads(request.body)
+            name     = None
+            email    = None
+            phone    = None
+            password = None
+
+            if 'name' in data:
+                name = data['name']
+            if 'email' in data:
+                email = data['email']
+            if 'phone' in data:
+                phone = data['phone']
+            password = data['password']
+
+            user = get_user(name=name, email=email, phone=phone)
+            if not user:
+                return JsonResponse({'message': 'INVALID_USER'}, status = 401)
+
+            if not password or user.get().password != password:
+                return JsonResponse({'message': 'INVALID_USER'}, status = 401)
         except json.decoder.JSONDecodeError:
             return JsonResponse({'message': 'INVALID_JSON'}, status = 400)
-
-        # key 체크
-        try:
-            user_id  = data['id']
-            password = data['password']
         except KeyError:
             return JsonResponse({'message': 'KEY_ERROR'}, status = 400)
-
-        # id 확인
-        try:
-            user = User.objects.get(
-                Q(username=user_id)|
-                Q(email=user_id)|
-                Q(phone=user_id)
-            )
-        except User.DoesNotExist:
-            return JsonResponse({'message': 'INVALID_USER'}, status = 401)
-
-        # 패스워드 확인
-        if user.password != password:
-            return JsonResponse({'message': 'INVALID_USER'}, status = 401)
 
         return JsonResponse({'message': 'SUCCESS'}, status = 200)
