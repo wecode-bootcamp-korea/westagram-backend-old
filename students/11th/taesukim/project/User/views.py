@@ -1,62 +1,58 @@
 import json
 import re
 
-from django.views     import View
-from django.http      import JsonResponse
+from django.views           import View
+from django.http            import JsonResponse
+from django.core.exceptions import ValidationError
 
 from .models import User
+from .helper import (
+    name_overlap,
+    phone_number_overlap,
+    email_overlap,
+    email_validate,
+    password_validate
+)
 
 class SignUpView(View):
-    def get(self, request):
-        return JsonResponse({"message":"Test SignUpView"})
-
     def post(self, request):
         data = json.loads(request.body)
 
         try:
-            _email    = data['email']
-            _password = data['password']
+            post_email    = data['email']
+            post_password = data['password']
         except KeyError:
             return JsonResponse({'message':'KEY_ERROR'}, status = 400)
 
-        try:
-            _phone_number = data['phone_number']
-        except KeyError:
-            _phone_number = ""
+        if 'phone_number' in data.keys():
+            post_phone_number = data['phone_number']
         else:
-            if User.objects.filter(phone_number = _phone_number):
-                return JsonResponse({'message':'Phone_number is already used'}, status = 400)
+            post_phone_number = ""
+
+        if 'name' in data.keys():
+            post_name = data['name']
+        else:
+            post_name = ""
 
         try:
-            _name = data['name']
-        except KeyError:
-            _name = ""
-        else:
-            if User.objects.filter(name = _name):
-                return JsonResponse({'mesaage':'Name is already used'}, status = 400)
-
-        if not re.search('.+[@].+[.].+', _email):
-            return JsonResponse({'message':'Email is not correct'}, status = 400)
-
-        if not re.search(".{8,}", _password):
-            return JsonResponse({'message':'Password is not correct'}, status = 400)
-
-        if User.objects.filter(email = _email):
-            return JsonResponse({'message':'Email is already used'}, status = 400)
+            email_validate(post_email)
+            password_validate(post_password)
+            phone_number_overlap(post_phone_number)
+            name_overlap(post_name)
+            email_overlap(post_email)
+        except ValidationError as e:
+            return JsonResponse({'message':e.message}, status = 400)
 
         User(
-            phone_number = _phone_number,
-            name         = _name,
-            email        = _email,
-            password     = _password
+            phone_number = post_phone_number,
+            name         = post_name,
+            email        = post_email,
+            password     = post_password
         ).save()
 
         return JsonResponse({'message':'SUCCESS'}, status=200)
 
 class SignInView(View):
-    def get(self, request):
-        return JsonResponse({"message":"Test SignInView"})
-
     def post(self, request):
         data = json.loads(request.body)
 
