@@ -1,41 +1,39 @@
 import json
 
 from django.views import View
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.db import IntegrityError
 from django.db.models import Q
 
 from .models import User
 
-class SignUp(View):
+class SignUpView(View):
     def post(self, request):
         data = json.loads(request.body)
         try:
             if '@' and '.' not in data['email']:
                 return JsonResponse(
                     {"message":"Email_Not_Verified"},
-                    status = 404
+                    status = 400
                 )
-            elif len(data['password']) < 8:
+
+            if len(data['password']) < 8:
                 return JsonResponse(
                     {"message":"Password_Not_Verified"},
-                    status = 411
+                    status = 400
                 )
-            else:
-                User(
-                    name           = data['name'],
-                    email          = data['email'],
-                    phone          = data['phone'],
-                    password       = data['password']
-                ).save()
-                return JsonResponse(
-                    {"message":"SUCCESS"},
-                    status = 200
-                )
+
+            User(
+                name     = data['name'],
+                email    = data['email'],
+                phone    = data['phone'],
+                password = data['password']
+            ).save()
+            return HttpResponse(status = 200)
         except IntegrityError:
             return JsonResponse(
                 {"message":"Data_Already_Exists"},
-                status = 409
+                status = 400
             )
         except KeyError:
             return JsonResponse(
@@ -43,39 +41,32 @@ class SignUp(View):
                 status = 400
             )
 
-class SignIn(View):
+class SignInView(View):
     def post(self, request):
-        data      = json.loads(request.body)
-        accounts  = User.objects.values('name', 'email', 'phone')
-        passwords = User.objects.values('password')
-        check     = 0
+        data = json.loads(request.body)
         try:
-            for account in accounts:
-                if data['account'] in account.values():
-                    check += 1
-                else:
-                    pass
-
-            for password in passwords:
-                if data['password'] in password.values():
-                    check += 1
-                else:
-                    pass
-
-            if check == 2:
-                return JsonResponse(
-                    {"message":"SUCCESS"},
-                    status = 200
-                )
+            if User.objects.filter(
+                Q(name  = data['account']) |
+                Q(email = data['account']) |
+                Q(phone = data['account'])).exists():
+                pass
             else:
-                return JsonResponse(
-                    {"message":"INVALID_USER"},
-                    status = 401
-                )
+                raise User.DoesNotExist
+
+            if User.objects.filter(
+                password = data['password']).exists():
+                pass
+            else:
+                raise User.DoesNotExist
+
+            return HttpResponse(status = 200)
+        except User.DoesNotExist:
+            return JsonResponse(
+                {"message":"INVALID_USER"},
+                status = 401
+            )
         except KeyError:
             return JsonResponse(
                 {"message":"KEY_ERROR"},
                 status = 400
             )
-
-
