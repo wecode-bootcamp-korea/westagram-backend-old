@@ -1,11 +1,11 @@
 import json
 
-from django.views import View
-from django.http import JsonResponse, HttpResponse
-from django.db import IntegrityError
+from django.views     import View
+from django.http      import JsonResponse, HttpResponse
+from django.db        import IntegrityError
 from django.db.models import Q
 
-from .models import User
+from .models          import User
 
 class SignUpView(View):
     def post(self, request):

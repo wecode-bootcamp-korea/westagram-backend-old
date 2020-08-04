@@ -8,7 +8,7 @@ class Post(models.Model):
    created_at = models.DateTimeField(auto_now_add = True)
   
    class Meta:
-       db_table = 'post'
+       db_table = 'posts'
 
    def __str__(self):
        return self.content
@@ -20,4 +20,4 @@ class Comment(models.Model):
     created_at = models.DateTimeField(auto_now_add = True)
 
     class Meta:
-        db_table = 'comment'
+        db_table = 'comments'

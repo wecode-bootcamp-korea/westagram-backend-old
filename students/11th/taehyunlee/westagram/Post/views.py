@@ -1,10 +1,10 @@
 import json
 
 from django.views import View
-from django.http import JsonResponse
+from django.http  import JsonResponse
 
-from User.models import User
-from .models import Post, Comment
+from User.models  import User
+from .models      import Post, Comment
 
 class PostingView(View):
     def post(self, request):
