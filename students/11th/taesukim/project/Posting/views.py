@@ -46,7 +46,7 @@ class CommentPost(View):
     def post(self, request):
         data = json.loads(request.body)
 
-        if 'user' in date and 'post' in data and 'comment' in data:
+        if 'user' in data and 'post' in data and 'comment' in data:
             user    = data['user']
             post    = data['post']
             comment = data['comment']
@@ -73,6 +73,6 @@ class CommentPost(View):
 
 class CommentGet(View):
     def get(self, request):
-        comment = Comment.objects.all(id = 1)
+        comment = Comment.objects.filter(post = 1)
 
         return JsonResponse(serializers.serialize('json', comment), safe = False, status = 200)
