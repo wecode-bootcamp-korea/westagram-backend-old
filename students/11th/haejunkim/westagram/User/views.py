@@ -9,6 +9,8 @@ from .models import User
 class SignupView(View):
     def post(self, request):
         data = json.loads(request.body)
+        if not data['email'] or not data['password']:
+            return JsonResponse({'message' : 'KEY_ERROR'}, status = 400)
         try: 
             signup_user = User(
                 email = data['email'],
@@ -21,8 +23,8 @@ class SignupView(View):
         else:
             signup_user.save()
             return JsonResponse({'message' : 'SUCCESS'}, status = 200)
-
-        return JsonResponse({'message' : 'Invalid'}, status=200)
+        
+        return JsonResponse({'message' : 'Invalid format or Duplicated Email'}, status = 400)
 
     # 유저 리스트
     def get(self, request):
