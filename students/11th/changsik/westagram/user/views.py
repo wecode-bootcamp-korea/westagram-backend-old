@@ -32,9 +32,6 @@ class SignInView(View):
                 signin_user = User.objects.get(email = data['email'])
                 if signin_user.password == data['password']:
                     return JsonResponse({"message" : "SUCCESS"}, status = 200)
-                else:
-                    return JsonResponse({"message" : "INVALID_USER"}, status = 401)
-            else:
                 return JsonResponse({"message" : "INVALID_USER"}, status = 401)
-        else:
-            return JsonResponse({"message" : "KEY_ERROR"}, status = 400)
+            return JsonResponse({"message" : "INVALID_USER"}, status = 401)
+        return JsonResponse({"message" : "KEY_ERROR"}, status = 400)
