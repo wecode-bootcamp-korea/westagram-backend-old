@@ -1,7 +1,7 @@
 import json
 
 from django.views import View
-from django.http import JsonResponse
+from django.http  import JsonResponse
 
 from .models import User
 
@@ -27,7 +27,7 @@ class SignUpView(View):
 class SignInView(View):
     def post(self, request):
         data = json.loads(request.body)
-        try:
+        try :
             if User.objects.filter(email = data['email']).exists():
                 signin_user = User.objects.get(email = data['email'])
                 if signin_user.password == data['password']:
