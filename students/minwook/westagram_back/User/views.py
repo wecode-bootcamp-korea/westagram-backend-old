@@ -1,17 +1,10 @@
 import json
 
 from django.views import View
-from django.http import JsonResponse
-from django.db import IntegrityError
+from django.http  import JsonResponse
+from django.db    import IntegrityError
 
 from .models import User
-
-# email validation
-def email_format_check(email):
-    if ('@' in email) and ('.' in email):
-        return 0
-    else:
-        return 1
 
 class SignUp(View):
     def post(self, request):
@@ -38,7 +31,7 @@ class SignUp(View):
             return JsonResponse({'message':'MINIMUM_CONDITIONS_FAILED'}, status = 400)
 
         if email != '':
-            if email_format_check(email):
+            if ('@' not in email) and ('.' not in email)::
                 return JsonResponse({'message':'EMAIL_FORMAT_FAILED'}, status = 400)
 
         if password != '':
