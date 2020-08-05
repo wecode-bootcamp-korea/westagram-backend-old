@@ -27,7 +27,6 @@ class Signup(View):
         else:
             user.save()
             return JsonResponse({'message' : 'Register_Success'}, status = 200)
-
         return JsonResponse({'message' : 'INVALID_FORMAT'}, status = 400)
 
     def get(self, request):
@@ -44,6 +43,5 @@ class Signin(View):
                     return JsonResponse({'message' : f'{user.email} Success'}, status = 200)
                 return JsonResponse({'message' : 'INVALID_USER'}, status = 401)
             return JsonResponse({'message' : 'NO_EXISTS_USER'}, status = 401)
-
         except KeyError:
             return JsonResponse({'message' : 'KEY_ERROR'}, status = 400)
