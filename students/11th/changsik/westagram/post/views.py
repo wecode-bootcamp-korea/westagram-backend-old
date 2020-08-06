@@ -22,11 +22,12 @@ class PostView(View):
         except KeyError:
             return JsonResponse({"message" : "KEY ERROR"}, status = 400)
         
+class PostGetView(View):
     def get(self, request):
         db_post = Post.objects.values()
         return JsonResponse({'data' : list(db_post)}, status = 200)
     
-class CommentView(View):
+class CommentPostView(View):
     def post(self, request):
         data = json.loads(request.body)
         try:
@@ -42,7 +43,15 @@ class CommentView(View):
             return JsonResponse({"message" : "USER, POST MISMATCH"}, status = 400)
         except KeyError:
             return JsonResponse({"message" : "KEY ERROR"}, status = 400)
-        
+ 
+class CommentGetView(View):
     def get(self, request):
-        db_commnet = Comment.objects.values()
-        return JsonResponse({'data' : list(db_commnet)}, status = 200)
+        db_comment = Comment.objects.values()
+        return JsonResponse({'data' : list(db_comment)}, status = 200)
+    
+    
+
+# # serialize queryset
+# serialized_queryset = serializers.serialize('json', posting)
+# # serialize object
+# serialized_object = serializers.serialize('json', [some_object,])

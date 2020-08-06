@@ -11,16 +11,15 @@ class SignUpView(View):
         try:
             if User.objects.filter(email = data['email']).exists():
                 return JsonResponse({"message" : "email already exists"}, status = 400)
-            elif not '@' in data['email'] or not '.' in data['email']:
+            if not '@' in data['email'] or not '.' in data['email']:
                 return JsonResponse({"message" : "email form is mismatched"}, status = 400)
-            elif len(data['password']) < 8:
+            if len(data['password']) < 8:
                 return JsonResponse({"message" : "password form is mismatched"}, status = 400)
-            else:
-                User(
-                    email    = data['email'],
-                    password = data['password'],
-                ).save()
-                return JsonResponse({"message" : "SUCCESS"}, status = 200)
+            User(
+                email    = data['email'],
+                password = data['password'],
+            ).save()
+            return JsonResponse({"message" : "SUCCESS"}, status = 200)
         except KeyError:
             return JsonResponse({"message" : "KEY_ERROR"}, status = 400)
         
