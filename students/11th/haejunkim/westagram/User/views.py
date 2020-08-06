@@ -13,16 +13,15 @@ class SignupView(View):
             return JsonResponse({'message' : 'KEY_ERROR'}, status = 400)
         try: 
             signup_user = User(
-                email = data['email'],
+                email    = data['email'],
                 password = data['password'],
             )
             signup_user.full_clean()
+            signup_user.save()
+            return JsonResponse({'message' : 'SUCCESS'}, status = 200)
         except ValidationError as e:
             trace_back = traceback.format_exc()
             print(f"{e} : {trace_back}")
-        else:
-            signup_user.save()
-            return JsonResponse({'message' : 'SUCCESS'}, status = 200)
         
         return JsonResponse({'message' : 'Invalid format or Duplicated Email'}, status = 400)
 
@@ -38,9 +37,9 @@ class LoginView(View):
         if not data['email'] or not data['password']:
             return JsonResponse({'message' : 'KEY_ERROR'}, status = 400)
         
-        if User.objects.filter(email = data['email']):
-            signup_user = User.objects.get(email = data['email'])
-            if signup_user.password == data['password']:
+        if User.objects.filter(email = data['email']).exists():
+            signin_user = User.objects.get(email = data['email'])
+            if signin_user.password == data['password']:
                 return JsonResponse({'message' : 'SUCCESS'}, status = 200)
 
         return JsonResponse({'message' : 'INVALID_USER'}, status = 401)

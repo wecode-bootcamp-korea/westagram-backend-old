@@ -12,16 +12,16 @@ class PostView(View):
         data = json.loads(request.body)
 
         try:
-            if User.objects.filter(id = data['user_id']):
-                user = User.objects.get(id = data['user_id'])
+            if User.objects.filter(id = data['user_id']).exists():
+                email = User.objects.get(id = data['user_id'])
                 Post(
-                    user = user,
+                    email     = email,
                     content   = data['content'],
                     image_url = data['image_url'],
                 ).save()
                 return JsonResponse({'message' : 'SUCCESS'}, status = 200)
-            else:
-                return JsonResponse({'message' : 'Unauthorized'}, status = 401)
+
+            return JsonResponse({'message' : 'UNAUTHORIZED'}, status = 401)
         except Exception as e:
             return JsonResponse({'message' : f'{e}'}, status = 400)
 
