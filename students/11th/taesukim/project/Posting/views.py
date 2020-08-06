@@ -5,28 +5,22 @@ from django.http  import JsonResponse
 from django.core  import serializers
 
 from User.models import User
-from .models     import Post
-from .models     import Comment
+from .models     import Post, Comment
 
 class PostView(View):
     def post(self, request):
         data = json.loads(request.body)
 
-        if 'user' in data.keys() and 'img_url' in data.keys():
+        if 'user' in data and 'img_url' in data and 'content' in data:
             user    = data['user']
             img_url = data['img_url']
+            content = data['content']
         else:
-            return JsonResponse({'message':'User and ImgUrl are neccesary'}, status = 400)
+            return JsonResponse({'message':'KEY_ERROR'}, status = 400)
 
         if not User.objects.filter(email = user):
             return JsonResponse({'message':'You did not join'}, status = 400)
-        else:
-            user = User.objects.get(email = user)
-
-        if 'content' in data.keys():
-            content = data['content']
-        else:
-            content = ""
+        user = User.objects.get(email = user)
 
         Post(
             user    = user,
