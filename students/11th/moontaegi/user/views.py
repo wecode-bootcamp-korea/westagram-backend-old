@@ -26,30 +26,36 @@ class SignUpView(View):
                 password     = data['password'],
                 phone_number = data['phone_number']
             )
+            if users_info.filter(name = data['name']):
+                return JsonResponse({'message': 'already exsit name'})
+
+            elif users_info.filter(phone_number = data['phone_number']):
+                return JsonResponse({'message': 'already exsit phone_number'})
+            
+            elif users_info.filter(email = data['email']):
+                return JsonResponse({'message': 'already exsit email'})
             signup_user.full_clean()
+
         except ValidationError:
             return JsonResponse({'message': 'INVALID_PASSWORD_OR_EMAIL'}, status = 400)
 
         except KeyError:
             return JsonResponse({'message': 'KEY_ERROR'}, status=400)
-        
-        if users_info.filter(name = data['name']):
-            return JsonResponse({'message': 'already exsit name'})
-
-        if users_info.filter(phone_number = data['phone_number']):
-            return JsonResponse({'message': 'already exsit phone_number'})
-        
-        if users_info.filter(email = data['email']):
-            return JsonResponse({'message': 'already exsit email'})
 
         signup_user.save()
         return JsonResponse({'message':'SUCCESS'}, status=200)
-
+    
     def get(self, request):
         user_data = User.objects.values()
 
         return JsonResponse({'users':list(user_data)},
         status=200)
+
+# doing mission 3, not 2
+# class SignInView(View):
+#     def post(self, request):
+#         data = json.loads(request.body)
+#         users_info = User.objects.all()
 
 
 
