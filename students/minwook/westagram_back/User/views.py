@@ -6,10 +6,9 @@ from django.core.exceptions import ObjectDoesNotExist
 
 from .models import User
 
-class SignUp(View):
+class SignUpView(View):
     def post(self, request):
         data       = json.loads(request.body)
-        current_db = User.objects.all()
         try:
             name     = data['name']
             email    = data['email']
@@ -19,13 +18,13 @@ class SignUp(View):
             return JsonResponse({'mwssage':'KEY_ERROR'}, status = 400)
 
         if name != '' :
-            if current_db.filter(name = data['name']):
+            if User.objects.filter(name = data['name']):
                 return JsonResponse({'message':'DUPLICATE_NAME'}, status = 400)
         elif email != '' :
-            if current_db.filter(email = data['email']):
+            if User.objects.filter(email = data['email']):
                 return JsonResponse({'message':'DUPLICATE_EMAIL'}, status = 400)
         elif phone != '' :
-            if current_db.filter(phone = data['phone']):
+            if User.objects.filter(phone = data['phone']):
                 return JsonResponse({'message':'DUPLICATE_PHONE'}, status = 400)
         else:
             return JsonResponse({'message':'MINIMUM_CONDITIONS_FAILED'}, status = 400)
@@ -49,7 +48,7 @@ class SignUp(View):
         user_data = User.objects.values()
         return JsonResponse({'users':list(user_data)}, status = 200)
 
-class SignIn(View):
+class SignInView(View):
     def post(self, request):
         data = json.loads(request.body)
 
@@ -64,11 +63,11 @@ class SignIn(View):
 
             saved_password = ''
             if name != '':
-                saved_password = (User.objects.filter(name = name).values().get())['password']
+                saved_password = User.objects.get(name = name).password
             if email != '':
-                saved_password = (User.objects.filter(email = email).values().get())['password']
+                saved_password = User.objects.get(email = email).password
             if phone != '':
-                saved_password = (User.objects.filter(phone = phone).values().get())['password']
+                saved_password = User.objects.get(phone = phone).password
 
             if saved_password != '':
                 if password == saved_password:
