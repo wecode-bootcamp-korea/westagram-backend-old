@@ -29,10 +29,6 @@ class Signup(View):
             return JsonResponse({'message' : 'Register_Success'}, status = 200)
         return JsonResponse({'message' : 'INVALID_FORMAT'}, status = 400)
 
-    def get(self, request):
-        user_data = User.objects.values()
-        return JsonResponse({'users' : list(user_data)}, status = 200)
-
 class Signin(View):
     def post(self, request):
         try:
