@@ -13,3 +13,16 @@ class Post(models.Model):
 
     def  __str__(self):
         return self.email
+
+
+class Comment(models.Model):
+    email      = models.ForeignKey(User, on_delete = models.CASCADE)
+    post       = models.ForeignKey(Post, on_delete = models.CASCADE)
+    comment    = models.TextField(max_length = 300)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class  Meta:
+        db_table = "comments"
+
+    def __str__(self):
+        return self.email
