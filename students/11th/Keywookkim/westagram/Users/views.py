@@ -11,9 +11,9 @@ class Signup(View):
         data = json.loads(request.body)
         signup_db = Users.objects.all()
         try:
-            user_id = data['user_id']
-            email = data['email']
-            password = data['password']
+            user_id     = data['user_id']
+            email       = data['email']
+            password    = data['password']
             phonenumber = data['phonenumber']
         except KeyError:
             return JsonResponse({'message':'KEY_ERROR'}, status=400)
@@ -33,7 +33,7 @@ class Signup(View):
                 return JsonResponse({'message':'phonenumber : already exists'}, status=400)     
         
         Users(
-              user_id        = data['user_id'],
+              user_id     = data['user_id'],
               email       = data['email'],
 			  password    = data['password'],
               phonenumber = data['phonenumber']
