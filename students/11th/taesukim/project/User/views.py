@@ -69,17 +69,17 @@ class SignInView(View):
         if 'name' in data.keys():
             if not User.objects.filter(name = data['name'], password = data['password']):
                 return JsonResponse({'message':'INVALID_USER'}, status = 401)
-            else:
-                return JsonResponse({'message':'SUCCESS'}, status = 200)
+
+            return JsonResponse({'message':'SUCCESS'}, status = 200)
 
         elif 'email' in data.keys():
             if not User.objects.filter(email = data['email'], password = data['password']):
                 return JsonResponse({'message':'INVALID_USER'}, status = 401)
-            else:
-                return JsonResponse({'message':'SUCCESS'}, status = 200)
+
+            return JsonResponse({'message':'SUCCESS'}, status = 200)
 
         elif 'phone_number' in data.keys():
             if not User.objects.get(phone_number = data['phone_number'], password = data['password']):
                 return JsonResponse({'message':'INVALID_USER'}, status = 401)
-            else:
-                return JsonResponse({'message':'SUCCESS'}, status = 200)
+
+            return JsonResponse({'message':'SUCCESS'}, status = 200)
