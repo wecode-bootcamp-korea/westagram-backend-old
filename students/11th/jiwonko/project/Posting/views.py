@@ -19,10 +19,9 @@ class PostView(View):
                     img_url = data['img_url']
                 ).save()
                 return JsonResponse({'message' : 'SUCCESS'}, status = 200)
-            else:
-                return JsonResponse({'message' : 'NO_EXISTS_USER'}, status = 401)
-        except Exception as e:
-                return JsonResponse({'message' : f'{e}'}, status = 401)
+            return JsonResponse({'message' : 'NO_EXISTS_USER'}, status = 401)
+        except KeyError:
+                return JsonResponse({'message' : 'KEY_ERROR'}, status = 401)
 
 class CommentView(View):
     def post(self, request):
@@ -42,17 +41,6 @@ class CommentView(View):
             return JsonResponse({'message' : 'INVALID_USER'}, status = 400)
 
 class ListCommentView(View):
-    def get(self, request, post_id):
+    def get(self, request):
         comments = Comment.objects.filter(post = 1)
         return JsonResponse(serializers.serialize('json', comments), safe = False, status = 200)
-
-
-
-
-
-
-
-
-
-
-
