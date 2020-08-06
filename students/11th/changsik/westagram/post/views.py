@@ -32,11 +32,9 @@ class CommentPostView(View):
         data = json.loads(request.body)
         try:
             if User.objects.filter(id = data['user_id']).exists() and Post.objects.filter(id = data['post_id']).exists():
-                user = User.objects.get(id = data['user_id'])
-                post = Post.objects.get(id  = data['post_id'])
                 Comment(
-                    user    = user,
-                    post    = post,
+                    user    = User.objects.get(id = data['user_id']),
+                    post    = Post.objects.get(id  = data['post_id']),
                     comment = data['comment'],
                 ).save()
                 return JsonResponse({"message" : "SUCCESS"}, status = 200)
