@@ -12,3 +12,9 @@ class User(models.Model):
         max_length = 300,
         validators = [validate_password],
     )
+
+    class Meta:
+        db_table = "users"
+
+    def  __str__(self):
+        return self.email
