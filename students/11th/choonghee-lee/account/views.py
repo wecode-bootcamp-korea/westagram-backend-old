@@ -8,25 +8,10 @@ from django.views.generic import View
 from .models import User
 
 def get_user(name=None, email=None, phone=None):
-    if name and email and phone:
-        return User.objects.filter(
-            Q(name = name) |
-            Q(email = email) | 
-            Q(phone = phone)
-        )
-    if name and email:
-        return User.objects.filter(Q(name = name) | Q(email = email))
-    if name and phone:
-        return User.objects.filter(Q(name = name) | Q(phone = phone))
-    if email and phone:
-        return User.objects.filter(Q(email = email) | Q(phone = phone))
-    if name:
-        return User.objects.filter(name = name)
-    if email:
-        return User.objects.filter(email = email)
-    if phone:
-        return User.objects.filter(phone = phone)
-    return None
+    where_name = Q(name = name)
+    where_email = Q(email = email)
+    where_phone = Q(phone = phone)
+    return User.objects.filter(where_name | where_email | where_phone)
 
 class SignUpView(View):
     def post(self, request):
@@ -74,14 +59,14 @@ class SignUpView(View):
                     {'message': 'ALREADY_SIGNED_UP_USER'}, 
                     status = 400,
                 )
-            else:
-                User(
-                    name     = name,
-                    email    = email,
-                    phone    = phone,
-                    password = password,
-                ).save()
-                return JsonResponse({'message': 'SUCCESS'}, status = 200)
+            
+            User(
+                name     = name,
+                email    = email,
+                phone    = phone,
+                password = password,
+            ).save()
+            return JsonResponse({'message': 'SUCCESS'}, status = 200)
 
         except json.decoder.JSONDecodeError:
             return JsonResponse({'message': 'INVALID_JSON'}, status = 400)

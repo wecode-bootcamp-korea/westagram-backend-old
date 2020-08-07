@@ -7,7 +7,7 @@ from django.views.generic import View
 from account.models import User
 from .models        import Post, Comment
 
-class CreatePostView(View):
+class PostView(View):
     def post(self, request):
         try:
             data    = json.loads(request.body)
@@ -29,13 +29,12 @@ class CreatePostView(View):
         except User.DoesNotExist:
             return JsonResponse({'message': 'INVALID_USER_ID'}, status = 400)
 
-class ListPostView(View):
     def get(self, request):
         posts = Post.objects.all()
         serialized_posts = serializers.serialize('json', posts)
         return JsonResponse(serialized_posts, safe = False)
 
-class CreateCommentView(View):
+class CommentView(View):
     def post(self, request):
         try:
             data    = json.loads(request.body)
@@ -60,7 +59,6 @@ class CreateCommentView(View):
         except Post.DoesNotExist:
             return JsonResponse({'message': 'INVALID_POST_ID'}, status = 400)
 
-class ListCommentView(View):
     def get(self, request, post_id):
         try:
             post = Post.objects.get(id = post_id)

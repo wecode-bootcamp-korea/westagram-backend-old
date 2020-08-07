@@ -1,21 +1,11 @@
 from django.urls import path
 
-from .views import (
-    CreatePostView, 
-    ListPostView,
-    CreateCommentView,
-    ListCommentView
-)
+from .views import PostView, CommentView
 
 app_name = 'posting'
 
 urlpatterns = [
-    path('create-post/', CreatePostView.as_view(), name="create-post"),
-    path('list-post/', ListPostView.as_view(), name="list-post"),
-    path('create-comment/', CreateCommentView.as_view(), name="create-comment"),
-    path(
-        'list-comment/<int:post_id>',
-        ListCommentView.as_view(),
-        name="list-comment",
-    ),
+    path('post/', PostView.as_view(), name="post"),
+    path('comment/', CommentView.as_view(), name="create-comment"),
+    path('comment/<int:post_id>', CommentView.as_view(), name="list-comment"),
 ]
