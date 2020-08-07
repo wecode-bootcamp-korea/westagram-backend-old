@@ -40,7 +40,26 @@ class Signup(View):
             user_data = User.objects.values()
             return JsonResponse({'This is Newbie\'s data':list(user_data)}, status=200)
 
+class Login(View):
+    def post(self, request):
+        data = json.loads(request.body)
+        try:
+            user = User(
+                account      = data['account'],
+			    password     = data['password']
+            )
+            if User.objects.all().filter(account = data['account'], password = data['password']).exists() == True :
+                return JsonResponse({'message':'SUCCESS'}, status=200)    
+            return JsonResponse({'message':'INVALID_USER'}, status=401)
+        except KeyError :
+            return JsonResponse({'message':'KEY_ERROR'}, status=400)
+    
+    def get(self, request):
+        user_data = User.objects.values()
+        return JsonResponse({'Login_log':list(user_data)}, status=200)
 
-# User.objects.filter(name = data['name'], email= data['email'], password = data['password']).exists()
+ 
+
+
 
 
