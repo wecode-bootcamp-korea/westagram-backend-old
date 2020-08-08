@@ -1,5 +1,5 @@
 from django.db   import models
-from .validation import validate_email, validate_password
+from .validator import validate_email, validate_password
 
 
 class User(models.Model):
@@ -9,5 +9,3 @@ class User(models.Model):
     phone_number = models.CharField(max_length  = 50)
     created_at   = models.DateTimeField(auto_now_add = True)
     updated_at   = models.DateTimeField(auto_now     = True)
-
-
