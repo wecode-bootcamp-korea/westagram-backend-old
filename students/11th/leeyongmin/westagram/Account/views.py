@@ -1,9 +1,8 @@
 import json
 import re # regular expression
 
-from django.http        import HttpResponse, HttpResponseRedirect, Http404
 from django.http        import JsonResponse
-from django.shortcuts   import get_object_or_404, render
+from django.shortcuts   import get_object_or_404
 from django.views       import View
 from django.core.exceptions import ObjectDoesNotExist
 
