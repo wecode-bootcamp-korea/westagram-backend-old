@@ -4,6 +4,8 @@ from . import views
 app_name='Posting'
 
 urlpatterns = [
-    path('upload', views.Upload.as_view()),
-    path('show', views.Show.as_view())
+    path('uploadpost', views.UploadPost.as_view()),
+    path('showpost', views.ShowPost.as_view()),
+    path('uploadcomment', views.UploadComment.as_view()),
+    path('showcomment', views.ShowComment.as_view())
 ]
