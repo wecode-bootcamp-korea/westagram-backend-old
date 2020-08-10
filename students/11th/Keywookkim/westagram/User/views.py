@@ -33,7 +33,6 @@ class Signup(View):
             return JsonResponse({'message':'KEY_ERROR'}, status=400)
         except ValidationError as v :
             trace_back = traceback.format_exc()
-            print(f"{v} : {trace_back}")
             return JsonResponse({'message':'Invalid'}, status=400)     
 
     def get(self, request):
@@ -43,7 +42,7 @@ class Signup(View):
 class Login(View):
     def post(self, request):
         data = json.loads(request.body)
-        try:
+        try :
             user = User(
                 account      = data['account'],
 			    password     = data['password']
@@ -57,9 +56,3 @@ class Login(View):
     def get(self, request):
         user_data = User.objects.values()
         return JsonResponse({'Login_log':list(user_data)}, status=200)
-
- 
-
-
-
-
