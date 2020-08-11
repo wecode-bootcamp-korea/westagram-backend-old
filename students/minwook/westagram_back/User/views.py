@@ -3,6 +3,8 @@ import json
 from django.views           import View
 from django.http            import JsonResponse
 from django.core.exceptions import ObjectDoesNotExist
+import bcrypt
+import jwt
 
 from .models import User
 
@@ -38,7 +40,7 @@ class SignUpView(View):
                 return JsonResponse({'message':'SHORT_PASSWORD'}, status = 400)
         User(
             name     = name,
-            password = password,
+            password = (bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())).decode('utf-8'),
             email    = email,
             phone    = phone
         ).save()
@@ -69,9 +71,11 @@ class SignInView(View):
             if phone != '':
                 saved_password = User.objects.get(phone = phone).password
 
+            input_val = password.encode('utf=8')
             if saved_password != '':
-                if password == saved_password:
-                    return JsonResponse({'message':'SUCCESS'}, status = 200)
+                if bcrypt.checkpw(input_val, saved_password.encode('utf-8')):
+                    login_token = jwt.encode({'user_id' : User.objects.get(password = saved_password).id}, 'Salt', algorithm = 'HS256')
+                    return JsonResponse({'message':login_token.decode('utf-8')}, status = 200)
                 return JsonResponse({'message':'INVALID_USER'}, status = 401)
             return JsonResponse({'message':'INVALID_USER'}, status = 401)
         except KeyError:
