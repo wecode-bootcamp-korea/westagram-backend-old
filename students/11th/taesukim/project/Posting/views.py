@@ -20,6 +20,7 @@ class PostView(View):
 
         if not User.objects.filter(email = user):
             return JsonResponse({'message':'You did not join'}, status = 400)
+
         user = User.objects.get(email = user)
 
         Post(
@@ -49,13 +50,13 @@ class CommentPost(View):
 
         if not User.objects.filter(email = user):
             return JsonResponse({'message':'You did not join'}, status = 400)
-        else:
-            user = User.objects.get(email = user)
+
+        user = User.objects.get(email = user)
 
         if not Post.objects.filter(id = post):
             return JsonResponse({'message':'Post is not existed'}, status = 400)
-        else:
-            post = Post.objects.get(id = post)
+
+        post = Post.objects.get(id = post)
 
         Comment(
             user    = user,
