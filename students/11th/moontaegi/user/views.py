@@ -1,11 +1,14 @@
 import json
+import bcrypt
+import jwt
 
-from django.core.exceptions import ValidationError
-from django                 import forms
-from django.views           import View
-from django.http            import JsonResponse
+from django.core.exceptions      import ValidationError
+from django                      import forms
+from django.views                import View
+from django.http                 import JsonResponse
 
-from .models                import User
+from .models                     import User
+from westagram.settings          import SECRET_KEY
 
 class SignUpView(View):
     """
@@ -21,18 +24,21 @@ class SignUpView(View):
 
         try:
             signup_user = User(
-                name         = data['name'],
+                # name         = "asdfasdf"
                 email        = data['email'],
                 password     = data['password'],
-                phone_number = data['phone_number']
+                # phone_number = "1283428328"
             )
-            if users_info.filter(name = data['name']):
-                return JsonResponse({'message': 'already exsit name'})
-
-            elif users_info.filter(phone_number = data['phone_number']):
-                return JsonResponse({'message': 'already exsit phone_number'})
+            encoded_password = data['password'].encode('utf-8')
+            hashed_password = bcrypt.hashpw(encoded_password, bcrypt.gensalt())
             
-            elif users_info.filter(email = data['email']):
+            # if users_info.filter(name = data['name']):
+            #     return JsonResponse({'message': 'already exsit name'})
+
+            # elif users_info.filter(phone_number = data['phone_number']):
+            #     return JsonResponse({'message': 'already exsit phone_number'})
+            
+            if users_info.filter(email = data['email']):
                 return JsonResponse({'message': 'already exsit email'})
             signup_user.full_clean()
 
@@ -42,37 +48,40 @@ class SignUpView(View):
         except KeyError:
             return JsonResponse({'message': 'KEY_ERROR'}, status=400)
 
+        signup_user.password = hashed_password.decode('utf-8')
         signup_user.save()
         return JsonResponse({'message':'SUCCESS'}, status=200)
     
     def get(self, request):
         user_data = User.objects.values()
-
         return JsonResponse({'users':list(user_data)}, status=200)
 
 class LogInView(View):
     def post(self, request):
         data       = json.loads(request.body)
-        
         try:
             login_user = User(
-                name         = data['name'],
+                # name         = data['name'],
                 email        = data['email'],
-                password     = data['password'],
+                password     = data['password']
             )
-            if User.objects.filter(name = login_user.name):
-                # return JsonResponse({"message": "what"}, status=200)
-                account = User.objects.get(name = login_user.name)
-                # return JsonResponse({"message": "good"}, status=200)
-                if account.password == login_user.password:
-                    return JsonResponse({"message": "SUCCESS"}, status=200)
+            if User.objects.filter(email = login_user.email):
+                account = User.objects.get(email = login_user.email)   
+                pwd = account.password.encode('utf-8')
+
+                # if account.password == login_user.password:
+                if bcrypt.checkpw(login_user.password.encode('utf-8'), pwd):
+                    token = jwt.encode({'email': data['email']}, 'wecode', algorithm = 'HS256')
+                    return JsonResponse({"message": token.decode('utf-8')}, status=200)
+
                 return JsonResponse({"message": "INVALID_USER"}, status=401)
             return JsonResponse({"message": "INVALID_USER"}, status=401)
-
+        
+        except ValueError:
+            return JsonResponse({"message": "VALUE_ERROR"}, status = 400)
         except KeyError:
             return JsonResponse({"message": "KEY_ERROR"}, status=400)
     
     def get(self, request):
         user_data = User.objects.values()
-
         return JsonResponse({"users":list(user_data)}, status=200)
