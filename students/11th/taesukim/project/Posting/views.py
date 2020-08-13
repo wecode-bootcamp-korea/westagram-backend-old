@@ -5,9 +5,11 @@ from django.http  import JsonResponse
 from django.core  import serializers
 
 from User.models import User
+from User.utils  import validate_token
 from .models     import Post, Comment
 
 class PostView(View):
+    @validate_token
     def post(self, request):
         data = json.loads(request.body)
 
