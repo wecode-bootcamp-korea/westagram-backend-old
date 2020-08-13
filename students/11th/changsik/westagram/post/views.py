@@ -1,4 +1,6 @@
 import json
+import hashlib
+import bcrypt
 
 from django.views import View
 from django.http  import JsonResponse
