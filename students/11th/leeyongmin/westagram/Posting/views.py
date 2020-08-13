@@ -47,7 +47,7 @@ class UploadComment(View):
         try:
             comment_user = data['username']
             comment_text = data['text']
-            comment_post_id = data['postId'] # 댓글이 달리는 게시물 id
+            comment_post_id = data['post_id'] # 댓글이 달리는 게시물 id
         except KeyError:
             return JsonResponse({"message": "KEY_ERROR"}, status=400)
         
@@ -78,7 +78,7 @@ class ShowComment(View):
             return JsonResponse({'comments':comment_list},status=200)
         else: # [추가 구현 사항] : 댓글은 특정 게시물을 기준으로 분류. 1번 게시물에 등록된 댓글만을 표출할 수 있도록 구현
             comment_list = list(CommentModel.objects.filter(post=post_id).values())
-            if not comment_list: # 해당 게시글이 댓글이 없는 경우
+            if not comment_list:
                 return JsonResponse({'message':'NO_COMMENT'}, status=200)
             else:
                 return JsonResponse({'comments':comment_list},status=200)

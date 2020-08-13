@@ -25,7 +25,7 @@ SECRET_KEY = 'kfwac%m(_lh2@q$y@@gv1m&#r%qw0nxi-mm&7atm)wo=&!%j!@'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['*'] # 내 서버 접속하려는 ip 중 허락된 ip
 
 
 # Application definition

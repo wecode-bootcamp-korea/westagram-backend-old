@@ -1,10 +1,13 @@
 import json
 import re # regular expression
+import bcrypt
+import jwt
 
 from django.http        import JsonResponse
 from django.shortcuts   import get_object_or_404
 from django.views       import View
 from django.core.exceptions import ObjectDoesNotExist
+from westagram.settings import SECRET_KEY
 
 from .models import User
 
@@ -17,8 +20,8 @@ class SignUp(View):
         ## 이메일이나 패스워드 키가 전달되지 않았을 시, {"message": "KEY_ERROR"}, status code 400 을 반환
         try:
             data_email = data['email'] # 휴대번호 또는 이메일
-            data_name = data['name'] # 성명
-            data_username = data['username'] # 사용자이름(id)
+            data_name =  data['name']# 성명
+            data_username = data['username'] # 사용자이름
             data_password = data['password'] # 비밀번호
         except KeyError:
             return JsonResponse({"message": "KEY_ERROR"}, status=400)
@@ -40,6 +43,10 @@ class SignUp(View):
         email_duplication_chk    = User.objects.filter(email=data_email).values()
         username_duplication_chk = User.objects.filter(username=data_username).values()
 
+        # 비밀번호 암호화
+        encrypted_pw = bcrypt.hashpw(data_password.encode('utf-8'), bcrypt.gensalt())
+        
+
         if email_duplication_chk :
             return JsonResponse({"message": "EAMIL_ALREADY_EXISTS"}, status=400)
         elif username_duplication_chk:
@@ -50,8 +57,13 @@ class SignUp(View):
                 email = data_email,
                 name = data_name,
                 username = data_username,
-                password = data_password
+                password = encrypted_pw.decode('utf-8')
             ).save()
+            print(data_email)
+            print(data_name)
+            print(data_username)
+            
+            print('success')
             return JsonResponse({'message':'SUCCESS'}, status=200)
 
 class SignIn(View):
@@ -62,23 +74,26 @@ class SignIn(View):
         data = json.loads(request.body)
 
         try:
-            data_id = data['id']
+            data_email = data['email']
             data_password = data['password']
         except KeyError:
             return JsonResponse({"message": "KEY_ERROR"}, status=400)
 
         # 계정이 존재하지 않을 때, {"message": "INVALID_USER"}, status code 401을 반환
         try:
-            get_user_info = User.objects.get(email=data_id)
+            get_user_info = User.objects.get(email=data_email)
         except ObjectDoesNotExist: # 로그인을 위해 전화번호 또는 이메일 대신 '사용자 이름'을 입력한 경우
             try:
-                get_user_info = User.objects.get(username=data_id)
+                get_user_info = User.objects.get(username=data_email)
             except ObjectDoesNotExist: # 전화번호, 이메일, 사용자이름 모두 다 등록 되지 않은 경우
                 return JsonResponse( {"message": "INVALID_USER"}, status=401)
         
-        #비밀번호가 맞지 않을 때, {"message": "INVALID_USER"}, status code 401을 반환
-        if data_password != get_user_info.password:
-            return JsonResponse({"message": "INVALID_USER"}, status=401)
         
-        # 로그인이 성공하면 {"message": "SUCCESS"}, status code 200을 반환
-        return JsonResponse( {"message": "SUCCESS"}, status=200)
+        # 로그인이 성공하면 토큰발행, status code 200을 반환
+        if  bcrypt.checkpw(data_password.encode('utf-8'), get_user_info.password.encode('utf-8')):
+            token = jwt.encode({'user_id': get_user_info.id}, SECRET_KEY, algorithm='HS256')
+            return JsonResponse({'access_token':token.decode('utf-8')}, status = 200)
+        else: #비밀번호가 맞지 않을 때, {"message": "WRONG_PASSWORD"}, status code 401을 반환
+            return JsonResponse({"message": "WRONG_PASSWORD"}, status=401)
+        
+     
