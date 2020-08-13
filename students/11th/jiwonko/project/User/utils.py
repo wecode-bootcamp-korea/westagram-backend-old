@@ -20,10 +20,10 @@ def login_required(func):
                 user = User.objects.get(id = header['id'])
                 request.user = user
             except jwt.DecodeError:
-                return JsonResponse({"message" : "EXPIRED_TOKEN"}, status = 401)
+                return JsonResponse({"message" : 'EXPIRED_TOKEN'}, status = 401)
             except User.DoesNotExist:
                 return JsonResponse({'message' : 'NO_EXISTS_USER'}, status=404)
             return func(self, request, *args, **kwargs)
-        return JsonResponse({"message" : "INVALID_USER"}, status = 401)
+        return JsonResponse({"message" : 'INVALID_USER'}, status = 401)
     return wrapper
         
