@@ -20,22 +20,17 @@ class EnrollPost(View):
 
 class ViewGet(View):
     def get(self, request):
-        # res = {
-        # 'user':Posting().user,
-        # 'time':Posting().time,
-        # 'image_url':Posting().image_url,
-        # 'contents':Posting.contents
-        # }
         res = list(Posting.objects.values())
         return JsonResponse({'post':res},  status=200)
 
 class EnrollComment(View):
     def post(self, requst):
-        data = Json.loads(requst.body)
+        data = json.loads(requst.body)
+        comment = data.get('comment', None)
         Comment(
-        user_name = data['comment_user'],
+        user_name = Account.objects.get(email=data['comment_user']),
         comment   = data['comment'],
-        post      = Posting.objects.get(user=data['posting_user'])
+        post      = Posting.objects.get(id=data['posting_user'])
         ).save()
         return JsonResponse({"message": 'Success'},   status=200)
 
