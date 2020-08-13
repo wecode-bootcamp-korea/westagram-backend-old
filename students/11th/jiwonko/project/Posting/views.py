@@ -36,7 +36,7 @@ class CommentView(View):
         try:
             Comment(
             user    = request.user.email,
-            post_id    = data['post'],
+            post_id = data['post'],
             comment = data['comment']
             ).save()
             return JsonResponse({'message' : 'SUCCESS'}, status = 200)
