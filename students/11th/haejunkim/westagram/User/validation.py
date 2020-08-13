@@ -14,5 +14,5 @@ def validate_email(value):
         )
 
 def validate_password(password):
-    if len(password) <= 8:
+    if len(password) < 8:
         raise ValidationError("password is too short.")
