@@ -10,7 +10,7 @@ class Post(models.Model):
     updated_at = models.DateTimeField(auto_now = True)
     
     class Meta:
-        db_table = 'post'
+        db_table = 'posts'
         
 class Comment(models.Model):
     user       = models.ForeignKey(User, on_delete = models.CASCADE)
@@ -20,4 +20,4 @@ class Comment(models.Model):
     updated_at = models.DateTimeField(auto_now = True)
     
     class Meta:
-        db_table = 'comment'
+        db_table = 'comments'
