@@ -11,10 +11,9 @@ class SignupView(View):
     def post(self, request):
         data = json.loads(request.body)
 
-        if not data['email'] or not data['password']:
-            return JsonResponse({'message' : 'No value entered'}, status = 400)
-
         try: 
+            if not data['email'] or not data['password']:
+                return JsonResponse({'message' : 'No value entered'}, status = 400)
             signup_user = User(
                 email    = data['email'],
                 password = data['password'],
@@ -41,11 +40,10 @@ class SignupView(View):
 class LoginView(View):
     def post(self, request):
         data = json.loads(request.body)
-
-        if not data['email'] or not data['password']:
-            return JsonResponse({'message' : 'No value entered'}, status = 400)
             
         try:
+            if not data['email'] or not data['password']:
+                return JsonResponse({'message' : 'No value entered'}, status = 400)
             if User.objects.filter(email = data['email']).exists():
                 signin_user = User.objects.get(email = data['email'])
                 input_password = data['password']
