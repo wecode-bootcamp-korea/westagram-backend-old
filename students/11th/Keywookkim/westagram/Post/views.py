@@ -1,4 +1,4 @@
-import json
+import json, jwt
 
 from django       import forms
 from django.views import View
@@ -12,8 +12,8 @@ class Post(View) :
         data    = json.loads(request.body)
 
         try :
-            if User.objects.filter(id = data['account']).exists() == True :
-                account = User.objects.get(id = data['account'])
+            if User.objects.filter(id = data['email']).exists() :
+                account = User.objects.get(id = data['email'])
             else :
                 return JsonResponse({'message':'Invalid User'}, status=400) 
             b = Bulletin(
@@ -40,9 +40,9 @@ class CommentView(View) :
     def post(self, request) :
         data = json.loads(request.body)
         try : 
-            if User.objects.filter(id = data['account']).exists() == True :
-                account = User.objects.get(id = data['account']) 
-            if Bulletin.objects.filter(id = data['bulletin']).exists() == True :
+            if User.objects.filter(id = data['email']).exists() :
+                account = User.objects.get(id = data['email']) 
+            if Bulletin.objects.filter(id = data['bulletin']).exists() :
                 bulletin = Bulletin.objects.get(id = data['bulletin'])
             else :
                 return JsonResponse({'message':'Invalid User or Post'}, status=400) 
@@ -61,3 +61,6 @@ class CommentView(View) :
     def get(self,request) :
         comment_data = Comment.objects.values()
         return JsonResponse({'Recent comment':list(comment_data)}, status=200)
+
+
+

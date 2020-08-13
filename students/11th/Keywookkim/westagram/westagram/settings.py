@@ -26,7 +26,7 @@ SECRET_KEY = 'w+nulys&n19y6q#en@o5#$7@2&eh4#5p_@h8=6)4-xe_&l!u!i'
 DEBUG = True
 
 ALLOWED_HOSTS = ['*']
-
+# 외부접속과 관련된 구간, 특정 아이피를 넣으면 그 아이피의 접속만 허용시켜줄수 있다. *하면 전체 허용
 
 # Application definition
 
@@ -37,7 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'corsheaders',
     'User',
-    'Post',
+    'Post'
 ]
 
 MIDDLEWARE = [
@@ -98,6 +98,14 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+# password hasher
+
+PASSWORD_HASHERS = [
+    'django.contrib.auth.hashers.BCryptSHA256PasswordHasher',
+    'django.contrib.auth.hashers.PBKDF2PasswordHasher',
+    'django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher',
+    'django.contrib.auth.hashers.Argon2PasswordHasher',
+]
 
 
 # Internationalization
@@ -145,3 +153,21 @@ CORS_ALLOW_HEADERS = (
 
 )
 
+# REST_FRAMEWORK = {
+#     'DEFAULT_PERMISSION_CLASSES': (
+#         'rest_framework.permissions.IsAuthenticated',
+#     ),
+#     'DEFAULT_AUTHENTICATION_CLASSES': (
+#         'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
+#         'rest_framework.authentication.SessionAuthentication',
+#         'rest_framework.authentication.BasicAuthentication',
+#     ),
+# }
+
+# JWT_AUTH = {
+#     'JWT_SECRET_KEY' : SECRET_KEY,
+#     'JWT_ALGORITHM' : 'HS256',
+#     'JWT_ALLOW_REFRESH' : True,
+#     'JWT_EXPIRATION_DELTA' : datetime.timedelta(days=7),
+#     'JWT_REFRESH_EXPIRATION_DELTA' : datetime.timedelta(days=180),
+# }
