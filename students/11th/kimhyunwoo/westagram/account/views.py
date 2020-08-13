@@ -4,16 +4,22 @@ from django.views import View
 from django.http  import HttpResponse
 from .models      import Account
 from django.http  import JsonResponse
+import bcrypt     # 암호화에 사용
+import jwt        # 토큰 발행에 사용
+from westagram.settings import SECRET_KEY
 
-class AccountView(View) : 
+class SignUpView(View) : 
     def post(self,request):
         try: 
             data = json.loads(request.body)
-            user_name         =    data['name']
-            user_phone_number =    data['phone_number']
-            user_email        =    data['email']
-            user_password     =    data['password']
-            print(Account.objects.values_list('name'))
+            user_name           =    data['name']
+            user_phone_number   =    data['phone_number']
+            user_email          =    data['email']
+            user_password       =    data['password']
+
+            hashed_password = bcrypt.hashpw(user_password.encode('utf-8'), bcrypt.gensalt()) 
+            #첫번쨰 파라미터는 암호화할 대상,
+
             # email validation
             if "@" not in user_email or "." not in user_email: 
                 return JsonResponse({"message": "Email_ERRROR"},status = 400)
@@ -25,10 +31,8 @@ class AccountView(View) :
             # overlap validation
             if Account.objects.filter(name = user_name).exists():
                 return JsonResponse({"message": "Your User Name is overlapped! try again."},status = 400)
-
             if Account.objects.filter(phone_number = user_phone_number).exists():
                 return JsonResponse({"message": "Your Phone Number is overlapped! try again."},status = 400)
-
             if Account.objects.filter(email = user_email).exists():
                 return JsonResponse({"message": "Your Email is overlapped! try again."},status = 400) 
             
@@ -37,16 +41,50 @@ class AccountView(View) :
                 name         =    user_name,
                 phone_number =    user_phone_number,
                 email        =    user_email,
-                password     =    user_password,
+                password     =    hashed_password.decode('utf-8')
             ).save()
-            return JsonResponse({"message": "SUCCESS"},status = 200)
+            return JsonResponse({"message": "SIGN_UP_SUCCESS"},status = 200)
             
-        except KeyError :
+        except KeyError:
             return JsonResponse({"message": "KEY_ERROR"}, status = 400)
 
     def get(self, request):
       	return JsonResponse({'Hello':'World'}, status = 200)
 
+class SignInView(View):
+    def post(self,request):
+        try: 
+            data = json.loads(request.body)
+            input_name           =    data['name']
+            input_phone_number   =    data['phone_number']
+            input_email          =    data['email']
+            input_password       =    data['password']
+            
+            # print(Account.objects.filter(name = input_name).exists())
+            # print(Account.objects.get(name = input_name).password)
+            # name validation
+        
+            if input_name == "" or input_password == "":
+                return JsonResponse({"message": "KEY_ERROR"}, status = 400)
+            elif Account.objects.filter(name = input_name).exists():
+                pwd = Account.objects.get(name = input_name).password.encode('utf-8')
+                # if(Account.objects.get(name = input_name).password == input_password):
+                if(bcrypt.checkpw(input_password.encode('utf-8'), pwd)):
+                    token = jwt.encode({'username' : input_name}, SECRET_KEY, algorithm = "HS256")
+                    token = token.decode('utf-8')                          # 유니코드 문자열로 디코딩
+                    return JsonResponse({"message" :"LOGIN_SUCESS", "Your_token" : token}, status=200)
+                else: 
+                    return JsonResponse({'message': "PASSWORD_INCORRECT"}, status = 400)
+            else:
+                return JsonResponse({"message": "INVALID_USER"}, status = 401) 
+        except KeyError :
+            return JsonResponse({"message": "KEY_ERROR"}, status = 400)
+        except json.decoder.JSONDecodeError:
+            return JsonResponse({'message': 'WRONG_JSON_TYPE'}, status = 401)
+
+    def get(self, request):
+        signin_data = Account.objects.values()
+        return JsonResponse({'message': list(signin_data)}, status = 200)
 
     ''' Mission 2
     인스타그램에 회원가입 할 때에는 전화번호, 사용자 이름 또는 이메일이 필수로 필요합니다.

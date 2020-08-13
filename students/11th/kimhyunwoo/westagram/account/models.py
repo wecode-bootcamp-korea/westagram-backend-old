@@ -7,7 +7,7 @@ class Account(models.Model):
     password     = models.CharField(max_length = 400, help_text = "비밀번호") # 비밀번호
     created_date = models.DateTimeField(auto_now_add = True) # 처음 등록한 time 기록
     updated_date = models.DateTimeField(auto_now = True) # 수정한 time 기록
-    objects = models.Manager() 
+    # objects = models.Manager() 
 
     class Meta:
         db_table = "accounts"
