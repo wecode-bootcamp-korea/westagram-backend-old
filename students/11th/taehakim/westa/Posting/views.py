@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.views import View
 from django.http import JsonResponse
 from .models import Posting
+from .models import Comment
 from Account.models import Account
 import json
 
@@ -17,7 +18,6 @@ class EnrollPost(View):
             ).save()
             return JsonResponse({"message": 'Success'},   status=200)
 
-
 class ViewGet(View):
     def get(self, request):
         # res = {
@@ -26,6 +26,20 @@ class ViewGet(View):
         # 'image_url':Posting().image_url,
         # 'contents':Posting.contents
         # }
-        res2 = list(Posting.objects.values())
-        return JsonResponse({'post':res2},  status=200)
-    
+        res = list(Posting.objects.values())
+        return JsonResponse({'post':res},  status=200)
+
+class EnrollComment(View):
+    def post(self, requst):
+        data = Json.loads(requst.body)
+        Comment(
+        user_name = data['comment_user'],
+        comment   = data['comment'],
+        post      = Posting.objects.get(user=data['posting_user'])
+        ).save()
+        return JsonResponse({"message": 'Success'},   status=200)
+
+class ViewComment(View):
+    def get(self, request):
+        res = list(Comment.objects.values())
+        return JsonResponse({'post':res}, status=200)
