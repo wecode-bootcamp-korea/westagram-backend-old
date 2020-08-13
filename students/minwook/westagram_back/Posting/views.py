@@ -42,11 +42,11 @@ class CommentView(View):
         try:
             data = json.loads(request.body)
             post = data['post']
-            user = data['user']
+            user = data['email']
             text = data['text']
 
             post_id = Posting.objects.get(id = post)
-            user_id = User.objects.get(name = user)
+            user_id = User.objects.get(email = user)
 
             Comment(
                 post = post_id,
