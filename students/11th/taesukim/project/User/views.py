@@ -8,7 +8,7 @@ from django.http            import JsonResponse
 from django.core.exceptions import ValidationError
 from django.core            import serializers
 
-from project import settings
+from project import my_settings
 from .models import User
 from .helper import (
     name_overlap,
@@ -93,5 +93,5 @@ class SignInView(View):
                 return JsonResponse({'message':'INVALID_USER'}, status = 401)
 
             elif bcrypt.checkpw(data['password'].encode('utf-8'), User.objects.get(phone_number = data['phone_number']).password.encode('utf-8')):
-                access_token = jwt.encode({'id' : User.objects.get(email = data['email']).id }, settings.SECRET_KEY, algorithm = 'HS256')
+                access_token = jwt.encode({'id' : User.objects.get(email = data['email']).id }, my_settings.SECRET_KEY, algorithm = 'HS256')
                 return JsonResponse({'access_token':access_token.decode()}, status = 200)

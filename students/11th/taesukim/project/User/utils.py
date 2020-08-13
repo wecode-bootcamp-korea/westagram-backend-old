@@ -1,13 +1,13 @@
 import jwt
 import json
 
-import django.http import JsonResponse
-import django.core.exceptions import ObjectDoesNotExist
+from django.http import JsonResponse
+from django.core.exceptions import ObjectDoesNotExist
 
-import project.settings import SECRET_KEY
-import User.models import User
+from project.my_settings import SECRET_KEY
+from User.models import User
 
-def validate_token(func){
+def validate_token(func):
     def wrapper(self, request, *arg, **kwargs):
         try:
             access_token = request.headers.get('Authorization', None)
@@ -24,4 +24,4 @@ def validate_token(func){
         return func(self, request, *arg, **kwargs)
 
     return wrapper
-}
+
