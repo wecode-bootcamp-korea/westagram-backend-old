@@ -1,4 +1,5 @@
 import json
+from json               import JSONDecodeError
 
 from django.http        import JsonResponse, HttpResponse
 from django.shortcuts   import get_object_or_404
@@ -12,14 +13,28 @@ from Account.models import User
 # 게시물 등록 뷰
 class UploadPost(View):
     def post(self, request):
-        data = json.loads(request.body)
         try:
-            upload_user = data['username']
-            upload_text = data['text']
-            upload_img_url = data['url']
-        except KeyError:
-            return JsonResponse({"message": "KEY_ERROR"}, status=400)
+            data = json.loads(request.body)
+        except JSONDecodeError:
+            return JsonResponse({"message":"JSONDecodeError"}, status=400)
+            
+        # try:
+        #     upload_user = data['username']
+        #     upload_text = data['text']
+        #     upload_img_url = data['url']
+        # except KeyError:
+        #     return JsonResponse({"message": "KEY_ERROR"}, status=400)
         
+        #if 문으로 try except 대체할 수 있으면, if문으로 대체 : 부하 훨씬 적음
+        chk = 0
+        for key in data:
+            if key == 'username' or key =='text' or key=='url':
+                chk+=1
+        if chk < 3:
+            return JsonResponse({"message": "KEY_ERROR"}, status=400)
+
+     
+
         try:
             user_obj = User.objects.get(username=upload_user)
         except ObjectDoesNotExist: # 게시물을 등록한 유저정보가 데이터베이스에 없음
@@ -37,18 +52,31 @@ class UploadPost(View):
 # 게시물 호출 뷰
 class ShowPost(View):
     def get(self, request):
-        post_data = PostModel.objects.values()
+       # post_data = PostModel.objects.values()
+        post_id = request.GET.get('post_id') 
         return JsonResponse({'post':list(post_data)},status=200)
 
 # 댓글 등록 뷰
 class UploadComment(View):
     def post(self, request):
-        data =json.loads(request.body)
         try:
-            comment_user = data['username']
-            comment_text = data['text']
-            comment_post_id = data['post_id'] # 댓글이 달리는 게시물 id
-        except KeyError:
+            data = json.loads(request.body)
+        except JSONDecodeError:
+            return JsonResponse({"message":"JSONDecodeError"}, status=400)
+
+
+        # try:
+        #     comment_user = data['username']
+        #     comment_text = data['text']
+        #     comment_post_id = data['post_id'] # 댓글이 달리는 게시물 id
+        # except KeyError:
+        #     return JsonResponse({"message": "KEY_ERROR"}, status=400)
+
+        chk = 0
+        for key in data:
+            if key == 'username' or key =='text' or key=='post_id':
+                chk+=1
+        if chk < 3:
             return JsonResponse({"message": "KEY_ERROR"}, status=400)
         
         try:
