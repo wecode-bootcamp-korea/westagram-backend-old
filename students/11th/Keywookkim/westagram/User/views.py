@@ -11,9 +11,9 @@ from .my_settings           import Sk
 secret = Sk.SECRET_KEY
 class Signup(View):
     def post(self, request):
-        data = json.loads(request.body)
-        signup_db = User.objects.all()
         try:
+            data = json.loads(request.body)
+            signup_db = User.objects.all()            
             hashed_pw = bcrypt.hashpw(data['password'].encode('utf-8'), bcrypt.gensalt())      
             user = User(
                 email        = data['email'],
@@ -28,7 +28,9 @@ class Signup(View):
             return JsonResponse({'message':'KEY_ERROR'}, status=400)
         except ValidationError as v :
             trace_back = traceback.format_exc()
-            return JsonResponse({'message':'Invalid'}, status=400)     
+            return JsonResponse({'message':'Invalid'}, status=400)  
+        except json.JSONDecodeError : 
+            return JsonResponse({'message':'Invalid Jason form'}, status=400) 
 
     def get(self, request):
             user_data = User.objects.values()
