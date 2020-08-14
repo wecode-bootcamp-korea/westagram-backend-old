@@ -4,13 +4,14 @@ from django.views           import View
 from django.http            import JsonResponse
 
 from User.models import User
+from User.utils  import login_required
 from .models     import (
     Post,
     Comment
 )
 
-
 class PostView(View):
+    @login_required
     def post(self, request):
         data = json.loads(request.body)
 
@@ -29,11 +30,13 @@ class PostView(View):
             return JsonResponse({'message' : f'{e}'}, status = 400)
 
 class PostDisplayView(View):
+    @login_required
     def get(self, request):
         post_data = Post.objects.values()
         return JsonResponse({'post_data' : list(post_data)}, status = 200)
 
 class CommentView(View):
+    @login_required
     def post(self, request):
         data = json.loads(request.body)
 
@@ -52,6 +55,7 @@ class CommentView(View):
             return JsonResponse({"message" : f'{e}'}, status = 400)
 
 class  CommentDisplayView(View):
+    @login_required
     def get(self, request, post_id):
         db_comment   = Comment.objects.all().values()
         comment_list = list(db_comment)

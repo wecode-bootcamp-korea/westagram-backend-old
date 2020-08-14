@@ -3,9 +3,9 @@ import json, traceback, bcrypt, jwt
 from django.views           import View
 from django.http            import JsonResponse
 from django.core.exceptions import ValidationError
-from westagram.settings     import SECRET_KEY 
 
-from .models import User
+from westagram.settings     import SECRET_KEY
+from .models                import User
 
 class SignupView(View):
     def post(self, request):
