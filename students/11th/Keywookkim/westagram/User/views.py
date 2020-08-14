@@ -13,6 +13,8 @@ class Signup(View):
     def post(self, request):
         try:
             data = json.loads(request.body)
+            # if email and password not in data :
+            #     return JsonResponse({'message':'KEY_ERROR'}, status=400)
             signup_db = User.objects.all()            
             hashed_pw = bcrypt.hashpw(data['password'].encode('utf-8'), bcrypt.gensalt())      
             user = User(
@@ -28,7 +30,7 @@ class Signup(View):
             return JsonResponse({'message':'KEY_ERROR'}, status=400)
         except ValidationError as v :
             trace_back = traceback.format_exc()
-            return JsonResponse({'message':'Invalid'}, status=400)  
+            return JsonResponse({'message':'Invalid form'}, status=400)  
         except json.JSONDecodeError : 
             return JsonResponse({'message':'Invalid Jason form'}, status=400) 
 
