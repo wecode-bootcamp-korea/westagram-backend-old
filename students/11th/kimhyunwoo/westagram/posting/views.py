@@ -27,7 +27,10 @@ class PostingView(View):
         # DoesNotExist는 get에서 조건에 맞는 data가 없을 경우 발생됨. filter의 경우 [] return
         except Account.DoesNotExist:
             return JsonResponse({'message': 'Account_DoesNotExist'}, status = 401)    
-    
+        except json.decoder.JSONDecodeError:
+            return JsonResponse({'message': 'JSON_TYPE_Error'}, status = 401)
+        except ValueError:
+            return JsonResponse({"message": "VALUSE_ERROR"}, status = 400)
     def get(self, request):
         posted_data = Posting.objects.values()
         # print(list(posted_data))
@@ -49,7 +52,10 @@ class CommentView(View):
             return JsonResponse( {'message': 'Account_DoesNotExist'}, status = 401)
         except Posting.DoesNotExist:
             return JsonResponse( {'message': 'Post_DoesNotExist'}, status = 401)
-        
+        except json.decoder.JSONDecodeError:
+            return JsonResponse({'message': 'JSON_TYPE_Error'}, status = 401)
+        except ValueError:
+            return JsonResponse({"message": "VALUSE_ERROR"}, status = 400)
         Comment(
             user    = user_name,
             post    = post_id,

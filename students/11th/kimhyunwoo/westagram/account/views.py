@@ -47,7 +47,10 @@ class SignUpView(View) :
             
         except KeyError:
             return JsonResponse({"message": "KEY_ERROR"}, status = 400)
-
+        except json.decoder.JSONDecodeError:
+            return JsonResponse({'message': 'JSON_TYPE_Error'}, status = 401)
+        except ValueError:
+            return JsonResponse({"message": "VALUSE_ERROR"}, status = 400)
     def get(self, request):
       	return JsonResponse({'Hello':'World'}, status = 200)
 
@@ -80,8 +83,9 @@ class SignInView(View):
         except KeyError :
             return JsonResponse({"message": "KEY_ERROR"}, status = 400)
         except json.decoder.JSONDecodeError:
-            return JsonResponse({'message': 'WRONG_JSON_TYPE'}, status = 401)
-
+            return JsonResponse({'message': 'JSON_TYPE_Error'}, status = 401)
+        except ValueError:
+            return JsonResponse({"message": "VALUSE_ERROR"}, status = 400)
     def get(self, request):
         signin_data = Account.objects.values()
         return JsonResponse({'message': list(signin_data)}, status = 200)
