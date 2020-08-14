@@ -39,7 +39,9 @@ class SignUp(View):
         if chk < 2:
             return JsonResponse({"message": "KEY_ERROR"}, status=400)
         
-            
+        
+        data_email = data['email'] 
+        data_password = data['password'] # 비밀번호
         
 
 
@@ -72,8 +74,8 @@ class SignUp(View):
             # 회원가입이 성공하면 {"message": "SUCCESS"}, status code 200을 반환합니다.
             User(
                 email = data_email,
-                name = data_name,
-                username = data_username,
+                name = 'default_name',
+                username = 'default_username',
                 password = encrypted_pw.decode('utf-8')
             ).save()
       
@@ -102,7 +104,10 @@ class SignIn(View):
                 chk+=1
         if chk < 2:
             return JsonResponse({"message": "KEY_ERROR"}, status=400)
-            
+
+        data_email = data['email']
+        data_password = data['password']
+        #    
         # 계정이 존재하지 않을 때, {"message": "INVALID_USER"}, status code 401을 반환
         try:
             get_user_info = User.objects.get(email=data_email)

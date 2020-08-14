@@ -33,7 +33,9 @@ class UploadPost(View):
         if chk < 3:
             return JsonResponse({"message": "KEY_ERROR"}, status=400)
 
-     
+        upload_user = data['username']
+        upload_text = data['text']
+        upload_img_url = data['url']
 
         try:
             user_obj = User.objects.get(username=upload_user)
@@ -52,8 +54,7 @@ class UploadPost(View):
 # 게시물 호출 뷰
 class ShowPost(View):
     def get(self, request):
-       # post_data = PostModel.objects.values()
-        post_id = request.GET.get('post_id') 
+        post_data = PostModel.objects.values()
         return JsonResponse({'post':list(post_data)},status=200)
 
 # 댓글 등록 뷰
@@ -78,7 +79,11 @@ class UploadComment(View):
                 chk+=1
         if chk < 3:
             return JsonResponse({"message": "KEY_ERROR"}, status=400)
-        
+            
+        comment_user = data['username']
+        comment_text = data['text']
+        comment_post_id = data['post_id']
+
         try:
             user_info = User.objects.get(username=comment_user)
         except ObjectDoesNotExist: # 게시물을 등록한 유저정보가 데이터베이스에 없음
