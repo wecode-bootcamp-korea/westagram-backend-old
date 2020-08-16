@@ -10,7 +10,7 @@ from User.models         import User
 def validate_token(func):
     def wrapper(self, request, *arg, **kwargs):
         try:
-            access_token = request.headers.get('Authorization', None)
+            access_token = request.headers.get('Authorization')
             header       = jwt.decode(access_token, SECRET_KEY, algorithm = 'HS256')
             user         = User.objects.get(id = header['id'])
             request.user = user
