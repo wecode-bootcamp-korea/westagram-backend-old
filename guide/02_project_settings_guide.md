@@ -1,5 +1,6 @@
 
 위스타그램 프로젝트를 위해 수정해야할 django settings에 대해 알아보겠습니다.
+`project_westagram/settings.py` 를 열어주세요.
 
 # 1. 기본 설정
 
@@ -28,7 +29,7 @@ CORS에 관련된 내용은 추후에 좀 더 자세하게 배우겠습니다.
 
 `Django`를 설치해둔 가상환경을 실행시켜 주세요.
 ```bash
-conda activate project
+conda activate westagram
 ```
 그 다음 플러그인을 설치해주세요.
 ```bash
@@ -98,4 +99,11 @@ CORS_ALLOW_HEADERS = (
 )
 ```
 
-자, 이제 westagram 프로젝트를 위한 기본 설정이 완료 되었습니다. westagram을 위한 첫 앱을 생성해보세요! 앱을 만드신 뒤에는 다음 안내 사항인 [02_urls_guide.md 파일](https://github.com/wecode-bootcamp-korea/westagram-backend/blob/master/guide/02_urls_guide.md)을 확인해주세요.
+자, 이제 westagram 프로젝트를 위한 기본 설정이 완료 되었습니다. westagram을 위한 첫 앱을 생성해보세요! 회원가입, 로그인 등 회원을 관리할 앱을 생성하실 것이므로 앱 이름은 `user` 혹은 `account`를 추천드립니다.
+
+어떻게 만들죠?
+
+```bash
+python manage.py createapp user
+```
+앱을 만드신 뒤에는 다음 가이드를 확인해주세요.
