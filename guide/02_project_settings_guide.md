@@ -104,6 +104,6 @@ CORS_ALLOW_HEADERS = (
 어떻게 만들죠?
 
 ```bash
-python manage.py createapp user
+python manage.py startapp user
 ```
 앱을 만드신 뒤에는 다음 가이드를 확인해주세요.
