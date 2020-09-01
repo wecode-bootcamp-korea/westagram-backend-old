@@ -9,7 +9,7 @@ class Account(view):
         data = json.loads(request.body)
         
         try:
-            account = User(
+            account = Users(
                 name         = data['name'],
                 phone_number = data['phone_number'],
                 email        = data['email'],
@@ -17,17 +17,20 @@ class Account(view):
             )
            
             if account_db.filter(name = data['name']).exist():
-                return JsonResponse({'message': 'ALREADY_EXISTS',status = 400}
-            if account_db.filter(phone_number = data['phone_number']).exist():
-                return JsonResponse({'message': 'ALREADY_EXISTS',status = 400}
-            if account_db.filter(eamil = data['email']).exist():
-                return JsonResponse({'message': 'ALREADY_EXISTS',status = 400} 
+                return JsonResponse({'message': 'ALREADY_EXISTS'},status = 400}
+            elif account_db.filter(phone_number = data['phone_number']).exist():
+                return JsonResponse({'message': 'ALREADY_EXISTS'},status = 400}
+            elif account_db.filter(eamil = data['email']).exist():
+                return JsonResponse({'message': 'ALREADY_EXISTS'},status = 400} 
+            elif not '@' in email or not '.' in email:
+                return JsonResponse({"message": "INVALID_EMAIL"}, status = 400)
+            elif len(data[password]) < 8:
+                return JsonResponse({"message": "Password must be at least 8 digits."},status = 400 )
+            
             account.save()
             return JsonResponse({'message': 'SUCCESS'}, status = 200) 
         
         except KeyError    
             return JsonResponse({'message': 'KEY_ERROR'},status = 400)
-        
-        except ValidationError as v :
                                    
     

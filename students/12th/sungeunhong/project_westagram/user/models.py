@@ -10,4 +10,4 @@ class Users(models.model):
     updated_at     = models.DateTimeField(auto_now = True) # 업데이트 시 수정 시간 
     
     class Meta:
-        db_table  = 'users'
+        db_table  = 'Users'
