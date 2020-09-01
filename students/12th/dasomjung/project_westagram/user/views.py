@@ -9,39 +9,38 @@ class SignUp(View):
     def post(self, request):
         data = json.loads(request.body)
 
-        # 회원가입시 이메일을 사용할 경우 전달이 안된경우
-        try:
-
-        except:
+        # 회원가입시 휴대폰번호와 이메일 중 이메일을 사용할 경우 전달이 안되었을 때 에러 반환
+        if (Users.objects.filter('phone_number') or Users.objects.filter('email')) == True:
+            pass
+        else:
             return JsonResponse({'message': 'KEY_ERROR'}, status=400)
+   
         # 회원가입시 이메일을 사용할 경우 @ 과 . 이 포함 안된경우 에러 반환
-        try:
-            email = Users.email.get(pk=request.POST[@.])
-        except:
-            return JsonResponse({'message': ''}, status=)    # 에러 반환 
+        if Users.email.filter(r'[^@.]$') == True:     
+        # if not (Users.objects.get(email__in='@') or Users.objects.get(email__in='.')) == True:
+        # 이게 더 맞을지.....
+            return JsonResponse({'message': 'Incorrect format'}, status=400)    # 에러 반환 
 
         # 아이디(전화번호, 사용자이름, 이메일)가 중복된 경우 에러 반환
-        if Users.filter(['number']).exists() or Users.filter(['user_name']).exists() or Users.filter(['email']).exists():
-            return JsonResponse({'message': ''}, status=)    # 에러 반환
+        if (Users.objects.filter(['number']).exists() or Users.objects.filter(['user_name']).exists() or Users.objects.filter(['email']).exists()) == True:
+            return JsonResponse({'message': 'Already Exist'}, status=409)    # 에러 반환
         
         # 비밀번호 전달이 안된 경우
-        try:
-
-        except:
+        if not Users.objects.filter('password') == True:
             return JsonResponse({'message': 'KEY_ERROR'}, status=400)
 
         # 비밀번호가 8자리 미만일 경우 에러 반환
-        try:
-            password = Users.password.get(pk=request.POST[\d{8, }])
-        except:
-            return JsonResponse({'message': ''}, status=)   # 에러 반환
+        if Users.password.filter(r'\d{,7}$') == True:
+        # if Users.objects.filter(password__range(8)) == True:
+        # 이게 더 맞을지...
+            return JsonResponse({'message': 'Too short'}, status=411)   # 에러 반환
 
         Users(
-            name      = data['name'],
-            user_name = data['user_name']
-            number    = data['number'],
-            email     = data['email'],
-            password  = data['password']
+            name            = data['name'],
+            user_name       = data['user_name'],
+            phone_number    = data['phone_number'],
+            email           = data['email'],
+            password        = data['password']
         ).save()
 
         return JsonResponse({'message': 'SUCCESS'}, status=200)
