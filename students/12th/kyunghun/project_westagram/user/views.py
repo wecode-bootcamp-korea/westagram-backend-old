@@ -46,7 +46,7 @@ class SignIn(View):
     def post(self, request):
         data                    = json.loads(request.body)
         query_data_email        = Users.objects.values('email')
-        query_data              = Users.objects.values('password', 'phon_number')
+        query_data              = Users.objects.values('email', 'password', 'phon_number')
         
         #계정 or password 키가 안 넘어 왔을 때 error
         if 'email' not in data.keys() or 'password' not in data.keys():
@@ -56,15 +56,15 @@ class SignIn(View):
             query_email_list = list(query_data_email[query_index].values())
             #계정 없으면 error
             if data['email'] not in query_email_list :
-                return JsonResponse({'message':'INVALID_USER(no account)'}, status=400)
+                return JsonResponse({'message':'INVALID_USER(no account)'}, status=401)
             else:        
                 #로그인 성공
                 for query_index in range(len(query_data)):
                     query_list = list(query_data[query_index].values())
-                    if query_list == [data['password'], data['phon_number']]:
+                    if query_list == [data['email'], data['password'], data['phon_number']]:
                         return JsonResponse({'message':'SUCCESS'}, status=200)
                     else: #로그인 실패(비밀번호 또는 전화번호 잘 못 입력)
-                        return JsonResponse({'message':'INVALID_USER'}, status=400)
+                        return JsonResponse({'message':'INVALID_USER'}, status=401)
         
         
         
