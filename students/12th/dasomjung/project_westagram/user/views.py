@@ -1,16 +1,14 @@
 import json
 import re
 from django.views import View
-from django.http import JsonResponse
-from .models import Users
+from django.http  import JsonResponse
+from .models      import Users
 
 
 class SignUp(View):
     def post(self, request):
         data = json.loads(request.body)
 
-
-'''
         # 회원가입시 이메일을 사용할 경우 전달이 안된경우
         try:
 
@@ -20,10 +18,12 @@ class SignUp(View):
         try:
             email = Users.email.get(pk=request.POST[@.])
         except:
-            return JsonResponse({'message': ''}, status=)
+            return JsonResponse({'message': ''}, status=)    # 에러 반환 
 
         # 아이디(전화번호, 사용자이름, 이메일)가 중복된 경우 에러 반환
-
+        if Users.filter(['number']).exists() or Users.filter(['user_name']).exists() or Users.filter(['email']).exists():
+            return JsonResponse({'message': ''}, status=)    # 에러 반환
+        
         # 비밀번호 전달이 안된 경우
         try:
 
@@ -34,14 +34,14 @@ class SignUp(View):
         try:
             password = Users.password.get(pk=request.POST[\d{8, }])
         except:
-            return JsonResponse({'message': ''}, status=)
-'''
+            return JsonResponse({'message': ''}, status=)   # 에러 반환
+
         Users(
-            name=data['name'],
-            user_name=data['user_name']
-            number=data['number'],
-            email=data['email'],
-            password=data['password']
+            name      = data['name'],
+            user_name = data['user_name']
+            number    = data['number'],
+            email     = data['email'],
+            password  = data['password']
         ).save()
 
         return JsonResponse({'message': 'SUCCESS'}, status=200)
