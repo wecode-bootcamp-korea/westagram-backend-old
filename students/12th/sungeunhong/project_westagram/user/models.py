@@ -1,6 +1,6 @@
 from django.db import models # ORM을 하기 위해 models import
 
-class Users(models.model):
+class User(models.Model):
     name           = models.CharField(max_length = 50)
     phone_number   = models.CharField(max_length = 50) 
     email          = models.EmailField(max_length = 100)
@@ -9,4 +9,4 @@ class Users(models.model):
     updated_at     = models.DateTimeField(auto_now = True) # 업데이트 시 수정 시간 
     
     class Meta:
-        db_table  = 'Users'
+        db_table  = 'User'
