@@ -3,7 +3,7 @@ from django.views import View
 from django.http  import JsonResponse
 from .models      import User
 
-class SignView(View):
+class SignUp(View):
   def post(self, request):
     data = json.loads(request.body)
 
@@ -49,16 +49,13 @@ class LoginView(View):
     password    = data['password'],
     )
 
+    savedData = User.objects.get(name=UserData.name)
     # 1. 로그인할 땐 전화번호, 사용자 이름 또는 이메일이 필수, 비밀번호도 있어야 함.
-    if UserData.password is False or UserData.phoneNumber is False:
+    if not UserData.password or not UserData.phoneNumber:
       return JsonResponse({'message': 'KEY_ERROR'}, status=400)
 
-    # 2. 계정이나 패스워드가 전달되지 않으면, keyerror, 400
-    if not(UserData.name and UserData.email) or not UserData.password:
-      return JsonResponse({'message': 'KEY_ERROR'}, status=400)
+    # 2. 계정이 존재하지 않을 때나 비밀번호가 맞지 않을 때, invalid_user, 401
+    if (savedData.email != UserData.email) or (savedData.password != UserData.password):
+      return JsonResponse({'message' : 'INVALID_USER'}, status=401)
 
-    savedData = User.objects.filter(phoneNumber=UserData.phoneNumber)
-
-
-    # 4. 로그인 성공 시 Success, 200
-    return JsonResponse({'message': 'SUCCESS'}, status=200)
+    return JsonResponse({'message':'SUCCESS'}, status=200)
