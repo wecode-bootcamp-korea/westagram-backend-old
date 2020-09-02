@@ -1,10 +1,10 @@
 import json
 
 from django.views import View
-from django.http import JsonResponse
-from .models import User
+from django.http  import JsonResponse
+from .models      import User
 
-class MainView(View):
+class SignUpView(View):
     def post(self, request):
         data = json.loads(request.body)
 
@@ -17,16 +17,30 @@ class MainView(View):
             User.objects.filter(phone_num = data['phone_num'])):
             return JsonResponse({'message':'Already_in_use'}, status=400)
         else:
-            return JsonResponse({'message':'SUCCESS'}, status=200)
-
-        User(
+            User(
             name      = data['name'],
             email     = data['email'],
             pw        = data['pw'],
             phone_num = data['phone_num']
         ).save()
+            return JsonResponse({'message':'SUCCESS'}, status=200)
+
+        
 
 
     def get(self, request):
-        user_data = Users.objects.values()
+        user_data = User.objects.values()
         return JsonResponse({'users':list(user_data)}, status=200)
+
+class SignInView(View):   
+    def post(self, request):
+        data = json.loads(request.body)
+
+        if not data['email'] or not data['pw']: #이메일, 비밀번호 값이 없을 때
+            return JsonResponse({'message':'KEY_ERROR'},status=400) #KEY_ERROR 반환
+        if User.objects.filter(email=data['email']):
+            login_user = User.objects.get(email=data['email'])
+            if login_user.pw != data['pw']:
+                return JsonResponse({'message':'INVALID_USER'}, status=400)
+        else:
+            return JsonResponse({'message':'SUCCESSkkk'}, status=200)
