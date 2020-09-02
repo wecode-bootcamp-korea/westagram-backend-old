@@ -10,7 +10,9 @@ class SignUp(View):
     def post(self, request):
         data = json.loads(request.body)
     
-        if Users.objects.filter(name=data['name']) or Users.objects.filter(email=data['email']) or Users.objects.filter(phone_numbers=data['phone_numbers']):
+        if (Users.objects.filter(name=data['name']) or 
+            Users.objects.filter(email=data['email']) or 
+            Users.objects.filter(phone_numbers=data['phone_numbers'])):
             return JsonResponse({
                 'message':'ALREADY TAKEN'}, status = 400)
 
@@ -41,4 +43,25 @@ class SignUp(View):
         user_data = Users.objects.values()
         return JsonResponse(
             {'users':list(user_data)}, status = 200
+        )
+
+class SignIn(View):
+    def post(self, request):
+        data = json.loads(request.body)
+    
+        if not ('password' or 'phone_numbers') in data:
+            return JsonResponse({
+                'message':'KEY ERROR'}, status = 400)
+
+        if not Users.objects.filter(name = data['name']):
+            return JsonResponse({
+                'message':'INVALID_USER'}, status = 401)
+
+        if not {'name':data['name'], 'password':data['password']}\
+           in Users.objects.values('name','password'):
+            return JsonResponse({
+                'message':'INVALID_USER'}, status = 401)
+     
+        return JsonResponse(
+            {'message':'SUCCESS'}, status = 200
         )
