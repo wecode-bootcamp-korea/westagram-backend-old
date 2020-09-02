@@ -16,7 +16,7 @@ class SignUp(View):
             return JsonResponse({
                 'message':'ALREADY TAKEN'}, status = 400)
 
-        if not ('password' or 'phone_numbers') in data:
+        if not ('password' or 'email') in data:
             return JsonResponse({
                 'message':'KEY ERROR'}, status = 400)
 
@@ -49,7 +49,7 @@ class SignIn(View):
     def post(self, request):
         data = json.loads(request.body)
     
-        if not ('password' or 'phone_numbers') in data:
+        if not ('password' or 'name') in data:
             return JsonResponse({
                 'message':'KEY ERROR'}, status = 400)
 
