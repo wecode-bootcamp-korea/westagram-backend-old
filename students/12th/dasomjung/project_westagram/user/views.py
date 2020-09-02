@@ -10,9 +10,7 @@ class SignUp(View):
         data = json.loads(request.body)
 
         # 회원가입시 휴대폰번호와 이메일 중 이메일을 사용할 경우 전달이 안되었을 때 에러 반환
-        if (Users.objects.filter('phone_number') or Users.objects.filter('email')) == True:
-            pass
-        else:
+        if Users.objects.filter('email') == False:
             return JsonResponse({'message': 'KEY_ERROR'}, status=400)
    
         # 회원가입시 이메일을 사용할 경우 @ 과 . 이 포함 안된경우 에러 반환
@@ -21,8 +19,8 @@ class SignUp(View):
         # 이게 더 맞을지.....
             return JsonResponse({'message': 'Incorrect format'}, status=400)    # 에러 반환 
 
-        # 아이디(전화번호, 사용자이름, 이메일)가 중복된 경우 에러 반환
-        if (Users.objects.filter(['number']).exists() or Users.objects.filter(['user_name']).exists() or Users.objects.filter(['email']).exists()) == True:
+        # 아이디(이메일)가 중복된 경우 에러 반환
+        if Users.objects.filter(['email']).exists() == True:
             return JsonResponse({'message': 'Already Exist'}, status=409)    # 에러 반환
         
         # 비밀번호 전달이 안된 경우
@@ -33,12 +31,9 @@ class SignUp(View):
         if Users.password.filter(r'\d{,7}$') == True:
         # if Users.objects.filter(password__range(8)) == True:
         # 이게 더 맞을지...
-            return JsonResponse({'message': 'Too short'}, status=411)   # 에러 반환
+            return JsonResponse({'message': 'Too short'}, status=400)   # 에러 반환
 
         Users(
-            name            = data['name'],
-            user_name       = data['user_name'],
-            phone_number    = data['phone_number'],
             email           = data['email'],
             password        = data['password']
         ).save()
