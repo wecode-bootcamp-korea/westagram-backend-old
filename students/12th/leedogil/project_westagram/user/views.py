@@ -9,15 +9,13 @@ class SignUpView(View):
       return JsonResponse({"message":"email validation"},status=400)
     elif len(data['password'] < 8
       return JsonResponse({"message":"password validation"},status=400)
-    
-          
-  
-    Users(
-      phone    = data['phone']
-      name     = data['name'],
-      email    = data['email'],
-      password = data['password']
-    ).save() 
+    else:
+      Users(
+        phone    = data['phone']
+        name     = data['name'],
+        email    = data['email'],
+        password = data['password']
+      ).save() 
 
     return JsonResponse({'message':'SUCCESS'},
     status=200)
