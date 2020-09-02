@@ -4,29 +4,29 @@ from django.http import JsonResponse
 from django.views import View
 
 
+
 class SignUpView(View):
 
     def post(self, request):
         data = json.loads(request.body)
-        
-        signup_user(
-        	name 	     = data['name'],
+        Users(
+        	name		= data['name'],
             	email           = data['email'],
             	phone_number    = data['phone_number'],
             	password        = data['password'],
             	user_name       = data['user_name'],
-        )
+        ).save()
             
-        if email not in data.keys() or password not in data.keys():
-            return JsonResponse({'message':'KEY_ERROR'}, status=400)
+        #if email not in data.keys() or password not in data.keys():
+         #   return JsonResponse({'message':'KEY_ERROR'}, status=400)
 
-        elif "@" not in email or "." not in email:
-            return JsonResponse({'message':'email address incorrect'}, status=400)
+        #elif "@" not in email or "." not in email:
+         #   return JsonResponse({'message':'email address incorrect'}, status=400)
         
-        elif len(password) < 8:
-            return JsonResponse({'message':'password must be longer than 8 characters'}, status=400)
+        #elif len(password) < 8:
+         #   return JsonResponse({'message':'password must be longer than 8 characters'}, status=400)
         
-        signup_user.objects.create()
+#        signup_user.objects.create()
         return JsonResponse({'message':'SUCCESS'}, status=200)
 
 
