@@ -6,7 +6,7 @@ from django.http  import JsonResponse
 from .models      import Users
 
 
-class SignUp(View):
+class SignUpView(View):
     def post(self, request):
         data                    = json.loads(request.body)
         MINIMUM_PASSWORD        = 8
@@ -14,6 +14,14 @@ class SignUp(View):
         #query_data              = Users.objects.values('name', 'email', 'phon_number')
         
      
+        if ('email' not in data.keys() or
+            'name' not in data.keys() or
+            'password' not in data.keys() or
+            'phon_number' not in data.key()):
+            
+            return JsonResponse({'message':'KEY_ERROR'}, status=400)
+        
+        
         if (query_data.filter(email= data['email']) or 
             query_data.filter(name= data['name'] ) or
             query_data.filter(phon_number= data['phon_number'])):
@@ -26,10 +34,7 @@ class SignUp(View):
         
         if '@' not in data['email'] or '.' not in data['email']:
             return JsonResponse({'message':'Not included @ or . '}, status=400)
-
-        if 'email' not in data.keys():
-            return JsonResponse({'message':'KEY_ERROR'}, status=400)
-        
+      
         else:
             Users(
             name            = data['name'],
@@ -45,7 +50,7 @@ class SignUp(View):
 
         return JsonResponse({'users':list(user_data)}, status=200)
 
-class LogIn(View):
+class LogInView(View):
     def post(self, request):
         data                    = json.loads(request.body)
         query_data              = Users.objects

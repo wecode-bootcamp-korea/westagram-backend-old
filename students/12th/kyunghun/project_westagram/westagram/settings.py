@@ -39,7 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'corsheaders',
     'user.apps.UserConfig',
-    'posting.apps.PostingConfig'
+    #'posting.apps.PostingConfig'
 ]
 
 MIDDLEWARE = [
