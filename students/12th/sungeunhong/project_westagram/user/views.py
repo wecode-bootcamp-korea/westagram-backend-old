@@ -49,23 +49,31 @@ class AccountView(View):
                 {'message': 'KEY_ERROR'},
                 status = 400
                 )
-                                   
-    
-# class loginView(View):
-#     def post(self,request):
-#         data = json.loads(request.body)
+
+class loginView(View):
+    def post(self,request):
+        data = json.loads(request.body)
         
-        # try:
-        #     if User.objects.filter(email=data['email']).exist():
-        #         login_user = User.objects.get(email=data['email'])
+        try:
+            if User.objects.filter(name=data['name']).exists():
+                user = User.objects.get(name=data['name'])
+                if user.password == data['password']:
+                    return JsonResponse({
+                        'message':'SUCCESS'},
+                         status=200
+                         ) 
+                 
+                return JsonResponse(
+                        {'message':'INVALID_PASSWORD'},
+                         status=400
+                         )
+            return JsonResponse(
+                        {'message':'INVALID_NAME'},
+                         status=400
+                         )
 
-        #         if login_user.password == data['password']:
-        #             return JsonResponse({'message':'SUCCESS'}, status=200)
-
-        #         return JsonResponse({'message':'INVALID_PASSWORD OR EMAIL'}, status =400)
-            
-        # except KeyError:   
-        #     return JsonResponse(
-        #         {'message': 'KEY_ERROR'},
-        #         status = 400
-        #         )
+        except KeyError:   
+            return JsonResponse(
+                {'message': 'KEY_ERROR'},
+                status = 400
+                )
