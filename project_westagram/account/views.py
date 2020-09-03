@@ -16,14 +16,15 @@ class SignUpView(View):
             password = data['password'].encode('utf-8')
             password_crypt = bcrypt.hashpw(password, bcrypt.gensalt())
             password_crypt = password_crypt.decode('utf-8')
-             Account(
+
+            Account(
                 email     =data['email'],
                 password  =data['password'],
                 ).save()
                 
-                return HttpResponse(status=200)
-            except keyError:
-                return JsonResponse({"message":"INVALID_KEYS"},status =400)
+            return HttpResponse(status=200)
+        except KeyError:
+            return JsonResponse({"message":"INVALID_KEYS"},status =400)
 
 class SignInView(View):
     def post(self, request):
@@ -32,19 +33,19 @@ class SignInView(View):
         try:
              if Account.objects.filter(email = data['email']).exists() :
                user = Account.objects.get(email = data['email'])
-             if bcrypt.checkpw(data['password'].encode('utf-8'), user password.encode('utf-8')):
+             if bcrypt.checkpw(data['password'].encode('utf-8'), user.password.encode('utf-8')):
                  token = jwt.encode({'email' : data['email']}, SECRET_KEY, algorithm = "HS256")
                  token = token.decode('utf-8')
 
                  return JsonResponse({"token" : token }, status=200)
 
-            else :
+             else:
                  return HttpResponse(status=401)
 
-                 return HttpResponse(status=400)
+             return HttpResponse(status=400)
 
-            except KeyError:
-                 return JsonResponse({"message":"INVALID_KEYS"}, status = 400)
+        except KeyError:
+             return JsonResponse({"message":"INVALID_KEYS"}, status = 400)
 
 class TokenCheckView(View):
     def post(self,request):
