@@ -2,42 +2,39 @@ import json
 
 from django.views import View
 from django.http  import JsonResponse
-from .models      import Users
+from .models  import User
 
-class Account(View):
+class AccountView(View):
     def post(self,request):
         data = json.loads(request.body)
-        try:
-            if data['name'].exist():
-                return JsonResponse(
-                    {'message': 'ALREADY_EXISTS'},
-                    status = 400
-                    )
-            if data['phone_number'].exist():
-                return JsonResponse(
-                    {'message': 'ALREADY_EXISTS'},
-                    status = 400
-                    )
-            if data['email'].exist():
-                return JsonResponse(
-                    {'message': 'ALREADY_EXISTS'},
-                    status = 400
-                    ) 
+       
+        try :
+            if data['name'] and data['email'] and data['password']:
+
+                if '@' not in data['email'] or '.' not in data['email']:
+                    return JsonResponse(
+                        {"message": "INVALID_EMAIL"}, 
+                        status = 400
+                        )    
+                 
+                if len(data['password']) < 8:
+                    return JsonResponse(
+                        {'message': 'Password must be at least 8 digits.'},
+                        status = 400
+                        )     
+                # if User.objects.filter(email=data['email']).exist():
+                #     return JsonResponse(
+                #         {'message': 'ALREADY_EXISTS'},
+                #         status = 400
+                #         )
+                # if User.objects.filter(email=data['name']).exist():
+                #     return JsonResponse(
+                #         {'message': 'ALREADY_EXISTS'},
+                #         status = 400
+                #         )    
             
-            if not '@' in data['email'] or not '.' in data['email']:
-                return JsonResponse(
-                    {"message": "INVALID_EMAIL"}, 
-                    status = 400
-                    )
-            if len(data['password']) < 8:
-                return JsonResponse(
-                    {"message": "Password must be at least 8 digits."},
-                    status = 400
-                    )
-            
-            Users(
+            User(
                 name         = data['name'],
-                phone_number = data['phone_number'],
                 email        = data['email'],
                 password     = data['password']
             ).save()
@@ -45,7 +42,7 @@ class Account(View):
             return JsonResponse(
                 {'message': 'SUCCESS'}, 
                 status = 200
-                ) 
+                )  
         
         except KeyError:   
             return JsonResponse(
@@ -54,3 +51,21 @@ class Account(View):
                 )
                                    
     
+# class loginView(View):
+#     def post(self,request):
+#         data = json.loads(request.body)
+        
+        # try:
+        #     if User.objects.filter(email=data['email']).exist():
+        #         login_user = User.objects.get(email=data['email'])
+
+        #         if login_user.password == data['password']:
+        #             return JsonResponse({'message':'SUCCESS'}, status=200)
+
+        #         return JsonResponse({'message':'INVALID_PASSWORD OR EMAIL'}, status =400)
+            
+        # except KeyError:   
+        #     return JsonResponse(
+        #         {'message': 'KEY_ERROR'},
+        #         status = 400
+        #         )
