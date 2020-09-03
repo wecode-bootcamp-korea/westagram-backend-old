@@ -1,45 +1,42 @@
-from django.views import View
-from django.http  import JsonResponse
+import json
 
-from .models      import PostMedia, Photo
+from django.views   import View
+from django.http    import JsonResponse
 
-def post(self, request):
-        data                    = json.loads(request.body)
-        MINIMUM_PASSWORD        = 8
-        query_data              = Users.objects
-        #query_data              = Users.objects.values('name', 'email', 'phon_number')
-        
-        PostMedia(
-        title             = data['title'],
-        content           = data['content'],
-        user              = request.users
-        ).save()
-        
-        return JsonResponse({'message':'SUCCESS'}, status=200)
+from .models        import PostMedia, Photo
+from user.models    import Users
+    
+class PostingView(View):   
+    def post(self, request):
+            data                 = json.loads(request.body)
+            login_user           = Users.objects.get(email = data['email'])
+            login_user_id        = login_user.id
+            posting              = PostMedia.objects.create(
+                
+                title            = data['title'],
+                content          = data['content'],
+                user_id          = login_user_id
+            )
+            Photo.objects.create(
+                post_id          = posting.id,
+                image            = data['img']
+            )
+            return JsonResponse({'message':'SUCCESS'}, status=200)
     
     def get(self, request):
-        user_data = Users.objects.values()
-
-        return JsonResponse({'users':list(user_data)}, status=200)
-
-class Create(View):
-    def post(self, request):
+        data                     = json.loads(request.body)
+        login_user               = Users.objects.get(email = data['email'])
+        login_user_id            = login_user.id
         
-            post = Post()
-            post.title = request.POST['title']
-            post.content = request.POST['content']
-            post.pub_date = timezone.datetime.now()
-            post.user = request.user
-            post.save()
-            # name 속성이 imgs인 input 태그로부터 받은 파일들을 반복문을 통해 하나씩 가져온다 
-            for img in request.FILES.getlist('imgs'):
-                # Photo 객체를 하나 생성한다.
-                photo = Photo()
-                # 외래키로 현재 생성한 Post의 기본키를 참조한다.
-                photo.post = post
-                # imgs로부터 가져온 이미지 파일 하나를 저장한다.
-                photo.image = img
-                # 데이터베이스에 저장
-                photo.save()
-            return redirect('/detail/' + str(post.id))
-    
+        posted_data              = PostMedia.objects.get(user_id= login_user_id)
+        posted_image             = Photo.objects.filter(post_id= posted_data.id)
+        
+        data_dict                = {'user_name':login_user.name}
+        image_list               = []
+        data_dict['title']       = posted_data.title
+        data_dict['content']     = posted_data.content
+
+        for img in posted_image:
+            image_list.append(img.image) 
+        return JsonResponse({'posted_data':data_dict, 'posted image':image_list}, status=200)
+

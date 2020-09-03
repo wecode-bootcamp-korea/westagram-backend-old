@@ -17,7 +17,7 @@ class SignUpView(View):
         if ('email' not in data.keys() or
             'name' not in data.keys() or
             'password' not in data.keys() or
-            'phon_number' not in data.key()):
+            'phon_number' not in data.keys()):
             
             return JsonResponse({'message':'KEY_ERROR'}, status=400)
         

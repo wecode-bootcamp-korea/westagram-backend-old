@@ -1,6 +1,6 @@
 from django.db import models
 
-from ..user.models import Users
+from user.models import Users
 # Create your models here.
 
 class PostMedia(models.Model):
