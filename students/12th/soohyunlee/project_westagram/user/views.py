@@ -27,8 +27,6 @@ class SignUpView(View):
         ).save()
             return JsonResponse({'message':'SUCCESS'}, status=200)#그게 아니면 success 반환
 
-        
-
 
     def get(self, request):
         user_data = User.objects.values()
