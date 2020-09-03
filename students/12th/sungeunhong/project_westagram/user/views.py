@@ -2,7 +2,7 @@ import json
 
 from django.views import View
 from django.http  import JsonResponse
-from .models  import User
+from user.models  import User
 
 class AccountView(View):
     def post(self,request):
@@ -22,18 +22,18 @@ class AccountView(View):
                         {'message': 'Password must be at least 8 digits.'},
                         status = 400
                         )     
-                # if User.objects.filter(email=data['email']).exist():
-                #     return JsonResponse(
-                #         {'message': 'ALREADY_EXISTS'},
-                #         status = 400
-                #         )
-                # if User.objects.filter(email=data['name']).exist():
-                #     return JsonResponse(
-                #         {'message': 'ALREADY_EXISTS'},
-                #         status = 400
-                #         )    
-            
-            User(
+                if User.objects.filter(email=data['email']).exists():
+                    return JsonResponse(
+                        {'message': 'ALREADY_EXISTS'},
+                        status = 400
+                        )
+                if User.objects.filter(email=data['name']).exists():
+                    return JsonResponse(
+                        {'message': 'ALREADY_EXISTS'},
+                        status = 400
+                        )    
+           
+            User.objects.create(
                 name         = data['name'],
                 email        = data['email'],
                 password     = data['password']
