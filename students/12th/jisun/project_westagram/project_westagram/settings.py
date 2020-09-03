@@ -26,6 +26,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'corsheaders',
     'account',
+    'posting',
 ]
 
 MIDDLEWARE = [
@@ -133,3 +134,5 @@ CORS_ALLOW_HEADERS = (
         'x-csrftoken',
         'x-requested-with',
 )
+
+APPEND_SLASH = False
