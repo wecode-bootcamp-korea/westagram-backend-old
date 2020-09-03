@@ -1,43 +1,46 @@
 import json
 from django.views import View
 from django.http  import JsonResponse
-from .models      import Users
+from user.models      import Users
 
 
 class SignUp(View):
     def post(self, request):
+        data = json.loads(request.body)
+    
 
-        data     = json.loads(request.body)
-        MIN_PWD  = 10
+        try:
+            if data['name'] and data['email'] and data['password']:
 
-        set_data = User.objects.values('name', 'email', 'phone_number')
+                if '@' not in data['email'] or '.' not in data['email']:
+                    return JsonResponse({'message':'Invalid format'}, status = 400)
+
+                if len(data['password']) < 10:
+                    return JsonResponse({'message': 'Password must be at least 10 digits.'},
+                        status = 400
+                    )
+            
+            
+                if Users.objects.filter(email=data['email']).exists():
+                    return JsonResponse({'Already Exists'}, status=400)
+
+                if Users.objects.filter(email=data['name']).exists():
+                    return JsonResponse({'message': 'ALREADY_EXISTS'}, status=400)
         
-        if filter_data in set_data:
-            return JsonResponse({'message': 'Already existed'}, status = 400)
-
-        if len(data['password']) < MIN_PWD:
-            return JsonResponse({'message':'Minimum length of pwd is 10'}, status=400)
-
-        if '@' or '.' not in data['email']:
-            return JsonResponse({'message':"please check if '@' or '.' are included properly"}, status =400)
-
-        if 'email' not in data.keys():
-            return JsonResponse({'message':'No such address'}, status = 400)
-
-        else:
-            Users(
-                name        = data['name'],
-                phone_number= data['phone_number'],
-                email       = data['email'],
-                password    = data['password'],
+            Users.objects.create(
+                name         = data['name'],
+                email        = data['email'],
+                password     = data['password']
             ).save()
 
+            return JsonResponse(
+                {'message': 'SUCCESS'},
+                status = 200
+                )
 
-            return JsonResponse({'message':'SUCCESS'}, status=200)
-    
-    def get(self, request):
-        user_data = Users.objects.values()
-        return JsonResponse({"users":list(user_data)}, status=200)
+        except KeyError:
+            return JsonResponse({'message': 'KEY_ERROR'}, status = 400)
 
 
 
+           
