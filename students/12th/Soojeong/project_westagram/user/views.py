@@ -6,7 +6,8 @@ from .models        import Users
 class SignUpView(View):
     def post(self, request):
         data = json.loads(request.body)
-                  
+        print(list(Users.objects.all()))
+
         if ('email' or 'phone_number') not in data.keys()\
             or 'user_name' not in data.keys()\
             or 'name'  not in data.keys()\
