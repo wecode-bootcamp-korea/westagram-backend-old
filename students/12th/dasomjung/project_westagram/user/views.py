@@ -13,6 +13,9 @@ class SignUp(View):
             if Users.objects.filter(email=data['email']).exists():   # 아이디(email) 존재할 때
                 return JsonResponse({'message': 'Already Exist'}, status = 400)
             
+            if '@' not in data['email'] or '.' not in data['email']:
+                return JsonResponse({'message':'WRONG FORM'}, status = 400)
+
             if len(data['password']) < 8:
                 return JsonResponse({'message': 'Too short'}, status=400)   # 에러 반환
 
