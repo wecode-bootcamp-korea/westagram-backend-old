@@ -1,7 +1,7 @@
 import json
 from django.views import View
 from django.http  import JsonResponse
-from .models      import Posting
+from .models      import Posting, Images
 from user.models  import Users
 
 class RegisterPost(View):
@@ -12,17 +12,22 @@ class RegisterPost(View):
             return JsonResponse({'message':'NO PERMISSION'}, status=400)
 
         else:
-            Posting(
+            posting = Posting.objects.create(
                 writer         = Users.objects.get(email=data['email']),
-                contents       = data['contents'],
-                published_date = data['published_date'],
-                images_url     = data['images_url']
+                contents       = data['contents']
+            )
+            posting.save()
+
+            Images(
+                images_url = data['images_url'],
+                posting = posting
             ).save()
+            
 
         return JsonResponse({'message':'SUCCESS'}, status=200)
 
 
 class Posting(View):
     def get(self, request):
-        posting_data = RegisterPost.objects.values()
+        posting_data = Posting.objects.values()
         return JsonResponse({'posting': list(posting_data)}, status=200)
