@@ -20,7 +20,7 @@ BASE_DIR = Path(__file__).resolve(strict=True).parent.parent
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'ryjb_52-o1!@i8kes-jbet@lyo=c$v02r1*qe=+67)37_yvw=$'
+SECRET_KEY = '_qb$w$5g0m$wmpe#l%h28+s3+^#*0xw#k_48l7w@p@%8=h6xuq'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -31,21 +31,22 @@ ALLOWED_HOSTS = ['*']
 # Application definition
 
 INSTALLED_APPS = [
-    # 'django.contrib.admin',
-    # 'django.contrib.auth', 
+   # 'django.contrib.admin',
+   # 'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'corsheaders',
+    'account',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    # 'django.middleware.csrf.CsrfViewMiddleware',
-    # 'django.contrib.auth.middleware.AuthenticationMiddleware', 
+   # 'django.middleware.csrf.CsrfViewMiddleware',
+   # 'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
@@ -123,6 +124,19 @@ STATIC_URL = '/static/'
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
 ##CORS
 CORS_ORIGIN_ALLOW_ALL=True
 CORS_ALLOW_CREDENTIALS = True
@@ -148,3 +162,11 @@ CORS_ALLOW_HEADERS = (
     'x-requested-with',
 		#만약 허용해야할 추가적인 헤더키가 있다면?(사용자정의 키) 여기에 추가하면 됩니다.
 )
+
+
+
+
+
+
+
+
