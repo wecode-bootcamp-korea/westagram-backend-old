@@ -3,13 +3,13 @@ import json
 from django.views import View
 from django.http  import JsonResponse
 
-from .models      import Users, Posting, Commenting
+from .models      import User, Posting, Commenting
 
 class RegisterView(View):
     def post(self, request): 
         data = json.loads(request.body)
         if Users.objects.filter(name=data['user']):
-            user_ = Users.objects.get(name=data['user'])
+            user_ = User.objects.get(name=data['user'])
             Posting.objects.create(
                     user       = user_,
                     image_url  = data['image_url'],
@@ -29,9 +29,9 @@ class RegisterView(View):
 class CommentView(View):
     def post(self, request):
         data = json.loads(request.body)
-        if Users.objects.filter(name=data['user']) and \
+        if User.objects.filter(name=data['user']) and \
             Posting.objects.filter(image_url=data['image_url']):
-            user_ = Users.objects.get(name=data['user'])
+            user_ = User.objects.get(name=data['user'])
             image_url_  = Posting.objects.get(image_url=data['image_url'])
             Commenting.objects.create(
                     user = user_,
