@@ -33,7 +33,7 @@ class SignIn(View):
 
     if (data['email'] and data['password']) == False:
       return JsonResponse({'message':'key error'},status=404)
-    elif (Users.objects.filter(name=data['password']).exists() or
+    elif (Users.objects.filter(password=data['password']).exists() or
       Users.objects.filter(email=data['email']).exists())==False:
       return JsonResponse({'message':'invalid_user'})
     return JsonResponse({'message':'success'},status=200)
