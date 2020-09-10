@@ -21,9 +21,9 @@ class SignUp(View):
       return JsonResponse({'message':'key error'},status=404)      
 
     Users(
-      email        = data['email']
-      name         = data['name']
-      password     = data['password']
+      email        = data['email'],
+      name         = data['name'],
+      password     = data['password'],
       phone_number = data['phone_number']
     ).save()
 
