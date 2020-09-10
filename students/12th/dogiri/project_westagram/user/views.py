@@ -11,7 +11,7 @@ class SignUp(View):
    
     if '@' and '.' not in data['email']:
       return JsonResponse({'message':'ERROR1'},status=404)  
-    elif len(data['password'] < 8:
+    elif len(data['password']) < 8:
       return JsonResponse({'message':'ERROR2'},status=404)
     elif (Users.object.filter(name=data['name']).exists() or
       Users.object.filter(email=data['email']).exists() or
