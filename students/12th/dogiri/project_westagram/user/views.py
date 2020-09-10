@@ -40,6 +40,7 @@ class SignIn(View):
       Users.objects.filter(email=data['email']).exists())==False:
       return JsonResponse({'message':'invalid_user'})
 
+    email = Users.objects.get(email = data['email']
     password = data['password']
     access_token = jwt.encode({'email' : email}, SECRET, algorithm = 'HS256')
 
