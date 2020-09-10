@@ -26,12 +26,15 @@ class SignUp(View):
                 return JsonResponse({'message': 'Too short'}, status=400)   # 에러 반환
 
             password = data['password']
-            hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()) # bytes 데이터 형태로 변환시켜 hash
-            decoded_hashed_password = hashed_password.decode('utf-8') # str 데이터 형태로 디코딩해서 db에 저장해야 함
+            # bytes 데이터 형태로 변환시켜 hash
+            hashed_password = bcrypt.hashpw(
+                password.encode('utf-8'), 
+                bcrypt.gensalt()
+            ).decode('utf-8')  # str 데이터 형태로 디코딩해서 db에 저장해야 함
             
             Users.objects.create(
                 email    = data['email'],
-                password = decoded_hashed_password
+                password = hashed_password
             ).save()
 
             return JsonResponse({'message': 'SUCCESS'}, status=200)
@@ -64,9 +67,11 @@ class SignIn(View):
             SECRET_KEY = ''
             expire = datetime.datetime.utcnow() + datetime.timedelta(seconds=1800)  # 생성후 만료 시간 30분뒤로 설정
             # 인코딩하여 token 만들기
-            encoded_access_token = jwt.encode({'user_id': user_id, 'exp': expire}, SECRET_KEY, algorithm = 'HS256')
-            # b'토큰' 형태이기 때문에 return 할 때는 str 데이터형으로 변환해야 함
-            access_token = encoded_access_token.decode('utf-8')
+            access_token = jwt.encode(
+                {'user_id': user_id, 'exp': expire}, 
+                SECRET_KEY, 
+                algorithm = 'HS256'
+            ).decode('utf-8')    # b'토큰' 형태이기 때문에 return 할 때는 str 데이터형으로 변환해야 함
             
             return JsonResponse({'access_token': access_token}, status=200)
 
