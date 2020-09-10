@@ -44,7 +44,7 @@ class SignIn(View):
     access_token = jwt.encode({'email' : email}, SECRET, algorithm = 'HS256')
 
 
-    eturn JsonResponse({'access_token': access_token}, status=200)
+    return JsonResponse({'access_token': access_token}, status=200)
 
   def get(self,request):
     user_data = Users.objects.values()
