@@ -20,7 +20,7 @@ class SignUp(View):
     elif (data['email'] and data['password']) == False:
       return JsonResponse({'message':'key error'},status=404)      
 
-     Users(
+    Users(
       email        = data['email']
       name         = data['name']
       password     = data['password']
