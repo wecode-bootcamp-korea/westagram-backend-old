@@ -1,9 +1,12 @@
 import json
+import jwt
+import bcrypt
 
 from django.http  import JsonResponse
 from django.views import View
 
 from .models      import Users
+from project_westagram.settings import SECRET_KEY, ALGORITHM
 
 class SignUp(View):
   def post(self,request):
@@ -36,7 +39,12 @@ class SignIn(View):
     elif (Users.objects.filter(password=data['password']).exists() or
       Users.objects.filter(email=data['email']).exists())==False:
       return JsonResponse({'message':'invalid_user'})
-    return JsonResponse({'message':'success'},status=200)
+
+    password = data['password']
+    access_token = jwt.encode({'email' : email}, SECRET, algorithm = 'HS256')
+
+
+    eturn JsonResponse({'access_token': access_token}, status=200)
 
   def get(self,request):
     user_data = Users.objects.values()
