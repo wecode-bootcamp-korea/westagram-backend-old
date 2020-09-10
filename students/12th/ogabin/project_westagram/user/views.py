@@ -6,13 +6,17 @@ from .models      import User
 class UserView(View):
     def post(self, request):
         data = json.loads(request.body)
-        User(
-            name         = data["name"],
-            email        = data["email"],
-            password     = data["password"],
-            phone        = data["phone"],
-        ).save()
-        return JsonResponse({"message":"SUCCESS"}, status = 200)    
+        try:
+            User(
+                name         = data["name"],
+                email        = data["email"],
+                password     = data["password"],
+                phone        = data["phone"],
+            ).save()
+            return JsonResponse({"message":"SUCCESS"}, status = 200)    
+
+        except KeyError:
+            return JsonResponse({"message": "KEY_ERROR"}, status = 400)
 
     def get(self, request):
         user_data = User.objects.values()
@@ -40,4 +44,3 @@ class SignInView(View):
     def get(self, request):
         user = User.objects.values()
         return JsonResponse({"list" : list(user)}, status = 200)
-    
