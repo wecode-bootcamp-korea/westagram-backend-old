@@ -10,9 +10,9 @@ class SignUp(View):
     data = json.loads(request.body)
    
     if '@' and '.' not in data['email']:
-      return JsonResponse({'message':'ERROR1'},status=404)  
+      return JsonResponse({'message':'no email error'},status=404)  
     elif len(data['password']) < 8:
-      return JsonResponse({'message':'ERROR2'},status=404)
+      return JsonResponse({'message':'short length error'},status=404)
     elif (data['email'] and data['password']) == False:
       return JsonResponse({'message':'key error'},status=404)      
 
