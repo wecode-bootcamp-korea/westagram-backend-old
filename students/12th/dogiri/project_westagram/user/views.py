@@ -13,10 +13,6 @@ class SignUp(View):
       return JsonResponse({'message':'ERROR1'},status=404)  
     elif len(data['password']) < 8:
       return JsonResponse({'message':'ERROR2'},status=404)
-    elif (Users.objects.filter(name=data['name']).exists() or
-      Users.objects.filter(email=data['email']).exists() or
-      Users.objects.filter(phone_number=data['phone_number']).exists()):
-      return JsonResponse({'message':'ERROR3'},status=404)
     elif (data['email'] and data['password']) == False:
       return JsonResponse({'message':'key error'},status=404)      
 
