@@ -18,9 +18,7 @@ class SignUp(View):
 
     Users(
       email        = data['email'],
-      name         = data['name'],
       password     = data['password'],
-      phone_number = data['phone_number']
     ).save()
 
     return JsonResponse({'message':'SUCCESS'},status=200)
@@ -35,9 +33,9 @@ class SignIn(View):
 
     if (data['email'] and data['password']) == False:
       return JsonResponse({'message':'key error'},status=404)
-    elif (Users.objects.filter(name=data['name']).exists() or
+    elif (Users.objects.filter(name=data['password']).exists() or
       Users.objects.filter(email=data['email']).exists())==False:
-      return JsonResponse({'message':'invalid user'},status=404)
+      return JsonResponse({'message':'invalid_user'})
     return JsonResponse({'message':'success'},status=200)
 
   def get(self,request):
