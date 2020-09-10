@@ -37,7 +37,7 @@ class SignIn(View):
   def post(self,request):
     data = json.loads(request.body)
 
-    if (data['email'] and data['password'] == False:
+    if (data['email'] and data['password']) == False:
       return JsonResponse({'message':'key error'},status=404)
     elif (Users.object.filter(name=data['name']).exists() or
       Users.object.filter(email=data['email']).exists())
