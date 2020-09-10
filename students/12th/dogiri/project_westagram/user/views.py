@@ -40,8 +40,8 @@ class SignIn(View):
     if (data['email'] and data['password']) == False:
       return JsonResponse({'message':'key error'},status=404)
     elif (Users.object.filter(name=data['name']).exists() or
-      Users.object.filter(email=data['email']).exists())
-      return JsonResponse({'message':'invalid user'},status=404):
+      Users.object.filter(email=data['email']).exists()):
+      return JsonResponse({'message':'invalid user'},status=404)
     return JsonResponse({'message':'success'},status=200)
 
   def get(self,request):
