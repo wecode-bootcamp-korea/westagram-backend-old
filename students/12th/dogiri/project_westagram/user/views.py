@@ -42,11 +42,7 @@ class SignIn(View):
 
     email = Users.objects.get(email = data['email']
  
-    access_token = jwt.encode(
-                {'email': email, 'exp': expire}, 
-                SECRET_KEY, 
-                algorithm = 'HS256'
-            ).decode('utf-8')
+    access_token = jwt.encode({'email': email, 'exp': expire}, SECRET_KEY, algorithm = 'HS256').decode('utf-8')
 
     return JsonResponse({'access_token': access_token}, status=200)
 
