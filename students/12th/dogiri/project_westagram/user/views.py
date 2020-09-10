@@ -29,7 +29,7 @@ class SignUp(View):
 
     return JsonResponse({'message':'SUCCESS'},status=200)
 
-  def get(self.request):
+  def get(self,request):
     user_data = Users.objects.values()
     return JsonResponse({'users':list(user_data)},status=200)
 
