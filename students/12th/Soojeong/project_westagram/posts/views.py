@@ -3,6 +3,7 @@ from django.http import JsonResponse
 from django.views   import View
 from user.models import Users
 from .models import Posts
+from django.forms.models import model_to_dict
 
 class PostingView(View):
     def post(self, request):
@@ -17,13 +18,11 @@ class PostingView(View):
 
         return JsonResponse({'message':'CREATED'}, status=201)
 
-class PostDetailView(View):
     def get(self, request):
         data = json.loads(request.body)
+        post_data = Posts.objects.filter(id=data['id']).values()
+        post_data_1 = list(post_data)
 
-        post_data = Posts.objects.filter(id=data['id'])
-
-        return JsonResponse(
-            {'post_detail': list(post_data)}, status=200) 
-            # 에러발생 
-            # TypeError: Object of type Posts is not JSON serializable
+        return JsonResponse( post_data_1[0], status=200 )
+            
+            
