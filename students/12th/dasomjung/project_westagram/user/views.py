@@ -62,10 +62,9 @@ class SignIn(View):
 
             user_id = register_email.id
             SECRET_KEY = ''
-            expire = datetime.datetime.utcnow() + datetime.timedelta(minutes=30)  # 생성후 만료 시간 30분뒤로 설정
-            expire_str = str(expire)   # jwt.encode 할 때는 str 타입으로 바꿔줘야 함
+            expire = datetime.datetime.utcnow() + datetime.timedelta(seconds=1800)  # 생성후 만료 시간 30분뒤로 설정
             # 인코딩하여 token 만들기
-            encoded_access_token = jwt.encode({'user_id': user_id, 'exp': expire_str}, SECRET_KEY, algorithm = 'HS256')
+            encoded_access_token = jwt.encode({'user_id': user_id, 'exp': expire}, SECRET_KEY, algorithm = 'HS256')
             # b'토큰' 형태이기 때문에 return 할 때는 str 데이터형으로 변환해야 함
             access_token = encoded_access_token.decode('utf-8')
             
