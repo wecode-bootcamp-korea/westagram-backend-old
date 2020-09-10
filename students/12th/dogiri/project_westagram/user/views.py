@@ -6,7 +6,7 @@ from django.http  import JsonResponse
 from django.views import View
 
 from .models      import Users
-from project_westagram.settings import SECRET_KEY, ALGORITHM
+from project_westagram.settings import SECRET_KEY
 
 class SignUp(View):
   def post(self,request):
