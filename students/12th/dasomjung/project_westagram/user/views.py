@@ -58,7 +58,7 @@ class SignIn(View):
             password = register_email.password    # 데이터 베이스에 저장된 비밀번호 가져오기
 
             if not bcrypt.checkpw(new_password.encode('utf-8'), password.encode('utf-8')):
-                return JsonResponse({'message':'INVALID_USER'}, status=401)
+                return JsonResponse({'message':'WRONG_PASSWORD'}, status=401)
 
             user_id = register_email.id
             SECRET_KEY = ''
