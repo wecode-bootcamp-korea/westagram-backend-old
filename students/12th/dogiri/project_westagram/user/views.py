@@ -13,9 +13,9 @@ class SignUp(View):
       return JsonResponse({'message':'ERROR1'},status=404)  
     elif len(data['password']) < 8:
       return JsonResponse({'message':'ERROR2'},status=404)
-    elif (Users.object.filter(name=data['name']).exists() or
-      Users.object.filter(email=data['email']).exists() or
-      Users.object.filter(phone_number=data['phone_number']).exists()):
+    elif (Users.objects.filter(name=data['name']).exists() or
+      Users.objects.filter(email=data['email']).exists() or
+      Users.objects.filter(phone_number=data['phone_number']).exists()):
       return JsonResponse({'message':'ERROR3'},status=404)
     elif (data['email'] and data['password']) == False:
       return JsonResponse({'message':'key error'},status=404)      
@@ -39,8 +39,8 @@ class SignIn(View):
 
     if (data['email'] and data['password']) == False:
       return JsonResponse({'message':'key error'},status=404)
-    elif (Users.object.filter(name=data['name']).exists() or
-      Users.object.filter(email=data['email']).exists()):
+    elif (Users.objects.filter(name=data['name']).exists() or
+      Users.objects.filter(email=data['email']).exists()):
       return JsonResponse({'message':'invalid user'},status=404)
     return JsonResponse({'message':'success'},status=200)
 
