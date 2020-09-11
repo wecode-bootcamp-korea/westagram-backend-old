@@ -44,7 +44,7 @@ class SignIn(View):
     hash_password = Users.objects.get(password=data['password'])
     check_password = data['password']    
 
-    if (bcrypt.checkpw(check_password.encode('utf-8'),hash_password.password).encode('utf-8')==True:
+    if bcrypt.checkpw(check_password.encode('utf-8'),hash_password.password).encode('utf-8')==True:
       return JsonResponse({'message':'SUCCESS'},status=200)
     else:
       return JsonResponse({'message':'INVALIE PASSOWRD'})
