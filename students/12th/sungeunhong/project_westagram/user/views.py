@@ -29,7 +29,7 @@ class AccountView(View):
                         {'message': 'ALREADY_EXISTS'},
                         status = 400
                         )
-                if User.objects.filter(email=data['name']).exists():
+                if User.objects.filter(name=data['name']).exists():
                     return JsonResponse(
                         {'message': 'ALREADY_EXISTS'},
                         status = 400
@@ -37,13 +37,14 @@ class AccountView(View):
                 encoded_password = data['password'].encode('utf-8')
                 hashed_password = bcrypt.hashpw(encoded_password,bcrypt.gensalt())
                 data['password'] = hashed_password.decode('utf-8') 
+             
 
             User.objects.create(
                 name         = data['name'],
                 email        = data['email'],
                 password     = data['password']
             ).save()
-          
+
             return JsonResponse(
                 {'message': 'SUCCESS'}, 
                 status = 200
@@ -54,6 +55,16 @@ class AccountView(View):
                 {'message': 'KEY_ERROR'},
                 status = 400
                 )
+        
+    # def get(self,request):
+    #     users = User.objects.all()
+    #     user_data =[{
+    #         'email': user.emil
+    #     } for user in users]
+    #     return JsonResponse(
+    #         {'users':user_data},
+    #         status=200
+    #         )
 
 class loginView(View):
     def post(self,request):
@@ -67,7 +78,7 @@ class loginView(View):
                     token = jwt.encode({'email': data['email']},'secret_key', algorithm = "HS256").decode('utf-8')
                                                                                                       
                     return JsonResponse({
-                        'message':token},
+                        'Access_token':token},
                          status=200
                          ) 
                  
