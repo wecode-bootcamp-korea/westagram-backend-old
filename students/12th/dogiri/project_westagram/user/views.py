@@ -1,4 +1,6 @@
 import json
+import bcrypt
+import jwt
 
 from django.http  import JsonResponse
 from django.views import View
@@ -16,9 +18,11 @@ class SignUp(View):
     elif (data['email'] and data['password']) == False:
       return JsonResponse({'message':'KEY ERROR'},status=404)      
 
+    hashed_password = bcrypt.hashpw(data['password'].encode('utf-8'), bcrypt.gensalt())
+
     Users(
       email        = data['email'],
-      password     = data['password'],
+      password     = hashed_password
     ).save()
 
     return JsonResponse({'message':'SUCCESS'},status=200)
@@ -31,13 +35,18 @@ class SignIn(View):
   def post(self,request):
     data = json.loads(request.body)
 
-    if (data['email'] and data['password']) == False:
+    if data['email'] == False:
       return JsonResponse({'message':'KEY ERROR'},status=404)
-    elif (Users.objects.filter(password=data['password']).exists() or
-      Users.objects.filter(email=data['email']).exists())==False:
+    elif Users.objects.filter(email=data['email']).exists())==False:
       return JsonResponse({'message':'INVALID USER'})
+   
 
-    return JsonResponse({'message': SUCCESS}, status=200)
+    hash_password = Users.objects.get(password=data['password']
+
+    if (bcrypt.checkpw(data['password'].encode('utf-8'),hash_password):
+      return JsonResponse({'message':'SUCCESS'}),status=200)
+    else:
+      return JsonResponse({'message':'INVALIE PASSOWRD'})
 
   def get(self,request):
     user_data = Users.objects.values()
