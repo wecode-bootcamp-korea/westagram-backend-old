@@ -41,7 +41,7 @@ class SignIn(View):
       return JsonResponse({'message':'INVALID USER'})
    
 
-    hash_password = Users.objects.get(password=hashed_password.decode('utf-8'))
+    hash_password = Users.objects.get(email=data['email'])
     hash_password2 = hash_password.password
     check_password = data['password']    
 
