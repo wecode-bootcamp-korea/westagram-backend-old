@@ -13,11 +13,11 @@ class SignUp(View):
     data = json.loads(request.body)
    
     if '@' and '.' not in data['email']:
-      return JsonResponse({'message':'no email error'},status=404)  
+      return JsonResponse({'message':'NOT EMAIL FORM'},status=404)  
     elif len(data['password']) < 8:
-      return JsonResponse({'message':'short length error'},status=404)
+      return JsonResponse({'message':'SHORT LENGTH'},status=404)
     elif (data['email'] and data['password']) == False:
-      return JsonResponse({'message':'key error'},status=404)      
+      return JsonResponse({'message':'KEY ERROR'},status=404)      
 
     Users(
       email        = data['email'],
@@ -35,16 +35,12 @@ class SignIn(View):
     data = json.loads(request.body)
 
     if (data['email'] and data['password']) == False:
-      return JsonResponse({'message':'key error'},status=404)
+      return JsonResponse({'message':'KEY ERROR'},status=404)
     elif (Users.objects.filter(password=data['password']).exists() or
       Users.objects.filter(email=data['email']).exists())==False:
-      return JsonResponse({'message':'invalid_user'})
+      return JsonResponse({'message':'INVALID USER'})
 
-    email = Users.objects.get(email = data['email']
- 
-    access_token = jwt.encode({'email': email, 'exp': expire}, SECRET_KEY, algorithm = 'HS256').decode('utf-8')
-
-    return JsonResponse({'access_token': access_token}, status=200)
+    return JsonResponse({'message': SUCCESS}, status=200)
 
   def get(self,request):
     user_data = Users.objects.values()
