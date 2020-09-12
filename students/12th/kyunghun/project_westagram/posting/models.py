@@ -19,9 +19,9 @@ class Photo(models.Model):
         db_table = 'photos'
 
 class Comment(models.Model):
-    content             = models.CharField(max_lenght= 1000)
+    content             = models.CharField(max_length= 1000)
     post                = models.ForeignKey(PostMedia, on_delete= models.CASCADE, null= True)
-    related_comment     = models.ForeignKey('self', on_delete= models.CASCADE, null= True)
+    re_comment          = models.ForeignKey('self', on_delete= models.CASCADE, null= True)
 
     class Meta:
         db_table = 'comments'

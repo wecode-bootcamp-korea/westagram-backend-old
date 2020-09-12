@@ -42,34 +42,24 @@ class PostingView(View):
         for img in posted_image:
             image_list.append(img.image) 
         return JsonResponse({'posted_data':data_dict, 'posted image':image_list}, status=200)
+
 class CommentView(View):
     def post(self, request):
-        #post id도 일단 데이터로 받는다.
-        data = json.loads(request.body)
-        content = data.get('content')
-        re_comment_id = data.get('re_comment_id')
+        data                    = json.loads(request.body)
+        content                 = data['content']
+        re_comment_id           = data.get('re_comment_id')
 
-        if content == None:
+        if content == "": #httpie에서 빈 값을 넘겨주니 ""이 넘어 옴
             return JsonResponse({'message':'EMPTY_CONTENT'}, status= 400)
-        Comment.objects(
-            content = data['content'],
-            post_id = data['post_id']
-            re_comment_id = data['comment_id'] if not recomment_id else None
-        ).save
+        
+        else:
+            Comment.objects.create(
+                content         = data['content'],
+                post_id         = data['post_id'],
+                re_comment_id   = re_comment_id if re_comment_id != None else None
+            )
+            return JsonResponse({'message':'SUCCESS'}, status=200)
 
-# class ReCommentView(View):
-#     def post(self, request):
-#         #post id도 일단 데이터로 받는다.
-#         data = json.loads(request.body)
-#         content = data.get('content')
-
-#         if content == None:
-#             return JsonResponse({'message':'EMPTY_CONTENT'}, status= 400)
-#         Comment.objects(
-#             content = data['content'],
-#             post_id = data['post_id'],
-#             re_comment_id = data['comment_id']
-#         ).save
 
 
 
