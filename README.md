@@ -60,9 +60,9 @@
     from user.models    import User
     from product.models import Drink
 
-        class Product(models.Model):
-            product_code    = models.CharField(max_length=100, null=True)
-            name            = models.CharField(max_length=50, null=True)
-            price           = models.DecimalField(max_digits=14, decimal_places=4, null=True)
+    class Product(models.Model):
+        product_code = models.CharField(max_length=100, null=True)
+        name         = models.CharField(max_length=50, null=True)
+        price        = models.DecimalField(max_digits=14, decimal_places=4, null=True)
     ```
 - 보다 자세한 규칙은 노션에서 확인해주세요
