@@ -3,15 +3,12 @@ import re
 
 from django.views     import View
 from django.db.models import Q
-from django.http      import (
-    HttpResponse, 
-    JsonResponse
-)
+from django.http      import JsonResponse
 
 from .models          import User
 
-class SignUpView(View): 
-    def post(self, request): 
+class SignUpView(View):
+    def post(self, request):
         data     = json.loads(request.body)
         email    = data['email']
         name     = data['name']
@@ -20,9 +17,9 @@ class SignUpView(View):
 
         email_pattern = '^\w+([-_.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$'
         
-        if name == '' or email == '':
+        if password == '' or email == '':
             return JsonResponse({'message': 'KEY_ERROR'}, status=400)
-    
+        
         if len(password)<8: 
             return JsonResponse({'message': 'PASSWORD IS NOT VALID'}, status=400)
 
@@ -38,5 +35,5 @@ class SignUpView(View):
             password = password,
             phone    = phone
         )
-        
+
         return JsonResponse({'message': 'SUCCESS'}, status=201)
