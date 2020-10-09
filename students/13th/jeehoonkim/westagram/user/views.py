@@ -1,1 +1,42 @@
+import json
+import re
 
+from django.views     import View
+from django.db.models import Q
+from django.http      import (
+    HttpResponse, 
+    JsonResponse
+)
+
+from .models          import User
+
+class SignUpView(View): 
+    def post(self, request): 
+        data     = json.loads(request.body)
+        email    = data['email']
+        name     = data['name']
+        password = data['password']
+        phone    = data['phone']
+
+        email_pattern = '^\w+([-_.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$'
+        
+        if name == '' or email == '':
+            return JsonResponse({'message': 'KEY_ERROR'}, status=400)
+    
+        if len(password)<8: 
+            return JsonResponse({'message': 'PASSWORD IS NOT VALID'}, status=400)
+
+        if re.match(email_pattern, email) == None:
+            return JsonResponse({'message': 'EMAIL IS NOT VALID'}, status=400)
+
+        if User.objects.filter(Q(email=email) | Q(name=name) | Q(phone=phone)).exists(): 
+            return JsonResponse({'message': 'USER ALREADY EXISTS'}, status=400)
+        
+        User.objects.create(
+            email    = email,
+            name     = name,
+            password = password,
+            phone    = phone
+        )
+        
+        return JsonResponse({'message': 'SUCCESS'}, status=201)
