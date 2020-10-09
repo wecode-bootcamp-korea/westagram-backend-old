@@ -7,3 +7,6 @@ class Posting(models.Model):
     image=models.URLField()
     created_date=models.DateTimeField()
     modified_date=models.DateTimeField(null=True)
+
+    class Meta: 
+        db_table = 'postings'
