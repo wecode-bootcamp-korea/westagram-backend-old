@@ -1,7 +1,7 @@
+# autopep8: off
 import os
 import json
 
-# autopep8: off
 from pathlib                import Path
 from django.core.exceptions import ImproperlyConfigured
 
@@ -12,7 +12,6 @@ secret_file = os.path.join(BASE_DIR, 'secrets.json')
 
 with open(secret_file) as file:
     secrets = json.loads(file.read())
-
 
 def get_secret(key, secrets=secrets):
     try:
@@ -61,7 +60,6 @@ ROOT_URLCONF = 'westagram.urls'
 
 TEMPLATES = [
     {
-        # autopep8: off
         'BACKEND' : 'django.template.backends.django.DjangoTemplates',
         'DIRS'    : [],
         'APP_DIRS': True,
@@ -83,7 +81,6 @@ WSGI_APPLICATION = 'westagram.wsgi.application'
 
 DATABASES = {
     'default': {
-        # autopep8: off
         'ENGINE'  : 'django.db.backends.mysql',
         'NAME'    : get_secret("DB_NAME"),
         'USER'    : get_secret("DB_USER"),
@@ -114,7 +111,6 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/3.1/topics/i18n/
 
-# autopep8: off
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE     = 'UTC'
 USE_I18N      = True
@@ -126,7 +122,6 @@ USE_TZ        = True
 
 STATIC_URL = '/static/'
 
-# autopep8: off
 CORS_ORIGIN_ALLOW_ALL  = True
 CORS_ALLOW_CREDENTIALS = True
 
