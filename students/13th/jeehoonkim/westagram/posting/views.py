@@ -2,7 +2,6 @@ import json
 import re
 
 from django.views     import View
-from django.db.models import Q
 from django.http      import JsonResponse
 from django.utils     import timezone
 
@@ -17,14 +16,21 @@ class PostingView(View):
         image=data['image']
         created_date=timezone.now()
 
-        Posting.objects.create(
-            user_id=user_id,
-            content=content,
-            image=image,
-            created_date=created_date
-        )
+        if image:
+            Posting.objects.create(
+                user_id=user_id,
+                content=content,
+                image=image,
+                created_date=created_date
+            )
+            return JsonResponse({'message': 'SUCCESS'}, status=201)
+        else:
+            return JsonResponse({'message': 'PLEASE UPLOAD IMAGE'})
+        
+    def get(self, request):
+        all_contents=Posting.objects.all().values('user__name', 'content', 'image', 'created_date')
 
-        return JsonResponse({'message': 'SUCCESS'}, status=201)
+        return JsonResponse({'postings': list(all_contents)}, status=200)
         
 
 
