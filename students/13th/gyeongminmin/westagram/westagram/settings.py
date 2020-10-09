@@ -1,7 +1,8 @@
 import os
 import json
 
-from pathlib import Path
+# autopep8: off
+from pathlib                import Path
 from django.core.exceptions import ImproperlyConfigured
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -30,7 +31,6 @@ SECRET_KEY = get_secret("SECRET_KEY")
 DEBUG = True
 
 ALLOWED_HOSTS = ['*']
-
 
 # Application definition
 
@@ -61,10 +61,11 @@ ROOT_URLCONF = 'westagram.urls'
 
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        # autopep8: off
+        'BACKEND' : 'django.template.backends.django.DjangoTemplates',
+        'DIRS'    : [],
         'APP_DIRS': True,
-        'OPTIONS': {
+        'OPTIONS' : {
             'context_processors': [
                 'django.template.context_processors.debug',
                 'django.template.context_processors.request',
@@ -77,21 +78,20 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'westagram.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': get_secret("DB_NAME"),
-        'USER': get_secret("DB_USER"),
+        # autopep8: off
+        'ENGINE'  : 'django.db.backends.mysql',
+        'NAME'    : get_secret("DB_NAME"),
+        'USER'    : get_secret("DB_USER"),
         'PASSWORD': get_secret("DB_PASSWORD"),
-        'HOST': 'localhost',
-        'PORT': '3306',
+        'HOST'    : 'localhost',
+        'PORT'    : '3306',
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators
@@ -111,28 +111,23 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/3.1/topics/i18n/
 
+# autopep8: off
 LANGUAGE_CODE = 'en-us'
-
-TIME_ZONE = 'UTC'
-
-USE_I18N = True
-
-USE_L10N = True
-
-USE_TZ = True
-
+TIME_ZONE     = 'UTC'
+USE_I18N      = True
+USE_L10N      = True
+USE_TZ        = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
 
-# CORS
-CORS_ORIGIN_ALLOW_ALL = True
+# autopep8: off
+CORS_ORIGIN_ALLOW_ALL  = True
 CORS_ALLOW_CREDENTIALS = True
 
 CORS_ALLOW_METHODS = (
