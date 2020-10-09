@@ -4,74 +4,75 @@ import json
 from django.db.models import Q
 from django.http      import JsonResponse
 from django.views     import View
+
 from user.models      import User
 
 class RegisterView(View):
     def post(self, request):
-        user_info    = json.loads(request.body)
-        name         = user_info['name']
-        email        = user_info['email']
-        password     = user_info['password']
-        phone_number = user_info['phone_number']
+        user_info = json.loads(request.body)
+        name      = user_info['name']
+        account   = user_info['account']
+        password  = user_info['password']
 
-        if not email_password_key_check(
-            email, 
+        if not account_password_key_check(
+            account, 
             password):
             return JsonResponse(
                 {'MESSAGE':'KEY_ERROR'}, status=400)
 
-        if not email_validation(email):
+        if not account_validation(account):
             return JsonResponse(
-                {'MESSAGE':'It doesn\'t fit the email format.'}, status=400)
+                {'MESSAGE':'It doesn\'t fit the email or phone number format.'}, status=400)
 
         if not password_validation(password):
             return JsonResponse(
                 {'MESSAGE':'Password must be at least 8 digits.'}, status=400)
 
-        if email_duplicate_check(email):
+        if account_duplicate_check(account):
             return JsonResponse(
-                {'MESSAGE':'This email already exists.'}, status=400)
+                {'MESSAGE':'This account already exists.'}, status=400)
 
         if name_duplicate_check(name):
             return JsonResponse(
                 {'MESSAGE':'This name already exists.'}, status=400)
 
-        if phone_number_duplicate_check(phone_number):
-            return JsonResponse(
-                {'MESSAGE':'This phone number already exists.'}, status=400)
-
         User.objects.create(
-            name         = name, 
-            email        = email,
-            password     = password,
-            phone_number = phone_number)
+            name     = name, 
+            account  = account,
+            password = password)
         
         return JsonResponse({'MESSAGE':'SUCCESS'}, status=200)
 
-def email_password_key_check(email, password):
-    if email and password:
+def account_password_key_check(account, password):
+    if account and password:
         return True
     return False
 
-def email_validation(email):
-    return bool(re.match('^[a-zA-Z0-9+-_.]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$', email))
+def account_validation(account):
+    if bool(
+        re.match('^[a-zA-Z0-9+-_.]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$', 
+        account)):
+        return True
+    elif bool(
+        re.match('^\d{3}-\d{3,4}-\d{4}$', 
+        account)):
+        return True
+    else:
+        return False
 
 def password_validation(password):
     if len(password) >= 8:
         return True 
     return False
 
-def email_duplicate_check(email):
-    if User.objects.filter(Q(email=email)):
+def account_duplicate_check(account):
+    if User.objects.filter(
+        Q(account=account)):
         return True
     return False
 
 def name_duplicate_check(name):
-    if User.objects.filter(Q(name=name)):
+    if User.objects.filter(
+        Q(name=name)):
         return True
     return False   
-
-def phone_number_duplicate_check(phone_number):
-    if User.objects.filter(Q(phone_number=phone_number)):
-        return True
-    return False
