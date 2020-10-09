@@ -18,11 +18,9 @@ class UserView(View):
 
 		if Account.objects.filter(name = data['name']).exists() and (data['name'] != ''):
 			return JsonResponse({'MESSAGE':'NAME_DUPLICATED'}, status = 400)
-
-		if Account.objects.filter(email = data['email']).exists() and (data['email'] != ''):
+		elif Account.objects.filter(email = data['email']).exists() and (data['email'] != ''):
 			return JsonResponse({'MESSAGE':'EMAIL_DUPLICATED'}, status = 400)
-
-		if Account.objects.filter(phone = data['phone']).exists() and (data['phone'] != ''):
+		elif Account.objects.filter(phone = data['phone']).exists() and (data['phone'] != ''):
 			return JsonResponse({'MESSAGE':'PHONE_DUPLICATED'}, status = 400)
 
 		if (data['email'] == '') or (data['password'] == ''):
