@@ -4,9 +4,10 @@ from django.db import models
 
 
 class User(models.Model):
-    user_name = models.CharField(max_length=45)
-    user_email = models.EmailField(max_length=254)
-    user_password = models.CharField(max_length=25)
+    name     = models.CharField(max_length=45,unique=True)
+    phone    = models.CharField(max_length=30,unique=True)
+    email    = models.EmailField(max_length=254,unique=True)
+    password = models.CharField(max_length=25)
 
     class Meta:
         db_table = 'users'
