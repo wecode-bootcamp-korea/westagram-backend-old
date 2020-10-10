@@ -2,6 +2,7 @@ import json
 import re
 
 from django.views     import View
+from django.shortcuts import get_object_or_404
 from django.db.models import Q
 from django.http      import JsonResponse
 
@@ -55,3 +56,31 @@ class SignInView(View):
         else:
             return JsonResponse({'message': 'KEY_ERROR'}, status=400)
 
+class FollowView(View):
+    # 팔로우 할 사람의 user_id가 url에 있음
+    def post(self, request, user_id):
+        data=json.loads(request.body)
+        # 팔로우 하는 사람(follower)의 user_id를 입력받음
+        follower=data['user_id']
+        follower_obj=get_object_or_404(User, pk=follower)
+        user=User.objects.filter(id=user_id)
+        
+        # 요청한 user_id가 전체 유저의 수보다 크면 에러를 반환
+        if int(user_id)>User.objects.all().count():
+            return JsonResponse({'message':'USER DOES NOT EXIST'}, status=404)
+        else:
+            follower_obj.follow.add(user_id)
+            return JsonResponse({'message': 'FOLLOWED'}, status=201)
+         
+        
+        # get으로 불러와서 DoesNotExist에러가 뜨면 에러 메시지를 리턴하도록 했으나 실패
+        '''
+        try:
+            if User.objects.filter(id=user_id)=='<QuerySet []>':
+                raise DoesNotExist
+            follower_obj.follow.add(user_id)
+            return JsonResponse({'message': 'FOLLOWED'}, status=201)
+
+        except User.DoesNotExist:
+            return JsonResponse({'USER DOES NOT EXIST'}, status=404)
+        '''
