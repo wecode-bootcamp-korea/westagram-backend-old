@@ -30,7 +30,7 @@ class PostingView(View):
         
     def get(self, request):
         all_contents=Posting.objects.all().values('user__name', 'content', 'image', 'created_date')
-
+        # 바로 all_contents를 넣으면 에러. 리스트로 넣어야 출력됨. why?
         return JsonResponse({'Postings': list(all_contents)}, status=200)
         
 class CommentView(View):

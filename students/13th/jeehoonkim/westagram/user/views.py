@@ -53,4 +53,5 @@ class SignInView(View):
            else:
                 return JsonResponse({'message': 'SUCCESS'}, status=200)
         else:
-            return JsonResponse({'message': 'KEY_ERROR'}, status=400)    
+            return JsonResponse({'message': 'KEY_ERROR'}, status=400)
+
