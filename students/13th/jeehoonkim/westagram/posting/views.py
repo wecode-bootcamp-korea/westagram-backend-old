@@ -58,3 +58,11 @@ class CommentView(View):
         else:
             return JsonResponse({'message': 'DELETED POST'}, status=400)
 
+class LikeView(View):
+    def post(self, request, posting_id):
+        data=json.loads(request.body)
+        posting=get_object_or_404(Posting, pk=posting_id)
+        user_id=data['user_id']
+
+        posting.like.add(user_id)
+        return JsonResponse({'message': 'LIKED'}, status=201)    
