@@ -23,7 +23,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'n@l&t&qc&x@k0$tknc)6cnv%l^adf=4c6ugc6yr!j9@z^4ofdi'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
@@ -83,7 +83,8 @@ DATABASES = {
         'USER'    : 'root',
         'PASSWORD': '',
         'HOST'    : '127.0.0.1',
-        'PORT'    : '3306'
+        'PORT'    : '3306',
+        "OPTIONS": {"charset": "utf8mb4"},
     }
 }
 
