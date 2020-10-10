@@ -7,6 +7,7 @@ from django.views     import View
 
 from user.models      import User
 from posting.models   import Post
+from posting.models   import Comment
 
 class CreatePost(View):
     def post(self, request):
@@ -27,18 +28,47 @@ class PostView(View):
         post_info = json.loads(request.body)
         user_id   = post_info['user_id']
 
-        view = []
-        posts = Post.objects.filter(user_id=user_id).values_list()
+        post_view      = []
+        posts     = Post.objects.filter(user_id=user_id).values_list()
         user_name = User.objects.get(id=user_id).name
 
         for post in posts:
             image_url       = post[2]
             posting_comment = post[3]
             time            = post[1]
-            view.append([
+            post_view.append([
                 user_name,
                 image_url,
                 posting_comment,
                 time
-                ])
-        return JsonResponse({'MESSAGE':view}, status=200)
+            ])
+        return JsonResponse({'MESSAGE':post_view}, status=200)
+
+class CreateComment(View):
+    def post(self, request, post_id):
+        comment_info = json.loads(request.body)
+        user_id      = comment_info['user_id']
+        comment      = comment_info['comment']
+        
+        Comment.objects.create(
+            user_id = user_id,
+            post_id = post_id,
+            comment = comment)
+
+        return JsonResponse({'MESSAGE':'SUCCESS'}, status=200)
+
+class CommentView(View):
+    def get(self, request, post_id):
+        comment_view = []
+        comments     = Comment.objects.filter(post_id=post_id).values_list()
+
+        for comment in comments:
+            user_name    = User.objects.get(id=comment[3]).name
+            comment_text = comment[1]
+            time         = comment[2]
+            comment_view.append([
+                user_name,
+                comment_text,
+                time
+            ])
+        return JsonResponse({'MESSAGE':comment_view}, status=200)
