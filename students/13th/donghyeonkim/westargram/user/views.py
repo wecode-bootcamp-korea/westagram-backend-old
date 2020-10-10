@@ -14,7 +14,7 @@ class RegisterView(View):
         account   = user_info['account']
         password  = user_info['password']
 
-        if not account_password_key_check(
+        if not check_account_password_key(
             account, 
             password):
             return JsonResponse(
@@ -43,7 +43,26 @@ class RegisterView(View):
         
         return JsonResponse({'MESSAGE':'SUCCESS'}, status=200)
 
-def account_password_key_check(account, password):
+class LoginView(View):
+    def post(self, request):
+        user_info = json.loads(request.body)
+        account   = user_info['account']
+        password  = user_info['password']
+
+        if not check_account_password_key(
+            account, 
+            password):
+            return JsonResponse(
+                {'MESSAGE':'KEY_ERROR'}, status=400)
+
+        if check_login(account, password):
+            return JsonResponse(
+                {'MESSAGE':'SUCCESS'}, status=200)
+        else:
+            return JsonResponse(
+                {'MESSAGE':'INVALID_USER'}, status=401)
+
+def check_account_password_key(account, password):
     if account and password:
         return True
     return False
@@ -75,4 +94,14 @@ def name_duplicate_check(name):
     if User.objects.filter(
         Q(name=name)):
         return True
-    return False   
+    return False
+
+def check_login(account, password):
+    if User.objects.filter(Q(account=account)) and (
+       User.objects.filter(Q(password=password))):
+       return True
+    elif User.objects.filter(Q(name=account)) and (
+         User.objects.filter(Q(password=password))):
+        return True
+    return False
+    
