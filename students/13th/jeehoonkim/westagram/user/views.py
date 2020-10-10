@@ -59,21 +59,23 @@ class SignInView(View):
 class FollowView(View):
     # 팔로우 할 사람의 user_id가 url에 있음
     def post(self, request, user_id):
-        data=json.loads(request.body)
+        data         = json.loads(request.body)
         # 팔로우 하는 사람(follower)의 user_id를 입력받음
-        follower=data['user_id']
-        follower_obj=get_object_or_404(User, pk=follower)
-        user=User.objects.filter(id=user_id)
+        follower     = data['user_id']
+        follower_obj = get_object_or_404(User, pk=follower)
         
-        # 요청한 user_id가 전체 유저의 수보다 크면 에러를 반환
-        if int(user_id)>User.objects.all().count():
-            return JsonResponse({'message':'USER DOES NOT EXIST'}, status=404)
+        # 모든 유저의 id를 호출해서 입력받은 id와 비교. id가 없다면 에러 메시지 반환
+        for i in range(User.objects.all().count()):
+            if int(user_id) == list(User.objects.all().values('id'))[i]['id']:
+                follower_obj.follow.add(user_id)
+                return JsonResponse({'message': 'FOLLOWED'}, status=201)
+                
         else:
-            follower_obj.follow.add(user_id)
-            return JsonResponse({'message': 'FOLLOWED'}, status=201)
+            return JsonResponse({'message':'USER DOES NOT EXIST'}, status=404)
          
         
         # get으로 불러와서 DoesNotExist에러가 뜨면 에러 메시지를 리턴하도록 했으나 실패
+        #filter로 불러와서 빈 리스트이면 에러 메시지를 리턴하도록 했으나 실패
         '''
         try:
             if User.objects.filter(id=user_id)=='<QuerySet []>':
