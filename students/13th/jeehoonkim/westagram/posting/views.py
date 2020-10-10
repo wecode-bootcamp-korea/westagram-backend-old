@@ -29,9 +29,21 @@ class PostingView(View):
             return JsonResponse({'message': 'PLEASE UPLOAD IMAGE'})
         
     def get(self, request):
-        all_contents=Posting.objects.all().values('user__name', 'content', 'image', 'created_date')
+        all_contents = Posting.objects.all().values('user__name', 'content', 'image', 'created_date')
         # 바로 all_contents를 넣으면 에러. 리스트로 넣어야 출력됨. why?
         return JsonResponse({'Postings': list(all_contents)}, status=200)
+
+    def delete(self, request, posting_id):
+        data    = json.loads(request.body)
+        user_id = data['user_id']
+        posting = get_object_or_404(Posting, pk=posting_id)
+
+        if posting.user_id == int(user_id):
+            posting.delete()
+            return JsonResponse({'message': 'DELETED'}, status=200)
+        else:
+            return JsonResponse({'message': 'NO PERMISSION'}, status=400)
+
         
 class CommentView(View):
     def post(self, request, posting_id):
@@ -40,6 +52,7 @@ class CommentView(View):
         user_id      = data['user_id']
         content      = data['content']
         created_date = timezone.now()
+
         try:
             User.objects.get(id = user_id)
             posting.comment_set.create(
@@ -53,16 +66,29 @@ class CommentView(View):
 
     def get(self, request, posting_id):
         all_comments = Comment.objects.filter(posting_id=posting_id).values('user__name', 'content', 'created_date')
+
         if all_comments:
             return JsonResponse({'Comments': list(all_comments)}, status=200)
         else:
             return JsonResponse({'message': 'DELETED POST'}, status=400)
 
+    def delete(self, request):
+        data       = json.loads(request.body)
+        user_id    = data['user_id']
+        comment_id = data['comment_id']
+        comments   = Comment.objects.get(id=comment_id)
+
+        if comments.user_id == int(user_id):
+            comments.delete()
+            return JsonResponse({'message': 'DELETED'},status=200)
+        else:
+            return JsonResponse({'message': 'NO PERMISSION'}, status=400)
+
 class LikeView(View):
     def post(self, request, posting_id):
-        data=json.loads(request.body)
-        posting=get_object_or_404(Posting, pk=posting_id)
-        user_id=data['user_id']
+        data    = json.loads(request.body)
+        posting = get_object_or_404(Posting, pk=posting_id)
+        user_id = data['user_id']
 
         posting.like.add(user_id)
         return JsonResponse({'message': 'LIKED'}, status=201)    
