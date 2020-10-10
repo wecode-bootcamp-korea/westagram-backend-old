@@ -31,7 +31,7 @@ class PostingView(View):
     def get(self, request):
         all_contents=Posting.objects.all().values('user__name', 'content', 'image', 'created_date')
 
-        return JsonResponse({'postings': list(all_contents)}, status=200)
+        return JsonResponse({'Postings': list(all_contents)}, status=200)
         
 class CommentView(View):
     def post(self, request, posting_id):
@@ -51,8 +51,10 @@ class CommentView(View):
         except User.DoesNotExist:
             return JsonResponse({'message': 'USER DOES NOT EXIST'}, status=400)
 
-
-
-
-
+    def get(self, request, posting_id):
+        all_comments = Comment.objects.filter(posting_id=posting_id).values('user__name', 'content', 'created_date')
+        if all_comments:
+            return JsonResponse({'Comments': list(all_comments)}, status=200)
+        else:
+            return JsonResponse({'message': 'DELETED POST'}, status=400)
 
