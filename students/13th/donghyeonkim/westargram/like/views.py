@@ -10,7 +10,7 @@ from posting.models   import Post
 
 class LikeView(View):
     def get(self, request, post_id):
-        post = Post.objects.get(id=post_id)
+        post = Post.objects.get(pk=post_id)
         like_count = post.likes.all().count()
         return JsonResponse({'Like count':like_count}, status=200)
 

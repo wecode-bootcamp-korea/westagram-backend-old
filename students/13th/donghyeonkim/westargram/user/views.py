@@ -62,6 +62,30 @@ class LoginView(View):
             return JsonResponse(
                 {'MESSAGE':'INVALID_USER'}, status=401)
 
+class FollowView(View):
+    def get(self, request, user_id):
+        user = User.objects.get(id=user_id)
+        follow_count = user.follows.all().count()
+        return JsonResponse({'follow_count':follow_count}, status=200)
+
+    def post(self, request, user_id):
+        data    = json.loads(request.body)
+        from_user_id = data['user_id']
+        to_user_id = user_id
+
+        if int(from_user_id) == int(to_user_id):
+            return JsonResponse({'MESSAGE':'자기 자신은 follow 할 수 없습니다.'}, status=200)
+
+        from_user = User.objects.get(pk=from_user_id)
+        to_user   = User.objects.get(id=to_user_id)
+        
+        if from_user in to_user.follows.all():
+            to_user.follows.remove(from_user)
+            return JsonResponse({'MESSAGE':'follow를 취소했습니다.'}, status=200)
+        to_user.follows.add(from_user)
+        return JsonResponse({"MESSAGE":"follow를 눌렀습니다."}, status=200)
+
+
 def check_account_password_key(account, password):
     if account and password:
         return True

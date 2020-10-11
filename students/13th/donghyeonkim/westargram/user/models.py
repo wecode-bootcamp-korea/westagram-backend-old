@@ -5,5 +5,11 @@ class User(models.Model):
     account  = models.CharField(max_length=50, unique=True)
     password = models.CharField(max_length=50)
 
+    follow   = models.ManyToManyField(
+        "self", 
+        symmetrical=False,
+        related_name='follows'
+    )
+
     class Meta:
         db_table = 'user'
