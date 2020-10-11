@@ -63,31 +63,33 @@ class SignInView(View):
             elif User.objects.filter(name=data['name']).exists():
                 user = User.objects.get(name=data['name'])
                 
-                if not user.email or user.email == data['email']:
+                if user.email == data['email'] or not data['email']:
                     if user.password == data['password']:
                         return JsonResponse({'MESSAGE':'SUCCESS'},status=200)
                     
                     else:
                          return JsonResponse({'MESSAGE': 'INVALID_USER(PW)'}, status=401)
-                else:
-                    return JsonResponse({'MESSAGE': 'INVALID_USER'}, status=401)
+                
+                elif data['email'] and user.email != data['email']:
+                    return JsonResponse({'MESSAGE': 'INVALID_USER(email)'}, status=401)
             
             elif User.objects.filter(email=data['email']).exists():
                 user = User.objects.get(email=data['email'])
                 
-                if not user.name or user.name == data['name']:
+                if not data['name'] or user.name == data['name']:
                     if user.password == data['password']:
                         return JsonResponse({'MESSAGE':'SUCCESS'},status=200)
                     
                     else:
                         return JsonResponse({'MESSAGE': 'INVALID_USER(PW)'}, status=401)
-                else:
+                
+                elif data['name'] and user.name != data['name']:
+                    return JsonResponse({'MESSAGE': 'INVALID_USER(name)'}, status=401)
 
-                    return JsonResponse({'MESSAGE': 'INVALID_USER'}, status=401)
-
-            elif not User.objects.filter(name=data['name']).exists() and not User.objects.filter(email=data['email']).exists():
+           # elif not User.objects.filter(name=data['name']).exists() and not User.objects.filter(email=data['email']).exists():
+            #    return JsonResponse({'MESSAGE': 'INVALID_USER'}, status=401)
+            else:
                 return JsonResponse({'MESSAGE': 'INVALID_USER'}, status=401)
- 
 
         except:
             return JsonResponse({'MESSAGE':'KEYERROR'},status=400)
