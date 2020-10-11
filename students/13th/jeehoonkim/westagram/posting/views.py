@@ -45,36 +45,43 @@ class PostingView(View):
             return JsonResponse({'message': 'NO PERMISSION'}, status=400)
     
     def put(self, request, posting_id):
-        data=json.loads(request.body)
-        user_id=data['user_id']
-        content=data['content']
-        image=data['image']
-        modified_date=timezone.now()
-        posting=Posting.objects.filter(id=posting_id)
+        data          = json.loads(request.body)
+        user_id       = data['user_id']
+        content       = data['content']
+        image         = data['image']
+        modified_date = timezone.now()
+        posting       = Posting.objects.filter(id=posting_id)
 
         if posting[0].user_id == int(user_id):
-            posting.update(content=content, image=image, modified_date=modified_date)
+            posting.update(content = content, image = image, modified_date = modified_date)
             return JsonResponse({'message': 'EDITED'}, status=200)
         else:
             return JsonResponse({'message': 'NO PERMISSION'}, status=400)
 
-
-        
 class CommentView(View):
     def post(self, request, posting_id):
         data         = json.loads(request.body)
         posting      = get_object_or_404(Posting, pk = posting_id)
         user_id      = data['user_id']
         content      = data['content']
+        thread_to    = data['comment_id']
         created_date = timezone.now()
-
+        
         try:
             User.objects.get(id = user_id)
-            posting.comment_set.create(
-                user_id      = user_id,
-                content      = content,
-                created_date = created_date
-            )
+            if thread_to:
+                posting.comment_set.create(
+                    user_id      = user_id,
+                    thread_to    = thread_to,
+                    content      = content,
+                    created_date = created_date
+                )
+            else:
+                posting.comment_set.create(
+                    user_id      = user_id,
+                    content      = content,
+                    created_date = created_date
+                )
             return JsonResponse({'message': 'SUCCESS'}, status=201)
         except User.DoesNotExist:
             return JsonResponse({'message': 'USER DOES NOT EXIST'}, status=400)

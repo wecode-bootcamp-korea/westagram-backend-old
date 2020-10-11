@@ -19,6 +19,7 @@ class Comment(models.Model):
     content=models.CharField(max_length=2000)
     created_date=models.DateTimeField()
     modified_date=models.DateTimeField(null=True)
+    thread_to=models.IntegerField(null=True, blank=True)
 
     class Meta: 
         db_table = 'comments'
