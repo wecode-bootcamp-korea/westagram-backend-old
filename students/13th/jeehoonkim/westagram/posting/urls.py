@@ -5,6 +5,7 @@ urlpatterns = [
     path('', PostingView.as_view()),
     path('create', PostingView.as_view()),
     path('<int:posting_id>/delete',PostingView.as_view()),
+    path('<int:posting_id>/edit', PostingView.as_view()),
     # 댓글 확인
     path('<int:posting_id>/comments', CommentView.as_view()),
     # 댓글 달기

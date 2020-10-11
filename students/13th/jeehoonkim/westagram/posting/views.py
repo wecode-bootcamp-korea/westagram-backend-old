@@ -43,6 +43,21 @@ class PostingView(View):
             return JsonResponse({'message': 'DELETED'}, status=200)
         else:
             return JsonResponse({'message': 'NO PERMISSION'}, status=400)
+    
+    def put(self, request, posting_id):
+        data=json.loads(request.body)
+        user_id=data['user_id']
+        content=data['content']
+        image=data['image']
+        modified_date=timezone.now()
+        posting=Posting.objects.filter(id=posting_id)
+
+        if posting[0].user_id == int(user_id):
+            posting.update(content=content, image=image, modified_date=modified_date)
+            return JsonResponse({'message': 'EDITED'}, status=200)
+        else:
+            return JsonResponse({'message': 'NO PERMISSION'}, status=400)
+
 
         
 class CommentView(View):
