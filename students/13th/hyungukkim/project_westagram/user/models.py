@@ -5,4 +5,3 @@ class Account(models.Model):
 	email = models.CharField(max_length=45)
 	phone = models.CharField(max_length=45)
 	password = models.CharField(max_length=45)
-# Create your models here.
