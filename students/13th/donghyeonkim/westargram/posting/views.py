@@ -24,25 +24,23 @@ class CreatePost(View):
         return JsonResponse({'MESSAGE':'SUCCESS'}, status=200)
 
 class PostView(View):
-    def get(self, request):
-        post_info = json.loads(request.body)
-        user_id   = post_info['user_id']
-
-        post_view      = []
-        posts     = Post.objects.filter(user_id=user_id).values_list()
+    def get(self, request, user_id):
+        posts_view      = []
+        posts     = Post.objects.all().values_list()
         user_name = User.objects.get(id=user_id).name
 
         for post in posts:
+            user_name       = User.objects.get(id=post[4]).name
             image_url       = post[2]
             posting_comment = post[3]
             time            = post[1]
-            post_view.append([
+            posts_view.append([
                 user_name,
                 image_url,
                 posting_comment,
                 time
             ])
-        return JsonResponse({'MESSAGE':post_view}, status=200)
+        return JsonResponse({'MESSAGE':posts_view}, status=200)
 
 class CreateComment(View):
     def post(self, request, post_id):
@@ -53,7 +51,8 @@ class CreateComment(View):
         Comment.objects.create(
             user_id = user_id,
             post_id = post_id,
-            comment = comment)
+            comment = comment
+            )
 
         return JsonResponse({'MESSAGE':'SUCCESS'}, status=200)
 
