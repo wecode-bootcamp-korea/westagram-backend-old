@@ -111,6 +111,11 @@ class LikeView(View):
         data    = json.loads(request.body)
         posting = get_object_or_404(Posting, pk=posting_id)
         user_id = data['user_id']
-
-        posting.like.add(user_id)
-        return JsonResponse({'message': 'LIKED'}, status=201)    
+        user    = User.objects.get(id=user_id)
+        
+        if user in posting.like.all():
+            posting.like.remove(user_id)
+            return JsonResponse({'message': 'CANCELED LIKE'}, status=201)
+        else:
+            posting.like.add(user_id)
+            return JsonResponse({'message': 'LIKED'}, status=201)    
