@@ -106,13 +106,27 @@ class CommentView(View):
         else:
             return JsonResponse({'message': 'NO PERMISSION'}, status=400)
 
+    def put(self, request):
+        data          = json.loads(request.body)
+        user_id       = data['user_id']
+        comment_id    = data['comment_id']
+        content       = data['content']
+        modified_date = timezone.now()
+        comments      = Comment.objects.filter(id=comment_id)
+        
+        if comments[0].user_id == int(user_id):
+            comments.update(content=content, modified_date = modified_date)
+            return JsonResponse({'message': 'EDITED'}, status=200)
+        else:
+            return JsonResponse({'message': 'NO PERMISSION'}, status=400)
+
 class LikeView(View):
     def post(self, request, posting_id):
         data    = json.loads(request.body)
         posting = get_object_or_404(Posting, pk=posting_id)
         user_id = data['user_id']
         user    = User.objects.get(id=user_id)
-        
+
         if user in posting.like.all():
             posting.like.remove(user_id)
             return JsonResponse({'message': 'CANCELED LIKE'}, status=201)

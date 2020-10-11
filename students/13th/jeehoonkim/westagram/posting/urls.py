@@ -11,6 +11,7 @@ urlpatterns = [
     # 댓글 달기
     path('<int:posting_id>/create', CommentView.as_view()),
     path('comments/delete', CommentView.as_view()),
+    path('comments/edit', CommentView.as_view()),
     path('<int:posting_id>/like', LikeView.as_view()),
     
 ]
