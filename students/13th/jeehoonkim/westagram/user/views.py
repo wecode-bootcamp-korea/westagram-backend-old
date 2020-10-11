@@ -64,11 +64,16 @@ class FollowView(View):
         follower     = data['user_id']
         follower_obj = get_object_or_404(User, pk=follower)
         
+        followed=User.objects.get(id=user_id)
         # 모든 유저의 id를 호출해서 입력받은 id와 비교. id가 없다면 에러 메시지 반환
         for i in range(User.objects.all().count()):
             if int(user_id) == list(User.objects.all().values('id'))[i]['id']:
-                follower_obj.follow.add(user_id)
-                return JsonResponse({'message': 'FOLLOWED'}, status=201)
+                if followed in follower_obj.follow.all():
+                    follower_obj.follow.remove(user_id)
+                    return JsonResponse({'message': 'UNFOLLOWED'})
+                else:
+                    follower_obj.follow.add(user_id)
+                    return JsonResponse({'message': 'FOLLOWED'}, status=201)
                 
         else:
             return JsonResponse({'message':'USER DOES NOT EXIST'}, status=404)
