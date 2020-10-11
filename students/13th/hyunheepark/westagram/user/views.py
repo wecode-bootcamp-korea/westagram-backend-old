@@ -15,23 +15,28 @@ def IndexView(request):
 
 class SignUpView(View):
     def post(self,request):
-        data     = json.loads(request.body)
-        '''name     = User.objects.create(name=data['name'])
-        email    = User.objects.create(email=data['email'])
-        password = User.objects.create(password=data['password'])'''
-        name = data['name'],
-        email = data['email'],
-        password = data['password']
-        '''        
-        if not name:
-            return JsonResponse({'MESSAGE':'KEY_ERROR'},status=400)
-        
-        else:
-            if len(password) < 8 :
-                return JsonResponse({'MESSAGE':'비밀번호를 8자 이상 입력해주세요'},status=400)
-            elif User.objects.filter(name=name).exists() == True :
-                return JsonResponse({"message" : "이미 존재하는 아이디입니다."}, status = 401)
-            elif User.objects.filter(email=email).exists() == True :
-                return JsonResponse({"message" : "이미 존재하는 아이디입니다."}, status = 401)
-'''
+        try :
+            data = json.loads(request.body)
+            if len(data['password']) < 8 :
+                return JsonResponse({'MESSAGE':'비밀번호를 8자 이상으로 입력하세요'},status=400)
+            elif '@' not in data['email'] or '.' not in data['email']:
+                return JsonResponse({'MESSAGE':'이메일을 확인하하세요'},status=400)
+            elif User.objects.filter(name=data['name']).exists():
+                return JsonResponse({'MESSAGE':'이미 가입된 정보입니다'},status=400)
+            else:
+                User(
+                    name = data['name'],
+                    phone = data['phone'],
+                    email = data['email'],
+                    password = data['password']
+                    ).save()
+                return JsonResponse({'MESSAGE':'SUCCESS'},status=200)
+
+        except:
+            return JsonResponse({'MESSAGE':'KEYERROR'},status=400)
+
+
+
+
+     
 
