@@ -53,7 +53,11 @@ class PostingView(View):
         posting       = Posting.objects.filter(id=posting_id)
 
         if posting[0].user_id == int(user_id):
-            posting.update(content = content, image = image, modified_date = modified_date)
+            posting.update(
+                content       = content,
+                image         = image,
+                modified_date = modified_date
+                )
             return JsonResponse({'message': 'EDITED'}, status=200)
         else:
             return JsonResponse({'message': 'NO PERMISSION'}, status=400)
@@ -87,7 +91,11 @@ class CommentView(View):
             return JsonResponse({'message': 'USER DOES NOT EXIST'}, status=400)
 
     def get(self, request, posting_id):
-        all_comments = Comment.objects.filter(posting_id=posting_id).values('user__name', 'content', 'created_date')
+        all_comments = Comment.objects.filter(posting_id=posting_id).values(
+            'user__name', 
+            'content', 
+            'created_date'
+            )
 
         if all_comments:
             return JsonResponse({'Comments': list(all_comments)}, status=200)
@@ -115,7 +123,10 @@ class CommentView(View):
         comments      = Comment.objects.filter(id=comment_id)
         
         if comments[0].user_id == int(user_id):
-            comments.update(content=content, modified_date = modified_date)
+            comments.update(
+                content       = content,
+                modified_date = modified_date
+                )
             return JsonResponse({'message': 'EDITED'}, status=200)
         else:
             return JsonResponse({'message': 'NO PERMISSION'}, status=400)
@@ -129,7 +140,7 @@ class LikeView(View):
 
         if user in posting.like.all():
             posting.like.remove(user_id)
-            return JsonResponse({'message': 'CANCELED LIKE'}, status=201)
+            return JsonResponse({'message': 'UNLIKED'}, status=201)
         else:
             posting.like.add(user_id)
             return JsonResponse({'message': 'LIKED'}, status=201)    
