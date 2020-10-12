@@ -5,7 +5,7 @@ import datetime
 
 from django.views import View
 from auth.models  import Users
-from post.models  import Posts, PostImage, Comments
+from post.models  import *
 from django.http  import JsonResponse
 from django.db    import IntegrityError
 from utils        import signin_decorator
@@ -75,3 +75,22 @@ class Comment(View):
                 'comment_id',
                 'user__name'))
         return JsonResponse(comments, safe=False)
+
+class Like(View):
+    @signin_decorator
+    def post(self, request):
+        data = json.loads(request.body)
+
+        try:
+            PostLikes.objects.create(
+                user       = request.user,
+                post_id    = data.get('post_id'),
+            )
+
+            return JsonResponse({"message": "LIKE_SUCCESS"}, status=200)
+
+        except KeyError:
+            return JsonResponse({"message": "KEY_ERROR"}, status=400)
+
+        except IntegrityError:
+            return JsonResponse({"message": "KEY_ERROR"}, status=400)
