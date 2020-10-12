@@ -34,11 +34,11 @@ class SignUpView(View):
             return JsonResponse({'message': 'USER ALREADY EXISTS'}, status=400)
         
         hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
-        #return JsonResponse({'ee':f"{hashed_password}"})
+        decode_hashed_pw = hashed_password.decode('utf-8')
         User.objects.create(
             email    = email,
             name     = name,
-            password = hashed_password,
+            password = decode_hashed_pw,
             phone    = phone
         )
 
@@ -46,17 +46,22 @@ class SignUpView(View):
 
 class SignInView(View):
     def post(self, request):
-        data     = json.loads(request.body)
-        email    = data['email']
-        password = data['password']
-        phone    = data['phone']
-        
+        data            = json.loads(request.body)
+        email           = data['email']
+        password        = data['password']
+        phone           = data['phone']
+
         if (phone or email) and password:
-           try:
-                User.objects.get(Q(phone=phone) | Q(email=email), password=password)
-           except User.DoesNotExist:
+            try:
+                User.objects.get(Q(phone=phone) | Q(email=email))
+                hashed_password = User.objects.get(Q(email=email) | Q(phone=phone)).password
+                if bcrypt.checkpw(password.encode('utf-8'), hashed_password.encode('utf-8'))==False:
+                    raise ValueError
+            except User.DoesNotExist:
                 return JsonResponse({'message': 'INVALID_USER'}, status=401)
-           else:
+            except ValueError:
+                return JsonResponse({'message': 'WRONG PASSWORD'}, status=401)
+            else:
                 return JsonResponse({'message': 'SUCCESS'}, status=200)
         else:
             return JsonResponse({'message': 'KEY_ERROR'}, status=400)
