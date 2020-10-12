@@ -1,5 +1,5 @@
 # autopep8: off
-from django.db import models
+from django.db   import models
 from auth.models import Users
 
 class Follows(models.Model):

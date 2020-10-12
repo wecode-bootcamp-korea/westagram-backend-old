@@ -1,12 +1,13 @@
+# autopep8: off
 import os
 import jwt
 import json
 
-from pathlib import Path
-from django.http import JsonResponse
+from pathlib                import Path
+from django.http            import JsonResponse
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.exceptions import ImproperlyConfigured
-from auth.models import Users
+from auth.models            import Users
 
 BASE_DIR = Path(__file__).resolve().parent
 
@@ -26,13 +27,13 @@ def get_secret(key, secrets=secrets):
 def signin_decorator(func):
     def wrapper(self, request, *args, **kwargs):
         try:
-            token = request.headers.get('Auth', None)
-            key = get_secret('JWT_KEY')
+            token     = request.headers.get('Auth', None)
+            key       = get_secret('JWT_KEY')
             algorithm = get_secret('JWT_ALGORITHM')
 
             if token:
-                decode = jwt.decode(token, key, algorithm=algorithm)
-                user = Users.objects.get(id=decode['user'])
+                decode       = jwt.decode(token, key, algorithm=algorithm)
+                user         = Users.objects.get(id=decode['user'])
                 request.user = user
         except jwt.DecodeError:
             return JsonResponse({"message": "INVALID_TOKEN"}, status=403)

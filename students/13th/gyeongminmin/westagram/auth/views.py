@@ -27,8 +27,7 @@ def get_secret(key, secrets=secrets):
 
 class SignUp(View):
     def post(self, request):
-        data = json.loads(request.body)
-
+        data  = json.loads(request.body)
         regex = '^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w{2,3}$'
         if not (re.search(regex, data.get('email'))):
             return JsonResponse({"message": "INVALID_EMAIL"}, status=400)
@@ -48,10 +47,10 @@ class SignUp(View):
             password_crypt = password_crypt.decode('utf-8')
 
             Users(
-                email=data.get('email'),
-                password=password_crypt,
-                name=data.get('name'),
-                phone_number=data.get('phone_number'),
+                email        = data.get('email'),
+                password     = password_crypt,
+                name         = data.get('name'),
+                phone_number = data.get('phone_number'),
             ).save()
 
             return JsonResponse({"message": "SUCCESS"}, status=200)
@@ -73,9 +72,9 @@ class SignIn(View) :
                 user = Users.objects.get(email=data.get('email'))
 
             if bcrypt.checkpw(data.get('password').encode('UTF-8'), user.password.encode('UTF-8')):
-                key = get_secret('JWT_KEY')
+                key       = get_secret('JWT_KEY')
                 algorithm = get_secret('JWT_ALGORITHM')
-                token = jwt.encode({'user' : user.id},key, algorithm = algorithm).decode('UTF-8')
+                token     = jwt.encode({'user' : user.id},key, algorithm = algorithm).decode('UTF-8')
                 return JsonResponse({"token": token}, status=200)
             else :
                 return JsonResponse({"message": "INVALID_USER"}, status=401)
