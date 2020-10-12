@@ -9,10 +9,10 @@ from user.models    import User
 class PostView(View):
     def post(self,request):
        # try:
-        data = json.loads(requst.body)
-        User (
-                user = data['user'],
-                img_url = data['img_url']
-                ).save()
-        return JsonResponse({'message':data},status=200)
+        data = json.loads(request.body)
+        user = data['user']
+        a = User.objects.get(name=user)
+        #return JsonResponse({'message':user},status=201)
+
+        return JsonResponse({"user_name": a.name}, status=201)
 

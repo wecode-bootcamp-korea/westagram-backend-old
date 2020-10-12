@@ -78,7 +78,7 @@ WSGI_APPLICATION = 'westagram.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'westagram',
+        'NAME': 'westagram_backend',
         'USER':'root',
         'PASSWORD':'',
         'HOST':'127.0.0.1',
