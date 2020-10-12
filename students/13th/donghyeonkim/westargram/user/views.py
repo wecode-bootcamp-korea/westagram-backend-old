@@ -85,7 +85,6 @@ class FollowView(View):
         to_user.follows.add(from_user)
         return JsonResponse({"MESSAGE":"follow를 눌렀습니다."}, status=200)
 
-
 def check_account_password_key(account, password):
     if account and password:
         return True

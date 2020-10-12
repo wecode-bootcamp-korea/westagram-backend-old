@@ -21,7 +21,7 @@ class CreatePost(View):
             image_url       = image_url,
             posting_comment = posting_comment)
 
-        return JsonResponse({'MESSAGE':'SUCCESS'}, status=200)
+        return JsonResponse({'MESSAGE':'SUCCESS'}, status=201)
 
 class PostView(View):
     def get(self, request, user_id):
@@ -49,10 +49,26 @@ class PostView(View):
         try:
             post = Post.objects.get(pk=post_id)
             post.delete()
-            return JsonResponse({'MESSAGE':"게시물을 삭제하였습니다."}, status=400)
+            return JsonResponse({'MESSAGE':"게시물을 삭제하였습니다."}, status=204)
         except Post.DoesNotExist:
-            return JsonResponse({'MESSAGE':"게시물이 존재하지 않습니다."}, status=400)
+            return JsonResponse({'MESSAGE':"게시물이 존재하지 않습니다."}, status=404)
             
+    def put(self, request, user_id):
+        post_info       = json.loads(request.body)
+        post_id         = post_info['post_id']
+        image_url       = post_info['image_url']
+        posting_comment = post_info['posting_comment']
+        
+        try:
+            post = Post.objects.filter(pk=post_id)
+            post.update(
+                user_id         = user_id,
+                image_url       = image_url,
+                posting_comment = posting_comment
+            )
+            return JsonResponse({'MESSAGE':"게시물을 수정하였습니다."}, status=204)
+        except Post.DoesNotExist:
+            return JsonResponse({'MESSAGE':"게시물이 존재하지 않습니다."}, status=404)
 
 class CreateComment(View):
     def post(self, request, post_id):
@@ -66,7 +82,7 @@ class CreateComment(View):
             comment = comment
             )
 
-        return JsonResponse({'MESSAGE':'SUCCESS'}, status=200)
+        return JsonResponse({'MESSAGE':'SUCCESS'}, status=201)
 
 class CommentView(View):
     def get(self, request, post_id):
@@ -91,6 +107,6 @@ class CommentView(View):
         try:
             comment = Comment.objects.get(pk=comment_id)
             comment.delete()
-            return JsonResponse({'MESSAGE':"댓글을 삭제하였습니다."}, status=200)
+            return JsonResponse({'MESSAGE':"댓글을 삭제하였습니다."}, status=204)
         except Comment.DoesNotExist:
-            return JsonResponse({'MESSAGE':"댓글이 존재하지 않습니다."}, status=400)
+            return JsonResponse({'MESSAGE':"댓글이 존재하지 않습니다."}, status=404)
