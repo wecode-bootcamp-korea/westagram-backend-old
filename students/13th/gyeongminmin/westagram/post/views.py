@@ -109,7 +109,6 @@ class Comment(View):
                 content    = data.get('content'),
                 user       = request.user,
                 post_id    = data.get('post_id'),
-                comment_id = data.get('comment_id')
             )
 
             return JsonResponse({"message": "COMMENT_SUCCESS"}, status=200)
@@ -179,6 +178,83 @@ class Comment(View):
         except ObjectDoesNotExist:
             return JsonResponse({"message": "COMMENT_DOES_NOT_EXIST"}, status=404)
 
+class ReComment(View):
+    @signin_decorator
+    def post(self, request):
+        data = json.loads(request.body)
+
+        try:
+            new_comment = Comments.objects.create(
+                content    = data.get('content'),
+                user       = request.user,
+                comment_id    = data.get('comment_id'),
+            )
+
+            return JsonResponse({"message": "RE_COMMENT_SUCCESS"}, status=200)
+
+        except KeyError:
+            return JsonResponse({"message": "KEY_ERROR"}, status=400)
+
+        except IntegrityError:
+            return JsonResponse({"message": "KEY_ERROR"}, status=400)
+
+    def get(self, request):
+        comments = list(ReComments.objects
+        .filter(comment_id = request.GET['comment_id'])
+        .values('id',
+                'content',
+                'write_time',
+                'update_time',
+                'user_id',
+                'comment_id',
+                'user__name'))
+        return JsonResponse(comments, safe=False)
+
+    @signin_decorator
+    def put(self, request):
+        data = json.loads(request.body)
+        try:
+            instance = ReComments.objects.get(id=data.get('recomment_id'))
+            writer_id = instance.user_id
+
+            if writer_id != request.user.id:
+                return JsonResponse({"message" : "NO_PERMISSION"}, status=403)
+            else :
+                instance.content = data.get('content')
+                instance.save()
+                return JsonResponse({"message" : "UPDATE_SUCCESS"}, status=200)
+
+        except KeyError:
+            return JsonResponse({"message": "KEY_ERROR"}, status=400)
+
+        except IntegrityError:
+            return JsonResponse({"message": "KEY_ERROR"}, status=400)
+
+        except ObjectDoesNotExist:
+            return JsonResponse({"message": "RE_COMMENT_DOES_NOT_EXIST"}, status=404)
+
+
+    @signin_decorator
+    def delete(self, request):
+        data = json.loads(request.body)
+        try:
+            instance = ReComments.objects.get(id=data.get('recomment_id'))
+            writer_id = instance.user_id
+
+            if writer_id != request.user.id:
+                return JsonResponse({"message" : "NO_PERMISSION"}, status=403)
+            else :
+                instance.delete()
+                return JsonResponse({"message" : "DELETE_SUCCESS"}, status=200)
+
+        except KeyError:
+            return JsonResponse({"message": "KEY_ERROR"}, status=400)
+
+        except IntegrityError:
+            return JsonResponse({"message": "KEY_ERROR"}, status=400)
+
+        except ObjectDoesNotExist:
+            return JsonResponse({"message": "RE_COMMENT_DOES_NOT_EXIST"}, status=404)
 
 class Like(View):
     @signin_decorator

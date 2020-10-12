@@ -7,10 +7,10 @@ class Follows(models.Model):
     followed_by = models.ForeignKey(Users, related_name='followed_by', on_delete=models.CASCADE)
 
 class Posts(models.Model):
-    content = models.CharField(max_length=500)
-    write_time = models.DateTimeField(auto_now_add=True)
+    content     = models.CharField(max_length=500)
+    write_time  = models.DateTimeField(auto_now_add=True)
     update_time = models.DateTimeField(auto_now=True)
-    user = models.ForeignKey(Users, on_delete=models.CASCADE)
+    user        = models.ForeignKey(Users, on_delete=models.CASCADE)
 
     def get_json(self):
         return {
@@ -28,12 +28,18 @@ class PostLikes(models.Model):
 
 class Comments(models.Model):
     content     = models.CharField(max_length=200)
-    write_time = models.DateTimeField(auto_now_add=True)
+    write_time  = models.DateTimeField(auto_now_add=True)
     update_time = models.DateTimeField(auto_now=True)
-    user     = models.ForeignKey(Users, on_delete=models.CASCADE)
-    post    = models.ForeignKey(Posts, on_delete=models.CASCADE)
-    comment = models.ForeignKey('self', on_delete=models.CASCADE, null=True)
+    user        = models.ForeignKey(Users, on_delete=models.CASCADE)
+    post        = models.ForeignKey(Posts, on_delete=models.CASCADE)
+    comment     = models.ForeignKey('self', on_delete=models.CASCADE, null=True)
 
+class ReComments(models.Model):
+    content     = models.CharField(max_length=200)
+    write_time  = models.DateTimeField(auto_now_add=True)
+    update_time = models.DateTimeField(auto_now=True)
+    user        = models.ForeignKey(Users, on_delete=models.CASCADE)
+    comment     = models.ForeignKey(Comments, on_delete=models.CASCADE)
 class PostImage(models.Model):
-    url = models.TextField()
+    url  = models.TextField()
     post = models.ForeignKey(Posts, on_delete=models.CASCADE, related_name='image')
