@@ -1,5 +1,6 @@
 import json
 import re
+import bcrypt
 
 from django.views     import View
 from django.shortcuts import get_object_or_404
@@ -17,23 +18,27 @@ class SignUpView(View):
         phone    = data['phone']
 
         email_pattern = '^\w+([-_.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$'
+        # 8자 이상, 최소 하나의 문자, 숫자, 특수문자
+        password_pattern = '^(?=.*[A-Za-z])(?=.*\d)(?=.*[$@$!%*#?&])[A-Za-z\d$@$!%*#?&]{8,}$'
         
         if password == '' or email == '':
             return JsonResponse({'message': 'KEY_ERROR'}, status=400)
         
-        if len(password)<8: 
+        if re.match(password_pattern, password) == None: 
             return JsonResponse({'message': 'PASSWORD IS NOT VALID'}, status=400)
-
+        
         if re.match(email_pattern, email) == None:
             return JsonResponse({'message': 'EMAIL IS NOT VALID'}, status=400)
 
         if User.objects.filter(Q(email=email) | Q(name=name) | Q(phone=phone)).exists(): 
             return JsonResponse({'message': 'USER ALREADY EXISTS'}, status=400)
         
+        hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+        #return JsonResponse({'ee':f"{hashed_password}"})
         User.objects.create(
             email    = email,
             name     = name,
-            password = password,
+            password = hashed_password,
             phone    = phone
         )
 
