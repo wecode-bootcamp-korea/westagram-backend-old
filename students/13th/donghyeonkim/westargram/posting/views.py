@@ -3,11 +3,11 @@ import json
 
 from django.db.models import Q
 from django.http      import JsonResponse
+from django.shortcuts import get_object_or_404
 from django.views     import View
 
 from user.models      import User
-from posting.models   import Post
-from posting.models   import Comment
+from posting.models   import Post, Comment
 
 class CreatePost(View):
     def post(self, request):
@@ -41,6 +41,18 @@ class PostView(View):
                 time
             ])
         return JsonResponse({'MESSAGE':posts_view}, status=200)
+    
+    def delete(self, request, user_id):
+        post_info = json.loads(request.body)
+        post_id   = post_info['post_id']
+
+        try:
+            post = Post.objects.get(pk=post_id)
+            post.delete()
+            return JsonResponse({'MESSAGE':"게시물을 삭제하였습니다."}, status=400)
+        except Post.DoesNotExist:
+            return JsonResponse({'MESSAGE':"게시물이 존재하지 않습니다."}, status=400)
+            
 
 class CreateComment(View):
     def post(self, request, post_id):
@@ -71,3 +83,14 @@ class CommentView(View):
                 time
             ])
         return JsonResponse({'MESSAGE':comment_view}, status=200)
+    
+    def delete(self, request, post_id):
+        comment_info = json.loads(request.body)
+        comment_id   = comment_info['comment_id']
+
+        try:
+            comment = Comment.objects.get(pk=comment_id)
+            comment.delete()
+            return JsonResponse({'MESSAGE':"댓글을 삭제하였습니다."}, status=200)
+        except Comment.DoesNotExist:
+            return JsonResponse({'MESSAGE':"댓글이 존재하지 않습니다."}, status=400)
