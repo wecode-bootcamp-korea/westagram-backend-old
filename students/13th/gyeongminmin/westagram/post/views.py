@@ -54,6 +54,30 @@ class Post(View):
         return JsonResponse(posts, safe=False)
 
     @signin_decorator
+    def put(self, request):
+        data = json.loads(request.body)
+        try:
+            instance = Posts.objects.get(id=data.get('post_id'))
+            writer_id = instance.user_id
+
+            if writer_id != request.user.id:
+                return JsonResponse({"message" : "NO_PERMISSION"}, status=403)
+            else :
+                instance.content = data.get('content')
+                instance.save()
+                return JsonResponse({"message" : "UPDATE_SUCCESS"}, status=200)
+
+        except KeyError:
+            return JsonResponse({"message": "KEY_ERROR"}, status=400)
+
+        except IntegrityError:
+            return JsonResponse({"message": "KEY_ERROR"}, status=400)
+
+        except ObjectDoesNotExist:
+            return JsonResponse({"message": "POST_DOES_NOT_EXIST"}, status=404)
+
+
+    @signin_decorator
     def delete(self, request):
         data = json.loads(request.body)
         try:
@@ -108,6 +132,30 @@ class Comment(View):
                 'comment_id',
                 'user__name'))
         return JsonResponse(comments, safe=False)
+
+    @signin_decorator
+    def put(self, request):
+        data = json.loads(request.body)
+        try:
+            instance = Comments.objects.get(id=data.get('comment_id'))
+            writer_id = instance.user_id
+
+            if writer_id != request.user.id:
+                return JsonResponse({"message" : "NO_PERMISSION"}, status=403)
+            else :
+                instance.content = data.get('content')
+                instance.save()
+                return JsonResponse({"message" : "UPDATE_SUCCESS"}, status=200)
+
+        except KeyError:
+            return JsonResponse({"message": "KEY_ERROR"}, status=400)
+
+        except IntegrityError:
+            return JsonResponse({"message": "KEY_ERROR"}, status=400)
+
+        except ObjectDoesNotExist:
+            return JsonResponse({"message": "COMMENT_DOES_NOT_EXIST"}, status=404)
+
 
     @signin_decorator
     def delete(self, request):
