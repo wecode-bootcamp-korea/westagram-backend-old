@@ -6,4 +6,5 @@ urlpatterns = [
     path('comment/', views.Comment.as_view()),
     path('like/', views.Like.as_view()),
     path('follow/', views.Follow.as_view()),
+    path('recomment/', views.ReComment.as_view()),
 ]
