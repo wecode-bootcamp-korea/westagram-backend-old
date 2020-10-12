@@ -68,7 +68,7 @@ class SignIn(View) :
 
         try:
             if not Users.objects.filter(email=data.get('email')).exists():
-                return JsonResponse({"message": "INVALID_USER"}, status=400)
+                return JsonResponse({"message": "INVALID_USER"}, status=401)
             else :
                 user = Users.objects.get(email=data.get('email'))
 
@@ -78,7 +78,7 @@ class SignIn(View) :
                 token = jwt.encode({'user' : user.id},key, algorithm = algorithm).decode('UTF-8')
                 return JsonResponse({"token": token}, status=200)
             else :
-                return JsonResponse({"message": "INVALID_USER"}, status=400)
+                return JsonResponse({"message": "INVALID_USER"}, status=401)
 
         except KeyError:
             return JsonResponse({"message": "KEY_ERROR"}, status=400)
