@@ -20,3 +20,8 @@ class Comments(models.Model):
     update_time = models.DateField(auto_now=False, auto_now_add=False)
     user_id     = models.ForeignKey(Users, on_delete=models.CASCADE)
     post_id     = models.ForeignKey(Posts, on_delete=models.CASCADE)
+    comment_id  = models.ForeignKey('self', on_delete=models.CASCADE, null=True)
+
+class PostImage(models.Model):
+    url = models.TextField()
+    post_id = models.ForeignKey(Posts, on_delete=models.CASCADE)
