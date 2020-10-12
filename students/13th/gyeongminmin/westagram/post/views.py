@@ -64,6 +64,14 @@ class Comment(View):
             return JsonResponse({"message": "KEY_ERROR"}, status=400)
 
     def get(self, request):
-
-        comments = list(Comments.objects.filter(post_id = request.GET['post_id']).values())
+        comments = list(Comments.objects
+        .filter(post_id = request.GET['post_id'])
+        .values('id',
+                'content',
+                'write_time',
+                'update_time',
+                'user_id',
+                'post_id',
+                'comment_id',
+                'user__name'))
         return JsonResponse(comments, safe=False)
