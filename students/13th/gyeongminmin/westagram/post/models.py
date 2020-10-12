@@ -3,7 +3,7 @@ from django.db import models
 from auth.models import Users
 
 class Follows(models.Model):
-    user_id     = models.ForeignKey(Users, related_name='user', on_delete=models.CASCADE)
+    user        = models.ForeignKey(Users, related_name='user', on_delete=models.CASCADE)
     followed_by = models.ForeignKey(Users, related_name='followed_by', on_delete=models.CASCADE)
 
 class Posts(models.Model):

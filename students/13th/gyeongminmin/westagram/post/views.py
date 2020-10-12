@@ -36,7 +36,18 @@ class Post(View):
         except IntegrityError:
             return JsonResponse({"message": "KEY_ERROR"}, status=400)
 
+    @signin_decorator
     def get(self, request):
+        user_id = request.user.id
+        follow_list = []
+
+        follows = Follows.objects.filter(followed_by=user_id)
+
+        for follow in follows:
+            follow_list.append(follow.user_id)
+
+        print(follow_list)
+
         posts = []
         for post in Posts.objects.all():
             posts.append(post.get_json())
@@ -82,12 +93,43 @@ class Like(View):
         data = json.loads(request.body)
 
         try:
-            PostLikes.objects.create(
-                user       = request.user,
-                post_id    = data.get('post_id'),
-            )
+            user    = request.user
+            post_id = data.get('post_id')
+            if not PostLikes.objects.filter(user = user, post_id = post_id).exists() :
+                PostLikes.objects.create(
+                    user       = user,
+                    post_id    = post_id,
+                )
+                return JsonResponse({"message": "LIKE_SUCCESS"}, status=200)
+            else :
+                return JsonResponse({"message": "ALLREADY_LIKED"}, status=400) 
 
-            return JsonResponse({"message": "LIKE_SUCCESS"}, status=200)
+
+
+        except KeyError:
+            return JsonResponse({"message": "KEY_ERROR"}, status=400)
+
+        except IntegrityError:
+            return JsonResponse({"message": "KEY_ERROR"}, status=400)
+
+class Follow(View):
+    @signin_decorator
+    def post(self, request):
+        data = json.loads(request.body)
+
+        try:
+            user_id     = data.get('user_id'),
+            followed_by = request.user.id,
+            if not Follows.objects.filter(user_id=user_id, followed_by=followed_by).exists():
+                Follows.objects.create(
+                    user_id     = user_id,
+                    followed_by = followed_by,
+                )
+                return JsonResponse({"message": "FOLLOW_SUCCESS"}, status=200)
+
+            else :
+                return JsonResponse({"message": "ALLREADY_FOLLOWING"}, status=400) 
+
 
         except KeyError:
             return JsonResponse({"message": "KEY_ERROR"}, status=400)
