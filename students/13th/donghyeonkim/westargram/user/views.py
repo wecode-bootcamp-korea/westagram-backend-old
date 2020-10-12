@@ -1,5 +1,7 @@
 import re
 import json
+import bcrypt
+import jwt
 
 from django.db.models import Q
 from django.http      import JsonResponse
@@ -36,6 +38,7 @@ class RegisterView(View):
             return JsonResponse(
                 {'MESSAGE':'This name already exists.'}, status=400)
 
+        password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
         User.objects.create(
             name     = name, 
             account  = account,
@@ -57,7 +60,7 @@ class LoginView(View):
 
         if check_login(account, password):
             return JsonResponse(
-                {'MESSAGE':'SUCCESS'}, status=200)
+                {'MESSAGE': "SUCCESS"}, status=200)
         else:
             return JsonResponse(
                 {'MESSAGE':'INVALID_USER'}, status=401)
@@ -120,11 +123,11 @@ def name_duplicate_check(name):
     return False
 
 def check_login(account, password):
-    if User.objects.filter(Q(account=account)) and (
-       User.objects.filter(Q(password=password))):
-       return True
-    elif User.objects.filter(Q(name=account)) and (
-         User.objects.filter(Q(password=password))):
-        return True
-    return False
-    
+    try:
+        hashed_password = User.objects.get(account=account).password
+    except User.DoesNotExist:
+        hashed_password = User.objects.get(name=account).password
+        return JsonResponse(
+                {'MESSAGE':'test'}, status=401)
+
+    return bcrypt.checkpw(password.encode('utf-8'), hashed_password)
