@@ -3,12 +3,13 @@ import json
 import jwt
 import datetime
 
-from django.views import View
-from auth.models  import Users
-from post.models  import *
-from django.http  import JsonResponse
-from django.db    import IntegrityError
-from utils        import signin_decorator
+from django.views           import View
+from auth.models            import Users
+from post.models            import *
+from django.http            import JsonResponse
+from django.db              import IntegrityError
+from utils                  import signin_decorator
+from django.core.exceptions import ObjectDoesNotExist
 
 
 class Post(View):
@@ -52,6 +53,28 @@ class Post(View):
             posts.append(post.get_json())
         return JsonResponse(posts, safe=False)
 
+    @signin_decorator
+    def delete(self, request):
+        data = json.loads(request.body)
+        try:
+            instance = Posts.objects.get(id=data.get('post_id'))
+            writer_id = instance.user_id
+
+            if writer_id != request.user.id:
+                return JsonResponse({"message" : "NO_PERMISSION"}, status=403)
+            else :
+                instance.delete()
+                return JsonResponse({"message" : "DELETE_SUCCESS"}, status=200)
+
+        except KeyError:
+            return JsonResponse({"message": "KEY_ERROR"}, status=400)
+
+        except IntegrityError:
+            return JsonResponse({"message": "KEY_ERROR"}, status=400)
+
+        except ObjectDoesNotExist:
+            return JsonResponse({"message": "POST_DOES_NOT_EXIST"}, status=404)
+
 class Comment(View):
     @signin_decorator
     def post(self, request):
@@ -85,6 +108,29 @@ class Comment(View):
                 'comment_id',
                 'user__name'))
         return JsonResponse(comments, safe=False)
+
+    @signin_decorator
+    def delete(self, request):
+        data = json.loads(request.body)
+        try:
+            instance = Comments.objects.get(id=data.get('comment_id'))
+            writer_id = instance.user_id
+
+            if writer_id != request.user.id:
+                return JsonResponse({"message" : "NO_PERMISSION"}, status=403)
+            else :
+                instance.delete()
+                return JsonResponse({"message" : "DELETE_SUCCESS"}, status=200)
+
+        except KeyError:
+            return JsonResponse({"message": "KEY_ERROR"}, status=400)
+
+        except IntegrityError:
+            return JsonResponse({"message": "KEY_ERROR"}, status=400)
+
+        except ObjectDoesNotExist:
+            return JsonResponse({"message": "COMMENT_DOES_NOT_EXIST"}, status=404)
+
 
 class Like(View):
     @signin_decorator
