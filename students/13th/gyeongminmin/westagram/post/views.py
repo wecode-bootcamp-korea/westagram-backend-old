@@ -47,9 +47,8 @@ class Post(View):
             follow_list.append(follow.user_id)
 
         print(follow_list)
-
         posts = []
-        for post in Posts.objects.all():
+        for post in Posts.objects.filter(user_id__in=follow_list):
             posts.append(post.get_json())
         return JsonResponse(posts, safe=False)
 
@@ -118,8 +117,8 @@ class Follow(View):
         data = json.loads(request.body)
 
         try:
-            user_id     = data.get('user_id'),
-            followed_by = request.user.id,
+            user_id     = data.get('user_id')
+            followed_by = request.user
             if not Follows.objects.filter(user_id=user_id, followed_by=followed_by).exists():
                 Follows.objects.create(
                     user_id     = user_id,
@@ -129,7 +128,6 @@ class Follow(View):
 
             else :
                 return JsonResponse({"message": "ALLREADY_FOLLOWING"}, status=400) 
-
 
         except KeyError:
             return JsonResponse({"message": "KEY_ERROR"}, status=400)
