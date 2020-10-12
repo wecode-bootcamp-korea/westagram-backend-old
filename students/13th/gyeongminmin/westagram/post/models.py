@@ -12,6 +12,16 @@ class Posts(models.Model):
     update_time = models.DateTimeField(auto_now=True)
     user = models.ForeignKey(Users, on_delete=models.CASCADE)
 
+    def get_json(self):
+        return {
+            'id'         : self.id,
+            'content'    : self.content,
+            'write_time' : self.write_time,
+            'update_time': self.update_time,
+            'user_id'    : self.user_id,
+            'urls'       : [{'id': url.id, 'url':url.url} for url in PostImage.objects.filter(post=self)]
+        }
+
 class PostLikes(models.Model):
     user = models.ForeignKey(Users, on_delete=models.CASCADE)
     post = models.ForeignKey(Posts, on_delete=models.CASCADE)
@@ -26,4 +36,4 @@ class Comments(models.Model):
 
 class PostImage(models.Model):
     url = models.TextField()
-    post = models.ForeignKey(Posts, on_delete=models.CASCADE)
+    post = models.ForeignKey(Posts, on_delete=models.CASCADE, related_name='image')
