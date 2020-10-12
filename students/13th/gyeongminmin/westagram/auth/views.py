@@ -8,7 +8,7 @@ import jwt
 from pathlib                import Path
 from django.views           import View
 from auth.models            import Users
-from django.http            import HttpResponse, JsonResponse
+from django.http            import JsonResponse
 from django.db              import IntegrityError
 from django.core.exceptions import ImproperlyConfigured
 
