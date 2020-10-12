@@ -184,7 +184,7 @@ class ReComment(View):
         data = json.loads(request.body)
 
         try:
-            new_comment = Comments.objects.create(
+            new_comment = ReComments.objects.create(
                 content    = data.get('content'),
                 user       = request.user,
                 comment_id    = data.get('comment_id'),
