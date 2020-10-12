@@ -29,8 +29,11 @@ class SignUpView(View): #회원가입
 		if (len(data['password']) < 8):
 			return JsonResponse({'MESSAGE':'PASSWORD_VALIDATION'}, status = 400)
 
-		name = Account.objects.create(
-			name = data['name'], email = data['email'], phone = data['phone'], password = data['password']
+		Account.objects.create(
+			name = data['name'], 
+			email = data['email'], 
+			phone = data['phone'], 
+			password = data['password']
 		)
 
 		return JsonResponse({'MESSAGE':'SUCCESS'}, status = 200)
@@ -42,7 +45,6 @@ class SignUpView(View): #회원가입
 class SignInView(View): #로그인
 	def post(self, request):
 		data = json.loads(request.body)
-		account_data = Account.objects.values()
 		name = data['name']
 		email = data['email']
 		phone = data['phone']
