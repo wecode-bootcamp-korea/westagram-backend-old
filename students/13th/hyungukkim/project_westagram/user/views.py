@@ -3,7 +3,7 @@ import re
 
 from django.views import View
 from django.http import JsonResponse
-from user.models import Account
+from user.models import Account, Relation
 
 class SignUpView(View): #회원가입
 	def post(self, request):
@@ -78,5 +78,29 @@ class SignInView(View): #로그인
 
 		return JsonResponse({'MESSAGE':'SUCCESS'}, status = 200)
 
+class FollowAccount(View): # 팔로우 등록
+	def post(self, request):
+		data = json.loads(request.body)
 
-	
+		if Relation.objects.filter(from_account = data['from_account_id'], to_account = data['to_account_id']).exists():
+				follow = Relation.objects.filter(from_account = data['from_account_id'], to_account = data['to_account_id'])
+				follow.delete()
+		else:
+			Relation.objects.create(
+				from_account = Account(id = data['from_account_id']),
+				to_account = Account(id = data['to_account_id'])
+			)
+
+		from_followees = Relation.objects.filter(from_account = data['from_account_id']).count()
+		to_followers = Relation.objects.filter(to_account = data['to_account_id']).count()
+
+		from_account = Account.objects.filter(id = data['from_account_id']).get()
+		from_account.followees = from_followees
+		from_account.save()
+
+		to_account = Account.objects.filter(id = data['to_account_id']).get()
+		to_account.followers = to_followers
+		to_account.save()
+
+		return JsonResponse({'MESSAGE':'SUCCESS'}, status = 200)
+		
