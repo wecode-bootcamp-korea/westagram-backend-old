@@ -42,6 +42,16 @@ class DeletePost(View): # 게시물 삭제
 
         return JsonResponse({'MESSAGE':'SUCCESS'}, status = 200)
 
+class UpdatePost(View): # 게시물 수정
+    def put(self, request):
+        data = json.loads(request.body)
+
+        post = Post.objects.filter(id = data['id']).get()
+        post.contents = data['contents']
+        post.save()
+
+        return JsonResponse({'MESSAGE':'SUCCESS'}, status = 200)
+
 class RegisterComment(View): # 댓글 등록
     def post(self, request):
         data = json.loads(request.body)
@@ -65,7 +75,7 @@ class DeleteComment(View): # 댓글 삭제
     def delete(self, request):
         data = json.loads(request.body)
 
-        Comment.objects.filter(id = data['id']).delete()
+        Comment.objects.filter(account = data['account_id'], post = data['post_id']).delete()
 
         return JsonResponse({'MESSAGE':'SUCCESS'}, status = 200)
 
