@@ -57,19 +57,19 @@ class RegisterLikes(View): # 좋아요 등록
     def post(self, request):
         data = json.loads(request.body)
 
-        posting = Post.objects.get(id = data['post_id'])
         if Likes.objects.filter(account = data['account_id'], post = data['post_id']).exists():
             like = Likes.objects.filter(account = data['account_id'], post = data['post_id'])
             like.delete()
-            posting.likes_count = posting.likes_count - 1
         else:
             Likes.objects.create(
                 account = Account(id = data['account_id']),
                 post = Post(id = data['post_id']),
             )
-            posting.likes_count = posting.likes_count + 1
         
-        posting.save()
+        count = Likes.objects.filter(post = data['post_id']).count()
+        likes_cnt = Post.objects.filter(id = data['post_id']).get()
+        likes_cnt.likes_count = count
+        likes_cnt.save()
 
         return JsonResponse({'MESSAGE':'SUCCESS'}, status = 200)
 

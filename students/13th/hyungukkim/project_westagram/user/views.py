@@ -1,5 +1,6 @@
 import json
 import re
+import bcrypt
 
 from django.views import View
 from django.http import JsonResponse
@@ -29,11 +30,13 @@ class SignUpView(View): #회원가입
 		if (len(data['password']) < 8):
 			return JsonResponse({'MESSAGE':'PASSWORD_VALIDATION'}, status = 400)
 
+		password = data['password']
+		hashed_pw = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
 		Account.objects.create(
 			name = data['name'], 
 			email = data['email'], 
 			phone = data['phone'], 
-			password = data['password']
+			password = hashed_pw.decode('utf-8')
 		)
 
 		return JsonResponse({'MESSAGE':'SUCCESS'}, status = 200)
@@ -65,15 +68,15 @@ class SignInView(View): #로그인
 
 		if name != '':
 			user_data = Account.objects.get(name = name)
-			if user_data.password != password:
+			if bcrypt.checkpw(password.encode('utf-8'), user_data.password.encode('utf-8')) == False:
 				return JsonResponse({'MESSAGE':'INVALID_USER'}, status = 401)
 		elif email != '':
 			user_data = Account.objects.get(email = email)
-			if user_data.password != password:
+			if bcrypt.checkpw(password.encode('utf-8'), user_data.password.encode('utf-8')) == False:
 				return JsonResponse({'MESSAGE':'INVALID_USER'}, status = 401)
 		elif phone != '':
 			user_data = Account.objects.get(phone = phone)
-			if user_data.password != password:
+			if bcrypt.checkpw(password.encode('utf-8'), user_data.password.encode('utf-8')) == False:
 				return JsonResponse({'MESSAGE':'INVALID_USER'}, status = 401)		
 
 		return JsonResponse({'MESSAGE':'SUCCESS'}, status = 200)
