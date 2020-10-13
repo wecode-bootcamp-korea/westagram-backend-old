@@ -6,6 +6,7 @@ import jwt
 from django.db.models import Q
 from django.http      import JsonResponse
 from django.views     import View
+from westargram       import settings 
 
 from user.models      import User
 
@@ -39,6 +40,7 @@ class RegisterView(View):
                 {'MESSAGE':'This name already exists.'}, status=400)
 
         password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+        password = password.decode('utf-8')
         User.objects.create(
             name     = name, 
             account  = account,
@@ -51,16 +53,19 @@ class LoginView(View):
         user_info = json.loads(request.body)
         account   = user_info['account']
         password  = user_info['password']
-
+        
         if not check_account_password_key(
             account, 
             password):
             return JsonResponse(
                 {'MESSAGE':'KEY_ERROR'}, status=400)
+        
+        account = account_check(account)
 
         if check_login(account, password):
+            access_token = create_token(account)
             return JsonResponse(
-                {'MESSAGE': "SUCCESS"}, status=200)
+                {'MESSAGE': access_token}, status=200)
         else:
             return JsonResponse(
                 {'MESSAGE':'INVALID_USER'}, status=401)
@@ -122,12 +127,20 @@ def name_duplicate_check(name):
         return True
     return False
 
-def check_login(account, password):
+def account_check(account):
     try:
-        hashed_password = User.objects.get(account=account).password
+        account = User.objects.get(account=account).account
     except User.DoesNotExist:
-        hashed_password = User.objects.get(name=account).password
-        return JsonResponse(
-                {'MESSAGE':'test'}, status=401)
+        account = User.objects.get(name=account).account
+    return account
 
+def check_login(account, password):
+    hashed_password = User.objects.get(account=account).password
+    hashed_password = hashed_password.encode('utf-8')
     return bcrypt.checkpw(password.encode('utf-8'), hashed_password)
+
+def create_token(account):
+    user_id = User.objects.get(account=account).id
+    access_token = jwt.encode({'user_id':user_id}, settings.SECRET_KEY, algorithm='HS256')
+    access_token = access_token.decode('utf-8')
+    return access_token

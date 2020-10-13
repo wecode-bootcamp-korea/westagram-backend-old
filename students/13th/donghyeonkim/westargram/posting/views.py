@@ -71,17 +71,22 @@ class PostView(View):
             return JsonResponse({'MESSAGE':"게시물이 존재하지 않습니다."}, status=404)
 
 class CreateComment(View):
-    def post(self, request, post_id):
+    def post(self, request):
         comment_info = json.loads(request.body)
         user_id      = comment_info['user_id']
         comment      = comment_info['comment']
-        
-        Comment.objects.create(
-            user_id = user_id,
-            post_id = post_id,
-            comment = comment
-            )
+        post_id      = comment_info['post_id']
 
+        try:
+            response_to = comment_info['response_to']
+        except KeyError:
+            response_to = None
+        Comment.objects.create(
+            user_id     = user_id,
+            post_id     = post_id,
+            comment     = comment,
+            response_to = response_to
+            )
         return JsonResponse({'MESSAGE':'SUCCESS'}, status=201)
 
 class CommentView(View):
