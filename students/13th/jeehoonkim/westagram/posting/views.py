@@ -16,7 +16,7 @@ class PostingView(View):
         content      = data['content']
         image        = data['image']
         created_date = timezone.now()
-
+        
         if image:
             Posting.objects.create(
                 user_id      = user_id,

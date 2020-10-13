@@ -1,6 +1,7 @@
 import json
 import re
 import bcrypt
+import jwt
 
 from django.views     import View
 from django.shortcuts import get_object_or_404
@@ -8,6 +9,7 @@ from django.db.models import Q
 from django.http      import JsonResponse
 
 from .models          import User
+from my_settings    import SECRET_KEY
 
 class SignUpView(View):
     def post(self, request):
@@ -53,8 +55,8 @@ class SignInView(View):
 
         if (phone or email) and password:
             try:
-                User.objects.get(Q(phone=phone) | Q(email=email))
-                hashed_password = User.objects.get(Q(email=email) | Q(phone=phone)).password
+                user_info       = User.objects.get(Q(phone=phone) | Q(email=email))
+                hashed_password = user_info.password
                 if bcrypt.checkpw(password.encode('utf-8'), hashed_password.encode('utf-8'))==False:
                     raise ValueError
             except User.DoesNotExist:
@@ -62,7 +64,9 @@ class SignInView(View):
             except ValueError:
                 return JsonResponse({'message': 'WRONG PASSWORD'}, status=401)
             else:
-                return JsonResponse({'message': 'SUCCESS'}, status=200)
+                access_token=jwt.encode({'user_id': user_info.id}, SECRET_KEY, algorithm='HS256')
+                decoded_token=access_token.decode('utf-8')
+                return JsonResponse({'TOKEN': decoded_token}, status=200)
         else:
             return JsonResponse({'message': 'KEY_ERROR'}, status=400)
 
