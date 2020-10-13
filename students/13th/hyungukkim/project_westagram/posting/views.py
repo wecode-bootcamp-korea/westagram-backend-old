@@ -34,6 +34,14 @@ class ViewPost(View): # 게시물 표출
 
         return JsonResponse({'postings':list(posting_list)}, status = 200)
 
+class DeletePost(View): # 게시물 삭제
+    def delete(self, request):
+        data = json.loads(request.body)
+
+        Post.objects.filter(id = data['id']).delete()
+
+        return JsonResponse({'MESSAGE':'SUCCESS'}, status = 200)
+
 class RegisterComment(View): # 댓글 등록
     def post(self, request):
         data = json.loads(request.body)
@@ -52,6 +60,15 @@ class ViewComment(View): # 댓글 표출
         comment_list = Comment.objects.filter(post=Post(id=1)).values('account__name', 'contents', 'create_time')
 
         return JsonResponse({'comments':list(comment_list)}, status = 200)
+
+class DeleteComment(View): # 댓글 삭제
+    def delete(self, request):
+        data = json.loads(request.body)
+
+        Comment.objects.filter(id = data['id']).delete()
+
+        return JsonResponse({'MESSAGE':'SUCCESS'}, status = 200)
+
 
 class RegisterLikes(View): # 좋아요 등록
     def post(self, request):
