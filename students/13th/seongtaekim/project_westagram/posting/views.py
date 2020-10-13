@@ -2,7 +2,7 @@ import json
 from django.http     import JsonResponse 
 from django.views    import View  
 from user.models     import User
-from posting.models  import Post, Image_urls, Comment
+from posting.models  import Post, Image_urls, Comment, Like
 
 class PostView(View):
     
@@ -49,3 +49,16 @@ class CommentView(View) :
         comments = Comment.objects.filter(post = post_id).values('user__user_name', 'contents', 'time')
         return JsonResponse({'MESSAGE': list(comments) }, status=201)
 
+class LikeView(View) :
+    def post(self, request) :
+        
+        data = json.loads(request.body)
+        user_id = User.objects.get(id = data['user_id'])
+        post_id = Post.objects.get(id = data['post_id'])
+        try :
+            like_check = Like.objects.get(user=user_id,post=post_id)
+            like_check.delete()
+            return JsonResponse({'MESSAGE':'Like_cancel'}, status=201)
+        except :
+            Like.objects.create(user=user_id,post=post_id)
+            return JsonResponse({'MESSAGE':'Like_success'}, status=201)
