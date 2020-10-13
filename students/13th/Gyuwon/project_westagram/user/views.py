@@ -42,18 +42,15 @@ def email_validation(email):
     else:
         return False
 
+
 class SignInView(View):
     def post(self, request):
         data         = json.loads(request.body)
-        name         = data['name']
-        email        = data['email']
-        password     = data['password']
-        phone_number = data['phone_number']
-
+        
         try:
-            if email == '' or name == '' or phone_number == '' or password =='':
-                return JsonResponse({"message": "KEY_ERROR"}, status=400)
-            elif User.objects.get(Q(email=data['email']) | Q(name=data['name'] | Q(phone_number=data['phone_number'])) , password=data['password']):
+            if User.objects.filter(Q(email=data['email']) | Q(name=data['name']) | Q(phone_number=data['phone_number'])).exists() and User.objects.filter(password=data['password']).exists():
                 return JsonResponse({"message": "SUCCESS"}, status=200)
-        except:
-            return JsonResponse({"message": "INVALID_USER"}, status=401)
+            else:
+                return JsonResponse({"message": "INVALID_USER"}, status=200)
+        except KeyError:
+            return JsonResponse({"message": "KEY_ERROR"}, status=400)
