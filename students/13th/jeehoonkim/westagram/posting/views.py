@@ -91,12 +91,25 @@ class CommentView(View):
             return JsonResponse({'message': 'USER DOES NOT EXIST'}, status=400)
 
     def get(self, request, posting_id):
-        all_comments = Comment.objects.filter(posting_id=posting_id).values(
-            'user__name', 
-            'content', 
-            'created_date'
+        
+        try:
+            data=json.loads(request.body)
+            thread_to=data['comment_id']
+            threads=Comment.objects.filter(posting_id=posting_id, thread_to=int(thread_to)).values(
+                'user__name',
+                'content',
+                'created_date'
             )
-
+            if list(threads)==[]:
+                return JsonResponse({'message': 'NO THREADS'}, status=400)
+            return JsonResponse({'Threads': list(threads)}, status=200)
+        except ValueError:
+            all_comments = Comment.objects.filter(posting_id=posting_id).values(
+                'user__name', 
+                'content', 
+                'created_date'
+                )
+        
         if all_comments:
             return JsonResponse({'Comments': list(all_comments)}, status=200)
         else:
