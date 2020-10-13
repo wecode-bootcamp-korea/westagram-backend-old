@@ -5,6 +5,7 @@ from django.db.models import Q
 from django.http      import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.views     import View
+from django.utils     import timezone
 
 from user.models      import User
 from posting.models   import Post, Comment
@@ -64,7 +65,8 @@ class PostView(View):
             post.update(
                 user_id         = user_id,
                 image_url       = image_url,
-                posting_comment = posting_comment
+                posting_comment = posting_comment,
+                time            = timezone.now()
             )
             return JsonResponse({'MESSAGE':"게시물을 수정하였습니다."}, status=204)
         except Post.DoesNotExist:
