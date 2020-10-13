@@ -1,7 +1,6 @@
-import json
-import re
-import bcrypt
+import json, re, bcrypt, jwt
 
+from project_westagram.settings import SECRET_KEY
 from django.views import View
 from django.http import JsonResponse
 from user.models import Account, Relation
@@ -48,38 +47,40 @@ class SignUpView(View): #회원가입
 class SignInView(View): #로그인
 	def post(self, request):
 		data = json.loads(request.body)
-		name = data['name']
-		email = data['email']
-		phone = data['phone']
 		password = data['password']
+		account = data['account']
 
-		if (email == '') and (name == '') and (phone == ''):
+		if account == '' or password == '':
 			return JsonResponse({'MESSAGE':'KEY_ERROR'}, status = 400)
 
-		if password == '':
-			return JsonResponse({'MESSAGE':'KEY_ERROR'}, status = 400)
+		if Account.objects.filter(email = account).exists():
+			account_data = Account.objects.get(email = account)
 
-		if email != '' and Account.objects.filter(email = email).exists() == False:
-			return JsonResponse({'MESSAGE':'INVALID_USER'}, status = 401)
-		elif phone != '' and Account.objects.filter(phone = phone).exists() == False:
-			return JsonResponse({'MESSAGE':'INVALID_USER'}, status = 401)
-		elif name != '' and Account.objects.filter(name = name).exists() == False:			
-			return JsonResponse({'MESSAGE':'INVALID_USER'}, status = 401)
-
-		if name != '':
-			user_data = Account.objects.get(name = name)
-			if bcrypt.checkpw(password.encode('utf-8'), user_data.password.encode('utf-8')) == False:
+			if bcrypt.checkpw(password.encode('utf-8'), account_data.password.encode('utf-8')) == False:
 				return JsonResponse({'MESSAGE':'INVALID_USER'}, status = 401)
-		elif email != '':
-			user_data = Account.objects.get(email = email)
-			if bcrypt.checkpw(password.encode('utf-8'), user_data.password.encode('utf-8')) == False:
-				return JsonResponse({'MESSAGE':'INVALID_USER'}, status = 401)
-		elif phone != '':
-			user_data = Account.objects.get(phone = phone)
-			if bcrypt.checkpw(password.encode('utf-8'), user_data.password.encode('utf-8')) == False:
-				return JsonResponse({'MESSAGE':'INVALID_USER'}, status = 401)		
 
-		return JsonResponse({'MESSAGE':'SUCCESS'}, status = 200)
+			access_token = jwt.encode({'email': account}, SECRET_KEY, algorithm = 'HS256')
+
+		elif Account.objects.filter(phone = account).exists():
+			account_data = Account.objects.get(phone = account)
+
+			if bcrypt.checkpw(password.encode('utf-8'), account_data.password.encode('utf-8')) == False:
+				return JsonResponse({'MESSAGE':'INVALID_USER'}, status = 401)
+			
+			access_token = jwt.encode({'phone': account}, SECRET_KEY, algorithm = 'HS256')
+
+		elif Account.objects.filter(name = account).exists():
+			account_data = Account.objects.get(name = account)
+
+			if bcrypt.checkpw(password.encode('utf-8'), account_data.password.encode('utf-8')) == False:
+				return JsonResponse({'MESSAGE':'INVALID_USER'}, status = 401)
+
+			access_token = jwt.encode({'name': account}, SECRET_KEY, algorithm = 'HS256')
+			
+		else:
+			return JsonResponse({'MESSAGE':'INVALID_USER'}, status = 401)
+
+		return JsonResponse({'MESSAGE':'SUCCESS', 'token':access_token.decode('utf-8')}, status = 200)
 
 class FollowAccount(View): # 팔로우 등록
 	def post(self, request):

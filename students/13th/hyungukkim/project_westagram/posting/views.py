@@ -79,4 +79,3 @@ class ViewLikes(View): # 좋아요 표출
         likes_count = Post.objects.filter(id=1).values('id', 'likes_count')
 
         return JsonResponse({'comments':list(likes_count)}, status = 200)
-
