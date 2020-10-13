@@ -100,7 +100,7 @@ class CommentView(View):
         except ValueError:
             response_to = None
 
-        comments = Comment.objects.filter(response_to=response_to).values(
+        comments = Comment.objects.filter(response_to=response_to, post_id=post_id).values(
             'user__name',
             'comment',
             'time'
