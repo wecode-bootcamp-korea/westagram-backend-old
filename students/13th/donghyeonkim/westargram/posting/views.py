@@ -107,13 +107,15 @@ class CommentView(View):
             ])
         return JsonResponse({'MESSAGE':comment_view}, status=200)
     
-    def delete(self, request, post_id):
+    def put(self, request, post_id, user_id):
         comment_info = json.loads(request.body)
         comment_id   = comment_info['comment_id']
 
-        try:
-            comment = Comment.objects.get(pk=comment_id)
-            comment.delete()
+        comment = Comment.objects.filter(pk=comment_id)
+        if comment:
+            comment.update(
+                comment = "삭제된 댓글입니다.",
+                time    = timezone.now()  
+                )
             return JsonResponse({'MESSAGE':"댓글을 삭제하였습니다."}, status=204)
-        except Comment.DoesNotExist:
-            return JsonResponse({'MESSAGE':"댓글이 존재하지 않습니다."}, status=404)
+        return JsonResponse({'MESSAGE':"댓글이 존재하지 않습니다."}, status=404)
