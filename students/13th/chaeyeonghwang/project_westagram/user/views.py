@@ -1,9 +1,11 @@
 import json
 import bcrypt
+import jwt
 
 from django.http    import JsonResponse
 from django.views   import View
 from user.models    import User
+from user.utils     import LoginConfirm
 
 # Create your views here.
 
@@ -32,8 +34,10 @@ class SignupView(View):
                     email       = data['email'],
                     full_name   = data['full_name'],
                     username    = data['username'],
-                    password    = bcrypt.hashpw( data['password'].encode('utf-8'), bcrypt.gensalt() ) #디코드해서 저장^^..
+                    password    = bcrypt.hashpw( data['password'].encode('utf-8'), bcrypt.gensalt() ).decode()  #디코드해서 저장^^..
                 ).save()
+                print(User.objects.get(username = data['username']).password)
+                print(type(User.objects.get(username = data['username']).password))
                 return JsonResponse(
                     {'MESSAGE':'REGISTER_SUCCESS'}
                     , status=201)
@@ -48,58 +52,40 @@ class LoginView(View):
     def post(self, request):
         try:
             data = json.loads(request.body)
-            hashed_pw = bcrypt.hashpw( data['password'].encode('utf-8'), salt )
-            if 'email' in data.keys():
-                if User.objects.filter(email = data['email']).exists():
-                    if bcrypt.checkpw( hashed_pw , User.objects.get(email = data['email']).password.encode('utf-8') ):
-                        return JsonResponse({'MESSAGE':'SUCCESS'}, status=200)
-                    else:
-                        return JsonResponse({'MESSAGE':'INVALID_USER'},status=401)
-                else:
-                    return JsonResponse({'MESSAGE':'INVALID_USER'}, status=401)
-            elif 'mobile' in data.keys():
-                if User.objects.filter(mobile = data['mobile']).exists():
-                    if bcrypt.checkpw( hashed_pw , User.objects.get(mobile = data['mobile']).password.enconde('utf-8')):
-                        return JsonResponse({'MESSAGE':'SUCCESS'}, status=200)
-                    else:
-                        return JsonResponse({'MESSAGE':'INVALID_USER'},status=401)
-                else:
-                    return JsonResponse({'MESSAGE':'INVALID_USER'}, status=401)
-            elif 'username' in data.keys():
-                if User.objects.filter(username = data['username']).exists():
-                    if bcrypt.checkpw( hashed_pw , User.objects.get(username = data['username']).password.encode('utf-8') ):
-                        return JsonResponse({'MESSAGE':'SUCCESS'}, status=200)
-                    else:
-                        return JsonResponse({'MESSAGE':'INVALID_USER'},status=401)
-                else:
-                    return JsonResponse({'MESSAGE':'INVALID_USER'}, status=401)
+            given_pw = data['password'].encode('utf-8')
+            success_msg = JsonResponse({'MESSAGE':'SUCCESS'}, status=200)
+            password_msg = JsonResponse({'MESSAGE':'PASSWORD INCORRECT'},status=401)
+
+            if ('email' or 'mobile' or 'username') in data.keys:
+                if 'email' in data.keys():
+                    if User.objects.filter(email = data['email']).exists():
+                        if bcrypt.checkpw( given_pw , User.objects.get(email = data['email']).password.encode('utf-8') ):
+                            return success_msg
+                        else:
+                            return password_msg
+                elif 'mobile' in data.keys():
+                    if User.objects.filter(mobile = data['mobile']).exists():
+                        if bcrypt.checkpw( given_pw , User.objects.get(mobile = data['mobile']).password.encode('utf-8')):
+                            return success_msg
+                        else:
+                            return password_msg
+                elif 'username' in data.keys():
+                    if User.objects.filter(username = data['username']).exists():
+                        if bcrypt.checkpw( given_pw , User.objects.get(username = data['username']).password.encode('utf-8') ):
+                            return success_msg
+                        else:
+                            return password_msg
+            else:
+                return JsonResponse({'MESSAGE':'INVALID_USER'}, status=401)
+
         except KeyError:
             return JsonResponse(
                 {'MESSAGE':'KEY_ERROR'},
                 status=400)
 
 
-#class FollowingView(View):
-#    def post(self, request):
-#        data = json.loads(request.body)
-
-        # http POST localhost:8000/follow follower="" following="" 
-       
-#        user_following = User.objects.get(username = data['following'])
-#        user_followed = User.objects.get(username = data['followed'])
-
-#        user_following.is_following.add(data['followed'])
-#        user_followed.is_followed.add(data['following'])
-
-#        User.objects.get(username = data['following']).is_following.add(data['followed'])
-#        User.objects.get(username = data['followed']).is_followed.add(data['following'])
-    
-
-#        return JsonResponse(
-#            {'MESSAGE': 'FOLLOW'},
-#            status=200)
-
 class FollowingView(View):
+    @LoginConfirm
     def post(self, request):
         data = json.loads(request.body)
         
