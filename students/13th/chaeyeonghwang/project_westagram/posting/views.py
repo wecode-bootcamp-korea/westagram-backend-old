@@ -47,7 +47,7 @@ class DeleteView(View):
 
 class UpdateView(View):
 
-    def post(self, request):
+    def put(self, request):
         data = json.loads(request.body)
         target = Posting.objects.get(id=data['target'])
         target.description = data['description']
