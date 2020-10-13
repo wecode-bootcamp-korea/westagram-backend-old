@@ -92,20 +92,21 @@ class CreateComment(View):
         return JsonResponse({'MESSAGE':'SUCCESS'}, status=201)
 
 class CommentView(View):
-    def get(self, request, post_id):
-        comment_view = []
-        comments     = Comment.objects.filter(post_id=post_id).values_list()
+    def post(self, request, post_id, user_id):
+    
+        try:
+            comment_info = json.loads(request.body)
+            response_to = comment_info['response_to']
+        except ValueError:
+            response_to = None
 
-        for comment in comments:
-            user_name    = User.objects.get(id=comment[3]).name
-            comment_text = comment[1]
-            time         = comment[2]
-            comment_view.append([
-                user_name,
-                comment_text,
-                time
-            ])
-        return JsonResponse({'MESSAGE':comment_view}, status=200)
+        comments = Comment.objects.filter(response_to=response_to).values(
+            'user__name',
+            'comment',
+            'time'
+        )
+    
+        return JsonResponse({'MESSAGE':list(comments)}, status=200)
     
     def put(self, request, post_id, user_id):
         comment_info = json.loads(request.body)
