@@ -1,4 +1,5 @@
 from django.urls import path
+
 from posting.views import RegisterPost, ViewPost, DeletePost, UpdatePost, RegisterComment, ViewComment, DeleteComment, RegisterByComment, RegisterLikes, ViewLikes
 
 urlpatterns = [

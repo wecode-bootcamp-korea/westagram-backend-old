@@ -1,8 +1,9 @@
 import json, re, bcrypt, jwt
 
-from project_westagram.settings import SECRET_KEY
 from django.views import View
 from django.http import JsonResponse
+
+from project_westagram.settings import SECRET_KEY
 from user.models import Account, Relation
 
 class SignUpView(View): #회원가입
@@ -32,9 +33,9 @@ class SignUpView(View): #회원가입
 		password = data['password']
 		hashed_pw = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
 		Account.objects.create(
-			name = data['name'], 
-			email = data['email'], 
-			phone = data['phone'], 
+			name 	 = data['name'], 
+			email 	 = data['email'], 
+			phone 	 = data['phone'], 
 			password = hashed_pw.decode('utf-8')
 		)
 
@@ -48,7 +49,7 @@ class SignInView(View): #로그인
 	def post(self, request):
 		data = json.loads(request.body)
 		password = data['password']
-		account = data['account']
+		account  = data['account']
 
 		if account == '' or password == '':
 			return JsonResponse({'MESSAGE':'KEY_ERROR'}, status = 400)
@@ -92,11 +93,11 @@ class FollowAccount(View): # 팔로우 등록
 		else:
 			Relation.objects.create(
 				from_account = Account(id = data['from_account_id']),
-				to_account = Account(id = data['to_account_id'])
+				to_account   = Account(id = data['to_account_id'])
 			)
 
 		from_followees = Relation.objects.filter(from_account = data['from_account_id']).count()
-		to_followers = Relation.objects.filter(to_account = data['to_account_id']).count()
+		to_followers   = Relation.objects.filter(to_account = data['to_account_id']).count()
 
 		from_account = Account.objects.filter(id = data['from_account_id']).get()
 		from_account.followees = from_followees

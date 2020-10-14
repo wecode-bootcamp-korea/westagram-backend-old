@@ -2,6 +2,7 @@ import json
 
 from django.views import View
 from django.http import JsonResponse
+
 from posting.models import Post, Comment, Likes, ByComment
 from user.models import Account
 
@@ -10,9 +11,9 @@ class RegisterPost(View): # 게시물 등록
         data = json.loads(request.body)
 
         Post.objects.create(
-            account = Account(id = data['id']),
+            account  = Account(id = data['id']),
             contents = data['contents'],
-            img_url = data['img_url'],
+            img_url  = data['img_url'],
         )
 
         return JsonResponse({'MESSAGE':'SUCCESS'}, status = 200)
@@ -84,8 +85,8 @@ class RegisterByComment(View): # 대댓글 등록
         data = json.loads(request.body)
 
         ByComment.objects.create(
-            comment = Comment(id = data['comment_id']),
-            account = Account(id = data['account_id']),
+            comment  = Comment(id = data['comment_id']),
+            account  = Account(id = data['account_id']),
             contents = data['contents'],
         )
 
@@ -101,10 +102,10 @@ class RegisterLikes(View): # 좋아요 등록
         else:
             Likes.objects.create(
                 account = Account(id = data['account_id']),
-                post = Post(id = data['post_id']),
+                post    = Post(id = data['post_id']),
             )
         
-        count = Likes.objects.filter(post = data['post_id']).count()
+        count     = Likes.objects.filter(post = data['post_id']).count()
         likes_cnt = Post.objects.filter(id = data['post_id']).get()
         likes_cnt.likes_count = count
         likes_cnt.save()
