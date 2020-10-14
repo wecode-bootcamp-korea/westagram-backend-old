@@ -64,7 +64,8 @@ class SignInView(View):
 
                 if user.email == email and user.phone_number == phone_number and password_validator == True:
                     access_token = jwt.encode({'id': user.id}, 'secret', algorithm = 'HS256')
-                    return JsonResponse({"message": "SUCCESS"}, status=200)
+                    decoded_token = access_token.decode('utf-8')
+                    return JsonResponse({"message": "SUCCESS", "token": decoded_token}, status=200)
 
                 else: 
                     return JsonResponse({"message": "INVALID_USER"}, status=401)
