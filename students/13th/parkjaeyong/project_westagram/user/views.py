@@ -38,7 +38,4 @@ class SignUpView(View):
 
 
 
-# 회원가입시 서로 다른 사람이 같은 전화번호나 사용자 이름, 이메일을 사용하지 않으므로 기존에 존재하는 자료와 중복되어서는 안됩니다. 적절한 에러를 반환해주세요.
-# 회원가입이 성공하면 {"message": "SUCCESS"}, status code 200을 반환합니다.
-# [추가 구현 사항] -> email validation 또는 password validation 과정에서 정규식을 사용해보세요. -ㅅ-?
  
