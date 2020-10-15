@@ -20,17 +20,6 @@ class RegisterPost(View): # 게시물 등록
 
 class ViewPost(View): # 게시물 표출
     def get(self, request):
-        # total_dic = {}
-
-        # account_list = Post.objects.select_related('account')
-        # for i in range(0, len(account_list)):
-        #     post_dic = {}
-        #     post_dic['name'] = Account.objects.filter(id=account_list[i].account_id).get().name
-        #     post_dic['contents'] = account_list[i].contents
-        #     post_dic['img_url'] = account_list[i].img_url
-        #     post_dic['create_time'] = account_list[i].create_time
-
-        #     total_dic[account_list[i].id] = post_dic
         posting_list = Post.objects.values('account__name', 'contents', 'img_url', 'create_time')
 
         return JsonResponse({'postings':list(posting_list)}, status = 200)

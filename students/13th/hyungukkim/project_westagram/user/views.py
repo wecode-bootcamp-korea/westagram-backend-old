@@ -12,10 +12,10 @@ class SignUpView(View): #회원가입
 
 		try:
 			if (data['email'] == '') and (data['phone'] == ''):
-				return JsonResponse({'MESSAGE':'KEY_ERROR'}, status = 400)
+				return JsonResponse({'MESSAGE':'Enter Your Email or Phone Number'}, status = 400)
 
 			if data['password'] == '' or data['name'] == '':
-				return JsonResponse({'MESSAGE':'KEY_ERROR'}, status = 400)
+				return JsonResponse({'MESSAGE':'Enter Your User Name or Password'}, status = 400)
 
 			p = re.compile('^[a-zA-Z0-9+-_.]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$')
 			if data['email'] != '' and (p.match(str(data['email'])) != None) == False:
@@ -57,7 +57,7 @@ class SignInView(View): #로그인
 			account  = data['account']
 
 			if account == '' or password == '':
-				return JsonResponse({'MESSAGE':'KEY_ERROR'}, status = 400)
+				return JsonResponse({'MESSAGE':'Enter Your User Name or Password'}, status = 400)
 
 			if Account.objects.filter(email = account).exists():
 				account_data = Account.objects.get(email = account)
