@@ -41,8 +41,8 @@ class SignUpView(View): #회원가입
 			)
 
 			return JsonResponse({'MESSAGE':'SUCCESS'}, status = 200)
-		except Exception as ex:
-			return JsonResponse({'MESSAGE':'KEY_ERROR'}, status = 400)
+		except KeyError as ex:
+			return JsonResponse({'MESSAGE':'KEY_ERROR_' + str.upper(ex.args[0])}, status = 400)
 
 	def get(self, request):
 		account_data = Account.objects.values()
@@ -51,10 +51,11 @@ class SignUpView(View): #회원가입
 class SignInView(View): #로그인
 	def post(self, request):
 		data = json.loads(request.body)
-		password = data['password']
-		account  = data['account']
-
+		
 		try:
+			password = data['password']
+			account  = data['account']
+
 			if account == '' or password == '':
 				return JsonResponse({'MESSAGE':'KEY_ERROR'}, status = 400)
 
@@ -85,9 +86,9 @@ class SignInView(View): #로그인
 			else:
 				return JsonResponse({'MESSAGE':'INVALID_USER'}, status = 401)
 
-			return JsonResponse({'MESSAGE':'SUCCESS', 'token':access_token.decode('utf-8')}, status = 200)
-		except Exception as ex:
-			return JsonResponse({'MESSAGE':'KEY_ERROR'}, status = 400)
+			return JsonResponse({'MESSAGE':'SUCCESS', 'Authorization':access_token.decode('utf-8')}, status = 200)
+		except KeyError as ex:
+			return JsonResponse({'MESSAGE':'KEY_ERROR_' + str.upper(ex.args[0])}, status = 400)
 
 class FollowAccount(View): # 팔로우 등록
 	def post(self, request):
