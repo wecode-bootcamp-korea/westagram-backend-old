@@ -1,6 +1,7 @@
 import json
 import bcrypt
 import jwt
+import re
 
 from django.http    import JsonResponse
 from django.views   import View
@@ -14,6 +15,7 @@ class SignupView(View):
     def post(self, request):
         try:
             data = json.loads(request.body)
+
             if ('@' not in data['email'] or 
                 '.' not in data['email']):
                 return JsonResponse(
@@ -36,10 +38,14 @@ class SignupView(View):
                     username    = data['username'],
                     password    = bcrypt.hashpw( data['password'].encode('utf-8'), bcrypt.gensalt() ).decode()  #디코드해서 저장^^..
                 ).save()
-                print(User.objects.get(username = data['username']).password)
-                print(type(User.objects.get(username = data['username']).password))
+                
+
+                
+                # print(User.objects.get(username = data['username']).password)
+                # print(type(User.objects.get(username = data['username']).password))
                 return JsonResponse(
-                    {'MESSAGE':'REGISTER_SUCCESS'}
+                    {'MESSAGE':'REGISTER_SUCCESS'
+                    }
                     , status=201)
 
         except KeyError:
@@ -53,28 +59,38 @@ class LoginView(View):
         try:
             data = json.loads(request.body)
             given_pw = data['password'].encode('utf-8')
-            success_msg = JsonResponse({'MESSAGE':'SUCCESS'}, status=200)
             password_msg = JsonResponse({'MESSAGE':'PASSWORD INCORRECT'},status=401)
 
-            if ('email' or 'mobile' or 'username') in data.keys:
-                if 'email' in data.keys():
-                    if User.objects.filter(email = data['email']).exists():
-                        if bcrypt.checkpw( given_pw , User.objects.get(email = data['email']).password.encode('utf-8') ):
-                            return success_msg
-                        else:
-                            return password_msg
-                elif 'mobile' in data.keys():
-                    if User.objects.filter(mobile = data['mobile']).exists():
-                        if bcrypt.checkpw( given_pw , User.objects.get(mobile = data['mobile']).password.encode('utf-8')):
-                            return success_msg
-                        else:
-                            return password_msg
-                elif 'username' in data.keys():
-                    if User.objects.filter(username = data['username']).exists():
-                        if bcrypt.checkpw( given_pw , User.objects.get(username = data['username']).password.encode('utf-8') ):
-                            return success_msg
-                        else:
-                            return password_msg
+
+
+            if 'email' in data.keys():
+                if User.objects.filter(email = data['email']).exists():
+                    if bcrypt.checkpw( given_pw , User.objects.get(email = data['email']).password.encode('utf-8') ):
+                        accessing_user = User.objects.get(email = data['email']).id
+                        return JsonResponse({'MESSAGE':'SUCCESS',
+                        'AUTHORIZATION':jwt.encode({'id' : accessing_user}, 'SECRET', algorithm = 'HS256').decode()},
+                        status=200)
+                    else:
+                        return password_msg
+            elif 'mobile' in data.keys():
+                if User.objects.filter(mobile = data['mobile']).exists():
+                    if bcrypt.checkpw( given_pw , User.objects.get(mobile = data['mobile']).password.encode('utf-8')):
+                        accessing_user = User.objects.get(mobile = data['mobile']).id
+                        return JsonResponse({'MESSAGE':'SUCCESS',
+                        'AUTHORIZATION':jwt.encode({'id' : accessing_user}, 'SECRET', algorithm = 'HS256').decode()},
+                        status=200)
+                    else:
+                        return password_msg
+            elif 'username' in data.keys():
+                if User.objects.filter(username = data['username']).exists():
+                    if bcrypt.checkpw( given_pw , User.objects.get(username = data['username']).password.encode('utf-8') ):
+                        accessing_user = User.objects.get(username = data['username']).id
+                        return JsonResponse({'MESSAGE':'SUCCESS',
+                        'AUTHORIZATION':jwt.encode({'id' : accessing_user}, 'SECRET', algorithm = 'HS256').decode()},
+                        status=200)
+                    else:
+                        return password_msg
+
             else:
                 return JsonResponse({'MESSAGE':'INVALID_USER'}, status=401)
 
