@@ -37,10 +37,10 @@ class SignUp(View):
         try:
             if Users.objects.filter(email=data.get('email')).exists():
                 return JsonResponse({"message": "EMAIL_TAKEN"}, status=400)
-            if Users.objects.filter(name=data.get('name')).exists():
-                return JsonResponse({"message": "NAME_TAKEN"}, status=400)
-            if Users.objects.filter(phone_number=data.get('phone_number')).exists():
-                return JsonResponse({"message": "PHONE_NUMBER_TAKEN"}, status=400)
+            # if Users.objects.filter(name=data.get('name')).exists():
+            #     return JsonResponse({"message": "NAME_TAKEN"}, status=400)
+            # if Users.objects.filter(phone_number=data.get('phone_number')).exists():
+            #     return JsonResponse({"message": "PHONE_NUMBER_TAKEN"}, status=400)
 
             password = data.get('password').encode('utf-8')
             password_crypt = bcrypt.hashpw(password, bcrypt.gensalt())
@@ -49,8 +49,8 @@ class SignUp(View):
             Users(
                 email        = data.get('email'),
                 password     = password_crypt,
-                name         = data.get('name'),
-                phone_number = data.get('phone_number'),
+                name         = "name",
+                phone_number = "01040035298",
             ).save()
 
             return JsonResponse({"message": "SUCCESS"}, status=200)
