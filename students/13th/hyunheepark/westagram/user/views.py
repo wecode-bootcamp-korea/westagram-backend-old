@@ -17,18 +17,24 @@ def IndexView(request):
 class SignUpView(View):
     def post(self,request):
          try:
+            print("hello")
             data = json.loads(request.body)
+            print(data)
             
             if len(data['password']) < 8 :
+                print("1")
                 return JsonResponse({'MESSAGE':'비밀번호를 8자 이상으로 입력하세요'},status=400)
             
             elif '@' not in data['email'] or '.' not in data['email']:
+                print("2")
                 return JsonResponse({'MESSAGE':'이메일을 확인하세요'},status=400)
             
             elif User.objects.filter(name=data['name']).exists():
+                print("3")
                 return JsonResponse({'MESSAGE':'이미 가입된 이름 정보입니다'},status=400)
             
             elif User.objects.filter(email=data['email']).exists():
+                print("4")
                 return JsonResponse({'MESSAGE':'이미 가입된 이메일 정보입니다'},status=400)
             
             elif User.objects.filter(phone=data['phone']).exists():
@@ -48,8 +54,8 @@ class SignUpView(View):
                     ).save()
                 return JsonResponse({'MESSAGE':'SUCCESS'},status=200)
 
-         except KeyError:
-             return JsonResponse({'MESSAGE':'KEYERROR'},status=400)
+        # except KeyError:
+             #return JsonResponse({'MESSAGE':'KEYERROR'},status=400)
          except ValueError:
              return JsonResponse({'MESSAGE':'VALUEERROR'},status=400)
 
@@ -61,7 +67,7 @@ class SignInView(View):
         #return JsonResponse({'MESSAGE':data},status=400)
         try:
             data     = json.loads(request.body)
-            
+           # prin(data)
             if not data['name'] and not data['email'] and not data['phone']:
                 return JsonResponse({'MESSAGE':'계정을 입력하세요'},status=400)
                 #return JsonResponse({'MESSAGE':'KEYERROR'},status=400)
