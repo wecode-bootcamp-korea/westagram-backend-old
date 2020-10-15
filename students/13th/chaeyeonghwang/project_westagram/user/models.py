@@ -7,7 +7,7 @@ class User(models.Model):
     full_name   = models.CharField(max_length=45)
     username    = models.CharField(max_length=45, unique=True)
     password    = models.CharField(max_length=300)
-    # follow      = models.ManyToManyField('self', symmetrical=False)
+    follow      = models.ManyToManyField('self', symmetrical=False)
 
     def __str__(self):
         return self.username

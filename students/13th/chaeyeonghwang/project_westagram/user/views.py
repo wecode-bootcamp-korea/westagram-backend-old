@@ -3,10 +3,14 @@ import bcrypt
 import jwt
 import re
 
-from django.http    import JsonResponse
-from django.views   import View
-from user.models    import User
-from user.utils     import LoginConfirm
+from django.http      import JsonResponse
+from django.views     import View
+from django.db.models import Q
+
+from user.models      import User
+from user.utils       import LoginConfirm
+
+
 
 # Create your views here.
 
@@ -38,11 +42,6 @@ class SignupView(View):
                     username    = data['username'],
                     password    = bcrypt.hashpw( data['password'].encode('utf-8'), bcrypt.gensalt() ).decode()  #디코드해서 저장^^..
                 ).save()
-                
-
-                
-                # print(User.objects.get(username = data['username']).password)
-                # print(type(User.objects.get(username = data['username']).password))
                 return JsonResponse(
                     {'MESSAGE':'REGISTER_SUCCESS'
                     }
@@ -55,41 +54,23 @@ class SignupView(View):
 
 class LoginView(View):
     
+    
     def post(self, request):
         try:
-            data = json.loads(request.body)
-            given_pw = data['password'].encode('utf-8')
-            password_msg = JsonResponse({'MESSAGE':'PASSWORD INCORRECT'},status=401)
+            data            = json.loads(request.body)
+            given_pw        = data['password'].encode('utf-8')
+            accessing_user  = User.objects.get(Q(email = data['user_input']) | Q(mobile = data['user_input']) | Q(username = data['user_input']))
+           
+            sucess_msg      = JsonResponse({'MESSAGE':'SUCCESS',
+                                            'AUTHORIZATION':jwt.encode({'id' : accessing_user.id}, 'SECRET', algorithm = 'HS256').decode()},
+                                            status=200)
+            password_msg    = JsonResponse({'MESSAGE':'INCORRECT PASSWORD'},status=401)
 
-
-
-            if 'email' in data.keys():
-                if User.objects.filter(email = data['email']).exists():
-                    if bcrypt.checkpw( given_pw , User.objects.get(email = data['email']).password.encode('utf-8') ):
-                        accessing_user = User.objects.get(email = data['email']).id
-                        return JsonResponse({'MESSAGE':'SUCCESS',
-                        'AUTHORIZATION':jwt.encode({'id' : accessing_user}, 'SECRET', algorithm = 'HS256').decode()},
-                        status=200)
-                    else:
-                        return password_msg
-            elif 'mobile' in data.keys():
-                if User.objects.filter(mobile = data['mobile']).exists():
-                    if bcrypt.checkpw( given_pw , User.objects.get(mobile = data['mobile']).password.encode('utf-8')):
-                        accessing_user = User.objects.get(mobile = data['mobile']).id
-                        return JsonResponse({'MESSAGE':'SUCCESS',
-                        'AUTHORIZATION':jwt.encode({'id' : accessing_user}, 'SECRET', algorithm = 'HS256').decode()},
-                        status=200)
-                    else:
-                        return password_msg
-            elif 'username' in data.keys():
-                if User.objects.filter(username = data['username']).exists():
-                    if bcrypt.checkpw( given_pw , User.objects.get(username = data['username']).password.encode('utf-8') ):
-                        accessing_user = User.objects.get(username = data['username']).id
-                        return JsonResponse({'MESSAGE':'SUCCESS',
-                        'AUTHORIZATION':jwt.encode({'id' : accessing_user}, 'SECRET', algorithm = 'HS256').decode()},
-                        status=200)
-                    else:
-                        return password_msg
+            if accessing_user:
+                if bcrypt.checkpw( given_pw , accessing_user.password.encode('utf-8') ):
+                    return sucess_msg
+                else:
+                    return password_msg
 
             else:
                 return JsonResponse({'MESSAGE':'INVALID_USER'}, status=401)
