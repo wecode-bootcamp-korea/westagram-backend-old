@@ -46,6 +46,7 @@ class RegisterView(View):
 		except KeyError:
 			return JsonResponse({'key_error':'Check input name or enter all fields'})
 
+
 class LoginView(View) :
 	def post(self,request) :
 		data 			= json.loads(request.body)
