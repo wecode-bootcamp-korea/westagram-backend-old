@@ -41,32 +41,35 @@ class RegisterView(View):
 				password= decoded_password,
 			).save()
 
-			return JsonResponse({'MESSAGE': 'Registration Successful'}, status=200)
+			return JsonResponse({'message': 'Registration Successful'}, status=200)
 
 		except KeyError:
-			return JsonResponse({'MESSAGE':'Key Error'})
+			return JsonResponse({'key_error':'Check input name or enter all fields'})
 
 class LoginView(View) :
 	def post(self,request) :
 		data 			= json.loads(request.body)
 		try:
-			# username = data['username']
-			# password = data['password']
+			email = data['email']
+			password = data['password']
 
-			if Account.objects.filter(username=data['username']).exists() :
-				user 	 		 = Account.objects.get(username=data['username'])
-				userpassword	 = data['password'].encode('utf-8')
+			#if Account.objects.filter(username=data['username']).exists() :
+				#user 	 		 = Account.objects.get(username=data['username'])
+				#userpassword	 = data['password'].encode('utf-8')
+			if Account.objects.filter(email=email).exists():
+				user 	 		 = Account.objects.get(email=email)
+				userpassword	 = password.encode('utf-8')
+				#return JsonResponse({'a': userpassword})
 
-				if bcrypt.checkpw(userpassword, user.password.encode('utf-8')):
+				if bcrypt.checkpw(userpassword, (user.password).encode('utf-8')):
 					token = jwt.encode({'id': user.id}, 'secret', algorithm = 'HS256')
 					decoded_token = token.decode()
-					return JsonResponse({'MESSAGE':'Login successful', 'user token' : decoded_token})
+					return JsonResponse({'MESSAGE':'Login_successful', 'user_token' : decoded_token}, status=200)
 
-				else :
-					return JsonResponse({'MESSAGE':'Check username and password'})
+				else:
+					return JsonResponse({'MESSAGE':'Check username and password'}, status=400)
 			else:
-				return JsonResponse({'MESSAGE':'Username does not exist'})
+				return JsonResponse({'MESSAGE':'Username does not exist'}, status=400)
 
 		except KeyError:
 			return JsonResponse({'MESSAGE':'Key Error'})
-
