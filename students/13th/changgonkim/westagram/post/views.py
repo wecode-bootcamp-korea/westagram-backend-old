@@ -25,7 +25,7 @@ class PostView(View) :
 				caption		= caption,
 			)
 
-			return JsonResponse({'message':'Post successful'})
+			return JsonResponse({'message':'Post successful'}, status=200)
 
 		except KeyError:
 			return JsonResponse({'key error':'must add posterid and image url'})
@@ -52,7 +52,13 @@ class CommentView(View) :
 				comment 		= comment,
 			)
 			print(data)
-			return JsonResponse({'message':'Such success!'})
+			return JsonResponse({'message':'Such success!'}, status=200)
 			
 		except KeyError:
 			return JsonResponse({'key error: No comment entered'})
+
+	def get(self,request) :
+		data	 = json.loads(request.body)
+		post 	 = Comment.objects.filter(commented_post=data['post']).values()
+		comments = [comments for comments in post]
+		return JsonResponse({'all comments for post': comments}, status=200)
