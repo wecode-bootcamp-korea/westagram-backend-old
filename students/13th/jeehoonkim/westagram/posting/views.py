@@ -6,7 +6,7 @@ from django.views     import View
 from django.http      import JsonResponse
 from django.utils     import timezone
 
-from .models          import Posting, Comment
+from .models          import Posting, Comment, PostingLike
 from user.models      import User
 
 class PostingView(View):
@@ -146,14 +146,19 @@ class CommentView(View):
 
 class LikeView(View):
     def post(self, request, posting_id):
-        data    = json.loads(request.body)
-        posting = get_object_or_404(Posting, pk=posting_id)
-        user_id = data['user_id']
-        user    = User.objects.get(id=user_id)
+        try:
+            data    = json.loads(request.body)
+            posting = get_object_or_404(Posting, pk=posting_id)
+            user_id = data['user_id']
+            user    = get_object_or_404(User, pk=user_id)
 
-        if user in posting.like.all():
-            posting.like.remove(user_id)
-            return JsonResponse({'message': 'UNLIKED'}, status=201)
-        else:
-            posting.like.add(user_id)
-            return JsonResponse({'message': 'LIKED'}, status=201)    
+            if PostingLike.objects.filter(posting_id=posting.id, user_id=user.id):
+                posting.like.remove(user_id)
+                return JsonResponse({'message': 'UNLIKED'}, status=201)
+            else:
+                posting.like.add(user_id)
+                return JsonResponse({'message': 'LIKED'}, status=201)   
+                
+        except json.JSONDecodeError:
+            return JsonResponse({'message':'KEY_ERROR'}, status=400)
+ 
