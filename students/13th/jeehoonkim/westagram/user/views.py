@@ -9,7 +9,7 @@ from django.db.models import Q
 from django.http      import JsonResponse
 
 from .models          import User
-from my_settings      import SECRET_KEY
+from my_settings      import SECRET_KEY, ALGORITHM
 from .utils           import authorize_decorator
 
 class SignUpView(View):
@@ -60,20 +60,16 @@ class SignInView(View):
             #phone           = data['phone']
             user_info       = User.objects.get(email=email)
             hashed_password = user_info.password
-            if bcrypt.checkpw(password.encode('utf-8'), hashed_password.encode('utf-8'))==False:
-                raise ValueError
+            if bcrypt.checkpw(password.encode('utf-8'), hashed_password.encode('utf-8')):
+                access_token=jwt.encode({'user_id': user_info.id}, SECRET_KEY, algorithm=ALGORITHM)
+                decoded_token=access_token.decode('utf-8')
+                return JsonResponse({'TOKEN': decoded_token}, status=200)
+            else:
+                return JsonResponse({'message': 'WRONG PASSWORD'}, status=401)
         except User.DoesNotExist:
             return JsonResponse({'message': 'INVALID_USER'}, status=401)
-        except ValueError:
-            return JsonResponse({'message': 'WRONG PASSWORD'}, status=401)
         except KeyError:
             return JsonResponse({'message': 'KEY_ERROR'}, status=401)
-        else:
-            access_token=jwt.encode({'user_id': user_info.id}, SECRET_KEY, algorithm='HS256')
-            decoded_token=access_token.decode('utf-8')
-            return JsonResponse({'TOKEN': decoded_token}, status=200)
-        return JsonResponse({'message': 'KEY_ERROR'}, status=400)
-
 
 class FollowView(View):
     # 팔로우 할 사람의 user_id가 url에 있음
