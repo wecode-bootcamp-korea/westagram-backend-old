@@ -4,6 +4,7 @@ import jwt
 
 from django.views   import View
 from django.http    import HttpResponse, JsonResponse
+
 from user.models    import User
 
 class SignUpView(View):
@@ -63,9 +64,9 @@ class SignInView(View):
                 password_validator = bcrypt.checkpw(password.encode('utf-8'), correct_password)
 
                 if user.email == email and user.phone_number == phone_number and password_validator == True:
-                    access_token = jwt.encode({'id': user.id}, 'secret', algorithm = 'HS256')
-                    decoded_token = access_token.decode('utf-8')
-                    return JsonResponse({"message": "SUCCESS", "token": decoded_token}, status=200)
+                    token = jwt.encode({'id': user.id}, 'secret', algorithm = 'HS256')
+                    access_token = token.decode('utf-8')
+                    return JsonResponse({"message": "SUCCESS", "token": access_token}, status=200)
 
                 else: 
                     return JsonResponse({"message": "INVALID_USER"}, status=401)
