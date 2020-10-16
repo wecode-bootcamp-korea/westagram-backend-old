@@ -25,12 +25,10 @@ class PostingView(View):
                 created_date = created_date
             )
             return JsonResponse({'message': 'SUCCESS'}, status=201)
-        else:
-            return JsonResponse({'message': 'PLEASE UPLOAD IMAGE'})
+        return JsonResponse({'message': 'PLEASE UPLOAD IMAGE'})
         
     def get(self, request):
-        all_contents = Posting.objects.all().values('user__name', 'content', 'image', 'created_date')
-        # 바로 all_contents를 넣으면 에러. 리스트로 넣어야 출력됨. why?
+        all_contents = Posting.objects.values('user__name', 'content', 'image', 'created_date')
         return JsonResponse({'Postings': list(all_contents)}, status=200)
 
     def delete(self, request, posting_id):
@@ -41,8 +39,8 @@ class PostingView(View):
         if posting.user_id == int(user_id):
             posting.delete()
             return JsonResponse({'message': 'DELETED'}, status=200)
-        else:
-            return JsonResponse({'message': 'NO PERMISSION'}, status=400)
+        
+        return JsonResponse({'message': 'NO PERMISSION'}, status=400)
     
     def put(self, request, posting_id):
         data          = json.loads(request.body)
@@ -52,15 +50,15 @@ class PostingView(View):
         modified_date = timezone.now()
         posting       = Posting.objects.filter(id=posting_id)
 
-        if posting[0].user_id == int(user_id):
+        if posting.first().user_id == int(user_id):
             posting.update(
                 content       = content,
                 image         = image,
                 modified_date = modified_date
                 )
             return JsonResponse({'message': 'EDITED'}, status=200)
-        else:
-            return JsonResponse({'message': 'NO PERMISSION'}, status=400)
+
+        return JsonResponse({'message': 'NO PERMISSION'}, status=400)
 
 class CommentView(View):
     def post(self, request, posting_id):
@@ -124,8 +122,7 @@ class CommentView(View):
         if comments.user_id == int(user_id):
             comments.delete()
             return JsonResponse({'message': 'DELETED'},status=200)
-        else:
-            return JsonResponse({'message': 'NO PERMISSION'}, status=400)
+        return JsonResponse({'message': 'NO PERMISSION'}, status=400)
 
     def put(self, request):
         data          = json.loads(request.body)
@@ -135,14 +132,13 @@ class CommentView(View):
         modified_date = timezone.now()
         comments      = Comment.objects.filter(id=comment_id)
         
-        if comments[0].user_id == int(user_id):
+        if comments.first().user_id == int(user_id):
             comments.update(
                 content       = content,
                 modified_date = modified_date
                 )
             return JsonResponse({'message': 'EDITED'}, status=200)
-        else:
-            return JsonResponse({'message': 'NO PERMISSION'}, status=400)
+        return JsonResponse({'message': 'NO PERMISSION'}, status=400)
 
 class LikeView(View):
     def post(self, request, posting_id):
