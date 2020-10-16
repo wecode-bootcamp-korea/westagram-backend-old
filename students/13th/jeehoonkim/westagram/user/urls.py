@@ -1,4 +1,5 @@
 from django.urls import path
+from .utils      import authorize_decorator
 from .views      import (
     SignUpView, 
     SignInView, 

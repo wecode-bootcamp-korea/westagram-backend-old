@@ -9,22 +9,26 @@ from django.db.models import Q
 from django.http      import JsonResponse
 
 from .models          import User
-from my_settings    import SECRET_KEY
+from my_settings      import SECRET_KEY
+from .utils           import authorize_decorator
 
 class SignUpView(View):
     def post(self, request):
-        data     = json.loads(request.body)
-        email    = data['email']
-        name     = data['name']
-        password = data['password']
-        phone    = data['phone']
+        try:
+            data     = json.loads(request.body)
+            email    = data['email']
+            #name     = data['name']
+            password = data['password']
+            #phone    = data['phone']
+            name='asdfasdf'
+            phone='01012345678'
 
+        except KeyError:    
+            return JsonResponse({'message': 'KEY_ERROR'}, status=400)
+            
         email_pattern = '^\w+([-_.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$'
         # 8자 이상, 최소 하나의 문자, 숫자, 특수문자
-        password_pattern = '^(?=.*[A-Za-z])(?=.*\d)(?=.*[$@$!%*#?&])[A-Za-z\d$@$!%*#?&]{8,}$'
-        
-        if password == '' or email == '':
-            return JsonResponse({'message': 'KEY_ERROR'}, status=400)
+        password_pattern = '^(?=.*[A-Za-z])(?=.*\d)(?=.*[$@$!%*#?&])[A-Za-z\d$@$!%*#?&]{8,}$'        
         
         if re.match(password_pattern, password) == None: 
             return JsonResponse({'message': 'PASSWORD IS NOT VALID'}, status=400)
@@ -32,9 +36,9 @@ class SignUpView(View):
         if re.match(email_pattern, email) == None:
             return JsonResponse({'message': 'EMAIL IS NOT VALID'}, status=400)
 
-        if User.objects.filter(Q(email=email) | Q(name=name) | Q(phone=phone)).exists(): 
+        if User.objects.filter(email=email).exists(): 
             return JsonResponse({'message': 'USER ALREADY EXISTS'}, status=400)
-        
+
         hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
         decode_hashed_pw = hashed_password.decode('utf-8')
         User.objects.create(
@@ -48,34 +52,36 @@ class SignUpView(View):
 
 class SignInView(View):
     def post(self, request):
-        data            = json.loads(request.body)
-        email           = data['email']
-        password        = data['password']
-        phone           = data['phone']
 
-        if (phone or email) and password:
-            try:
-                user_info       = User.objects.get(Q(phone=phone) | Q(email=email))
-                hashed_password = user_info.password
-                if bcrypt.checkpw(password.encode('utf-8'), hashed_password.encode('utf-8'))==False:
-                    raise ValueError
-            except User.DoesNotExist:
-                return JsonResponse({'message': 'INVALID_USER'}, status=401)
-            except ValueError:
-                return JsonResponse({'message': 'WRONG PASSWORD'}, status=401)
-            else:
-                access_token=jwt.encode({'user_id': user_info.id}, SECRET_KEY, algorithm='HS256')
-                decoded_token=access_token.decode('utf-8')
-                return JsonResponse({'TOKEN': decoded_token}, status=200)
+        try:
+            data            = json.loads(request.body)
+            email           = data['email']
+            password        = data['password']
+            #phone           = data['phone']
+            user_info       = User.objects.get(email=email)
+            hashed_password = user_info.password
+            if bcrypt.checkpw(password.encode('utf-8'), hashed_password.encode('utf-8'))==False:
+                raise ValueError
+        except User.DoesNotExist:
+            return JsonResponse({'message': 'INVALID_USER'}, status=401)
+        except ValueError:
+            return JsonResponse({'message': 'WRONG PASSWORD'}, status=401)
+        except KeyError:
+            return JsonResponse({'message': 'KEY_ERROR'}, status=401)
         else:
-            return JsonResponse({'message': 'KEY_ERROR'}, status=400)
+            access_token=jwt.encode({'user_id': user_info.id}, SECRET_KEY, algorithm='HS256')
+            decoded_token=access_token.decode('utf-8')
+            return JsonResponse({'TOKEN': decoded_token}, status=200)
+        return JsonResponse({'message': 'KEY_ERROR'}, status=400)
+
 
 class FollowView(View):
     # 팔로우 할 사람의 user_id가 url에 있음
+    @authorize_decorator
     def post(self, request, user_id):
         data         = json.loads(request.body)
-        # 팔로우 하는 사람(follower)의 user_id를 입력받음
-        follower     = data['user_id']
+        # 팔로우 하는 사람(follower)의 user_id를 decorator의 request.user에서 입력받음
+        follower     = request.user
         follower_obj = get_object_or_404(User, pk=follower)
         
         followed=User.objects.get(id=user_id)
