@@ -93,27 +93,27 @@ class CommentView(View):
     def get(self, request, posting_id):
         
         try:
-            data=json.loads(request.body)
-            thread_to=data['comment_id']
-            threads=Comment.objects.filter(posting_id=posting_id, thread_to=int(thread_to)).values(
-                'user__name',
-                'content',
-                'created_date'
-            )
-            if list(threads)==[]:
-                return JsonResponse({'message': 'NO THREADS'}, status=400)
-            return JsonResponse({'Threads': list(threads)}, status=200)
-        except ValueError:
+            Posting.objects.get(id=posting_id)
+            thread_to=request.GET.get('comment_id')
+            Comment.objects.get(id=thread_to)
+            if thread_to:
+                threads=Comment.objects.filter(posting_id=posting_id, thread_to=int(thread_to)).values(
+                    'user__name',
+                    'content',
+                    'created_date'
+                )
+                return JsonResponse({'Threads': list(threads)}, status=200)
+        except Posting.DoesNotExist:
+            return JsonResponse({'message': 'POST DOES NOT EXIST'}, status=400)
+        except Comment.DoesNotExist:
+            return JsonResponse({'message': 'COMMENT DOES NOT EXIST'}, status=400)
+        else:
             all_comments = Comment.objects.filter(posting_id=posting_id).values(
                 'user__name', 
                 'content', 
                 'created_date'
                 )
-        
-        if all_comments:
             return JsonResponse({'Comments': list(all_comments)}, status=200)
-        else:
-            return JsonResponse({'message': 'DELETED POST'}, status=400)
 
     def delete(self, request):
         data       = json.loads(request.body)
