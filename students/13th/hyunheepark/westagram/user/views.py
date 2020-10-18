@@ -1,32 +1,35 @@
 import json
 import bcrypt
 import jwt
+import os
 
+from dotenv import load_dotenv
 from django.views import View
 from django.http  import JsonResponse,HttpResponse
 
 from user.models  import User
 
-# Create your views here.
+load_dotenv(verbose=True)
+
+SECRET = os.getenv('SECRET')
+ALGO   = os.getenv('algo')
+
+
 class SignUpView(View):
     def post(self,request):
          try:
             data = json.loads(request.body)
-            
+            print(data)            
             if len(data['password']) < 8 :
-                print("1")
                 return JsonResponse({'message':'비밀번호를 8자 이상으로 입력하세요'},status=400)
             
             elif '@' not in data['email'] or '.' not in data['email']:
-                print("2")
                 return JsonResponse({'message':'이메일을 확인하세요'},status=400)
             
             elif User.objects.filter(name=data['name']).exists():
-                print("3")
                 return JsonResponse({'message':'이미 가입된 이름 정보입니다'},status=400)
             
             elif User.objects.filter(email=data['email']).exists():
-                print("4")
                 return JsonResponse({'message':'이미 가입된 이메일 정보입니다'},status=400)
             
             elif User.objects.filter(phone=data['phone']).exists():
@@ -68,8 +71,7 @@ class SignInView(View):
                 if bcrypt.checkpw(password.encode('utf-8'),db_password):
                 
                     #토큰 생성
-                    SECRET = 'secret'
-                    token  = jwt.encode({'id':user.id}, SECRET,algorithm = 'HS256')
+                    token  = jwt.encode({'id':user.id}, SECRET,algorithm = ALGO)
                     decoded_token  = token.decode('utf-8')
                     
                     return JsonResponse(

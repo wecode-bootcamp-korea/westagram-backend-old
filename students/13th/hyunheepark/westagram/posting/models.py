@@ -3,7 +3,8 @@ from django.db   import models
 # Create your models here.
 
 class Post(models.Model):
-    user       = models.ManyToManyField('user.User', through='Comment', related_name='user')
+    user       = models.ForeignKey('user.User',on_delete=models.CASCADE)  
+    commenter  = models.ManyToManyField('user.User', through='Comment', related_name='user')
     created_at = models.DateTimeField(auto_now_add=True)
     img_url    = models.CharField(max_length=245)
     content    = models.TextField()

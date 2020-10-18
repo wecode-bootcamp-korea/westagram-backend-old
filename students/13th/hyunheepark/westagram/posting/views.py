@@ -11,7 +11,7 @@ class PostView(View):
     def post(self,request):
         try:
             data = json.loads(request.body)
-
+            print(data)
             user_id = data['user_id']
             content = data['content']
             img_url = data['img_url']

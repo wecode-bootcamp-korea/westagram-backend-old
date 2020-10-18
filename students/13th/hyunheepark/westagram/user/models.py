@@ -8,7 +8,6 @@ class User(models.Model):
     phone     = models.CharField(max_length=30,unique=True)
     email     = models.EmailField(max_length=254,unique=True)
     password  = models.CharField(max_length=100)
-    #like     = models.IntegerField(default=0)
     like_post = models.ManyToManyField('posting.Post',through='Like', related_name='post')
 
     class Meta:
