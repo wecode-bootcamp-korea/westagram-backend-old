@@ -1,8 +1,10 @@
 import json
-from django.http import JsonResponse
+import re
 
+from django.http import JsonResponse
 from django.views import View
 from django.db.models import Q
+
 from user.models import User
 
 class UsersView(View):
@@ -12,6 +14,7 @@ class UsersView(View):
         valid_email    = False
         valid_password = False
         valid_user     = False
+        valid_email_re = '^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w+$'
 
         try:
             new_name     = data['name']
@@ -22,10 +25,17 @@ class UsersView(View):
             return JsonResponse({'message': "KEY_ERROR"}, status = 400)
 
         #email validation
-        if '@' in new_email and '.' in new_email.split('@')[1]:
+#        if '@' in new_email and '.' in new_email.split('@')[1]:
+#            valid_email = True
+#        else:
+#            return JsonResponse({'message': "Invalid Email"}, status = 400)
+
+        #email validation using re
+        if(re.search(valid_email_re, new_email)):
             valid_email = True
         else:
             return JsonResponse({'message': "Invalid Email"}, status = 400)
+
 
         #password validation
         if len(new_password) >= 8:
