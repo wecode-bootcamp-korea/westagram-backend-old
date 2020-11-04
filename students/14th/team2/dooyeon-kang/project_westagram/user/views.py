@@ -31,11 +31,10 @@ class UsersView(View):
 #            return JsonResponse({'message': "Invalid Email"}, status = 400)
 
         #email validation using re
-        if(re.search(valid_email_re, new_email)):
+        if re.search(valid_email_re, new_email):
             valid_email = True
         else:
             return JsonResponse({'message': "Invalid Email"}, status = 400)
-
 
         #password validation
         if len(new_password) >= 8:
@@ -59,3 +58,35 @@ class UsersView(View):
             )
 
             return JsonResponse({'message': "SUCCESS"}, status = 200)
+
+class LoginView(View):
+
+    def post(self, request):
+        data           = json.loads(request.body)
+        is_phone       = False
+        is_email       = False
+        is_name        = False
+        valid_email_re = '^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w+$'
+
+        try:
+            input_account  = data['account']
+            input_password = data['password']
+        except Exception as error_msg:
+            return JsonResponse({'message': 'KEY_ERROR'}, status = 400)
+
+        if re.search(valid_email_re, input_account):
+            is_email = True
+        elif input_account.isdigit():
+            is_phone = True
+        else:
+            is_name = True
+
+        try:
+            user = User.objects.get(Q(name=input_account)|Q(email=input_account)|Q(phone=input_account))
+        except Exception:
+            return JsonResponse({'message': 'INVALID_USER'}, status = 401)
+
+        if input_password == user.password:
+            return JsonResponse({'message': 'SUCCESS'}, status = 200)
+        else:
+            return JsonResponse({'message': 'INVALID_USER'}, status = 401)
