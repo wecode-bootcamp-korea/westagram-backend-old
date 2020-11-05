@@ -76,6 +76,9 @@ class CommentView(View):
         except Exception:
             return JsonResponse({'message': 'INVALID POSTING'}, status = 401)
 
+        if not comment_text:
+            return JsonResponse({'message': 'Cannot be none'}, status = 400)
+
         try:
             Comment(
                 text    = comment_text,
