@@ -4,7 +4,7 @@ from django.http import JsonResponse
 from django.views import View
 from django.db.models import Q
 
-from posting.models import Posting
+from posting.models import Posting, Comment
 from user.models import User
 
 class PostingView(View):
@@ -53,3 +53,64 @@ class PostingView(View):
 
         except Exception as error_message:
             return JsonResponse({'message': error_message}, status = 400)
+
+class CommentView(View):
+
+    def post(self, request):
+        data = json.loads(request.body)
+
+        try:
+            input_user   = data['user_id']
+            comment_text = data['text']
+            posting_id   = data['posting_id']
+        except Exception as error_message:
+            return JsonResponse({'message': error_message}, status = 400)
+
+        try:
+            user_obj = User.objects.get(id=input_user)
+        except Exception:
+            return JsonResponse({'message': 'INVALID USER'}, status = 401)
+
+        try:
+            posting_obj = Posting.objects.get(id=posting_id)
+        except Exception:
+            return JsonResponse({'message': 'INVALID POSTING'}, status = 401)
+
+        try:
+            Comment(
+                text    = comment_text,
+                user    = user_obj,
+                posting = posting_obj,
+            ).save()
+
+            return JsonResponse({'message': 'SUCCESS'}, status = 200)
+        except Exception as error_message:
+            return JsonResponse({'meesage': error_message}, status = 401)
+
+    def get(self, request):
+        data = json.loads(request.body)
+
+        try:
+            posting_id = data['posting_id']
+        except Exception as error_message:
+            return JsonResponse({'message': error_message}, status = 400)
+
+        try:
+            comments = Comment.objects.filter(posting_id=posting_id).values()
+        except Exception:
+            return JsonResponse({'message': 'No comment for this posting'}, status = 400)
+
+        result = [
+            {'posting_id': comment['posting_id'],
+             'user': {
+                'user_id': comment['user_id'],
+                'username': User.objects.get(id=comment['user_id']).name
+             },
+             'text': comment['text'],
+             'created_at': comment['created_at'] } for comment in comments
+        ]
+
+        try:
+            return JsonResponse({'result': result}, status = 200)
+        except Exception:
+            return JsonResponse({'message': 'Something Wrong'}, status = 400)
