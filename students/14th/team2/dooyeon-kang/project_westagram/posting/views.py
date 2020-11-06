@@ -44,9 +44,16 @@ class PostingView(View):
                     'user_id': post['user_id'],
                     'username': User.objects.get(id=post['user_id']).name
                  },
-                 'comments': [comment for comment in Comment.objects.filter(posting_id=post['id']).values()],
+                 'comments': [{ 'id': comment['id'],
+                                'user_id': comment['user_id'],
+                                'username': User.objects.get(id=comment['user_id']).name,
+                                'posting_id': comment['posting_id'],
+                                'text': comment['text'],
+                                'created_at': comment['created_at']} for comment\
+                              in Comment.objects.filter(posting_id=post['id']).values()],
                  'img_url': post['image_url'],
                  'description': post['description'],
+                 'posting_id': post['id'],
                  'created_at': post['created_at']} for post in posts
             ]
 
