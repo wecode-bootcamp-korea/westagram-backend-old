@@ -1,6 +1,6 @@
 import json
 
-from django.http import JsonResponse
+from django.http import JsonResponse, QueryDict
 from django.views import View
 from django.db.models import Q
 
@@ -91,15 +91,16 @@ class CommentView(View):
             return JsonResponse({'meesage': error_message}, status = 401)
 
     def get(self, request):
-        data = json.loads(request.body)
+#        post_id = request.GET.get('post')
+#        data = json.loads(request.body)
 
         try:
-            posting_id = data['posting_id']
+            post_id = request.GET.get('post')
         except Exception as error_message:
             return JsonResponse({'message': error_message}, status = 400)
 
         try:
-            comments = Comment.objects.filter(posting_id=posting_id).values()
+            comments = Comment.objects.filter(posting_id=post_id).values()
         except Exception:
             return JsonResponse({'message': 'No comment for this posting'}, status = 400)
 
