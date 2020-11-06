@@ -8,6 +8,7 @@ from user.models import User
 class TestView(TestCase):
     def setUp(self):
         client = Client()
+
         user_name = 'kim'
         password  = '123456*weW'
         phone     = '01033334444'
@@ -44,7 +45,7 @@ class TestView(TestCase):
         assert response.status_code == 400
         assert json.loads(response.content)['message'] == 'KEY_ERROR'
 
-    def test_fail_no_emaial(self):
+    def test_fail_no_email(self):
         url = reverse('user')
         fail_data = {
             'name'     : 'min',
