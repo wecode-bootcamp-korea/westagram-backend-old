@@ -44,6 +44,7 @@ class PostingView(View):
                     'user_id': post['user_id'],
                     'username': User.objects.get(id=post['user_id']).name
                  },
+                 'comments': [comment for comment in Comment.objects.filter(posting_id=post['id']).values()],
                  'img_url': post['image_url'],
                  'description': post['description'],
                  'created_at': post['created_at']} for post in posts
@@ -91,8 +92,6 @@ class CommentView(View):
             return JsonResponse({'meesage': error_message}, status = 401)
 
     def get(self, request):
-#        post_id = request.GET.get('post')
-#        data = json.loads(request.body)
 
         try:
             post_id = request.GET.get('post')
