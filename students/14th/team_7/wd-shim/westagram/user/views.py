@@ -154,27 +154,15 @@ class LoginView(View):
                     break
         
         except KeyError:
-            return JsonResponse(
-                {"message": "KEY_ERROR"},
-                status = 400
-            )
+            return JsonResponse({"message": "KEY_ERROR"}, status = 400)
         
         except User.DoesNotExist:
-            return JsonResponse(
-                {"message": "INVALID_USER"},
-                status=401
-            )
+            return JsonResponse({"message": "INVALID_USER"}, status=401)
         
         except BlankFieldException as e:
-            return JsonResponse(
-                {"message": e.__str__()},
-                status = 400
-            )
+            return JsonResponse({"message": e.__str__()}, status = 400)
         
         except Exception:
-            return JsonResponse(
-                {"message": "UNKNOWN_EXCEPTION"},
-                status=400
-            )
+            return JsonResponse({"message": "UNKNOWN_EXCEPTION"}, status=400)
         
         return JsonResponse({"message": "SUCCESS"}, status = 200)
