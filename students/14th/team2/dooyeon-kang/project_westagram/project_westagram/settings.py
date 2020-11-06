@@ -1,3 +1,4 @@
+import my_db_settings
 """
 Django settings for project_westagram project.
 
@@ -77,17 +78,7 @@ WSGI_APPLICATION = 'project_westagram.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'WESTA',
-        'USER': 'root',
-        'PASSWORD': '5080901',
-        'HOST': '127.0.0.1',
-        'PORT': '3306',
-    }
-}
-
+DATABASES = my_db_settings.DATABASES
 
 # Password validation
 # https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators
