@@ -31,6 +31,8 @@ ALLOWED_HOSTS = ['*']
 # Application definition
 
 INSTALLED_APPS = [
+    'user.apps.UserConfig',
+#    'phonenumber_field',
 #    'django.contrib.admin',
 #    'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -77,8 +79,12 @@ WSGI_APPLICATION = 'project_westagram.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'project_westagram',
+        'USER': 'root',
+        'HOST': '127.0.0.1',
+        'PASSWORD':'namu',
+        'PORT':'3306'
     }
 }
 
@@ -120,6 +126,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
+
+
+#REMOVE_APPEND_SLASH_WARNING
+APPEND_SLASH = False
 
 ##CORS
 CORS_ORIGIN_ALLOW_ALL=True
