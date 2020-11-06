@@ -8,9 +8,6 @@ from django.views     import View
 from .models import User
 
 class Register(View):
-    def get(self, request):
-        return JsonResponse({'message':'bless'}, status=200)
-
     def post(self, request):
         data = json.loads(request.body)
 
@@ -30,20 +27,20 @@ class Register(View):
             return JsonResponse({'message':'INVALID_PASSWORD'}, status = 400)
 
         if validate_phone_number(data['phone_number']) == False:
-            return JsonResponse({'meesage': 'INVALID_PHONE_NUMBER'}, status = 400)
+            return JsonResponse({'meesage':'INVALID_PHONE_NUMBER'}, status = 400)
 
         try:
             if User.objects.filter(username = data['username']).exists():
                 return JsonResponse({'message':'username already exists!'})
             elif User.objects.filter(email = data['email']).exists():
                 return JsonResponse({'message':'email already exists!'})
-            elif User.objects.filter(email = data['phone_number']).exists():
+            elif User.objects.filter(phone_number = data['phone_number']).exists():
                 return JsonResponse({'message':'phone_number already exists!'})
 
             User.objects.create(username = data['username'], email = data['email'], password=data['password'], phone_number = data['phone_number'])
             return JsonResponse({'message':'SUCESS'}, status = 200)
         except KeyError:
-            return JsonResponse({'meesge': 'KEY_ERROR'}, status =400)
+            return JsonResponse({'meesge':'KEY_ERROR'}, status =400)
 
 class LogIn(View):
     def post(self, request):
@@ -58,8 +55,8 @@ class LogIn(View):
                 print(user.password)
             if user.password == data['password']:
                 return JsonResponse({'message':'SUCESS'}, status  = 200)
-            return JsonResponse({'message': 'INVALID_USER'}, status = 400)
+            return JsonResponse({'message':'INVALID_USER'}, status = 400)
         except KeyError:
-            return JsonResponse({'message': 'KEY_ERROR'}, status = 400)
+            return JsonResponse({'message':'KEY_ERROR'}, status = 400)
         except UnboundLocalError:
-            return JsonResponse({'message': 'INVALID_USER'}, status = 400)
+            return JsonResponse({'message':'INVALID_USER'}, status = 400)
