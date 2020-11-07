@@ -5,6 +5,6 @@ from .views import (
                 )
 
 urlpatterns=[
-        path('regist', RegistView.as_view()),
-        path('login', LoginView.as_view()),
+        path('/regist', RegistView.as_view()),
+        path('/login', LoginView.as_view()),
         ]

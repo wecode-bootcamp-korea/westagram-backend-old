@@ -1,13 +1,14 @@
 import json
 import re
-from django.core import serializers
 from django.db.models import Q
+from django.core import serializers
 from datetime import datetime
 from django.http import JsonResponse
 from django.views import View
 from .models import (
                     Posts,
                     Comments,
+                    Likes,
                     )
 from user.models import Users
 
@@ -21,58 +22,48 @@ def getUserID(user_input):
 
 class Posting(View):
     def post(self, request):
-        data    = json.loads(request.body)
+        try:
+            data    = json.loads(request.body)
+        except Exception as ex:
+            return JsonResponse({"message":"You request with wrong format."}, status=400)
         
         # image_url, user account 정보를 추출하여 posts table에 추가 작업
-        keys    = ['account', 'image_url', 'article'] 
+        keys        = ['account', 'image_url', 'article'] 
+        inputs      = {k:v for k,v in data.items() if k in keys}
         
-        # dictionary conprehension 시도해보기
-        inputs  = {k:v for k,v in data.items() if k in keys}
-        
-        '''
-        inputs  = {}
         for key in keys:
-            if key in data:
-                inputs[key] = data[key]
-            else:
-                inputs[key] = ''
-        '''
+            if not key in inputs:
+                return JsonResponse({"message":"we need to take all values [account, image_url, article]"}, status=400)
         
-        if not 'account' in data:
-            return JsonResponse({"message":"account info to posting is empty."}, status=400)
-        
-        if not 'image_url' in data:
-            data['image_url']   = ''
-        
-        if not 'article' in data:
-            data['article']     = ''
-        
-        '''
-        user = Users.objects.get(
-                            Q(name          = inputs['account'])|
-                            Q(phone_number  = inputs['account'])|
-                            Q(email         = inputs['account'])
-                            )
-        '''
         user_id     = getUserID(inputs['account'])
 
         Posts.objects.create(
                         article     = inputs['article'], 
                         image_url   = inputs['image_url'],
                         created_at  = datetime.now(), 
-                        user_id     = user_id
+                        user        = user_id
                         ) 
-
         return JsonResponse({"message":"SUCCESS"}, status=201)
 
 class ShowAllPosts(View):
     def get(self, request):
-        posts = serializers.serialize('json', Posts.objects.all())
+        #posts = serializers.serialize('json', Posts.objects.all(), fields=('article', 'image_url', 'created_at'))
+
+        posts       = []
+        entries     = Posts.objects.select_related('user').all()
+        
+        for row in entries:
+            posts.append({"article":row.article, "image_url":row.image_url, "created_at":row.created_at ,"user":row.user.name})
+        
         return JsonResponse({"posts":posts}, status=200)
 
 class AddComment(View):
     def post(self, request):
-        data        = json.loads(request.body)
+        try:
+            data    = json.loads(request.body)
+        except Exception as ex:
+            return JsonResponse({"message":"You request with wrong format."}, status=400)
+        
         inputs      = {}
         
         ARTICLE     = 'article'
@@ -109,29 +100,44 @@ class AddComment(View):
 
 class ShowAllComments(View):
     def get(self, request):
-        comments = serializers.serialize('json', Comments.objects.all())
+        entries     = Comments.objects.select_related('user', 'post').all()
+        comments    = []
+        for row in entries:
+            comments.append({'article':row.article, 'created_at':row.created_at,
+                            'user':row.user.name, 'post':row.post.id})
         
         return JsonResponse({"comments":comments}, status=200)
 
 class ShowCommentsOfPost(View):
     def post(self, request):
-        data     = json.loads(request.body)
-        post_id  = ''
+        try:
+            data    = json.loads(request.body)
+        except Exception as ex:
+            return JsonResponse({"message":"You request with wrong format."}, status=400)
+
+        post_id     = ''
        
         if "post_id" in data:
             post_id = data['post_id']
         else:
             return JsonResponse({"message":"post_id is empty"}, status=400)
 
-        comments = serializers.serialize('json', 
-                                    Comments.objects.filter(post_id = post_id))
-
+        comments    = []
+        entries     = Comments.objects.select_related('user', 'post').filter(post_id=post_id)
+        
+        for row in entries:
+            comments.append({'article':row.article, 'created_at':row.created_at,
+                            'user':row.user.name, 'post':row.post.id})
+        
         return JsonResponse({"comments":comments}, status=201)        
 
-
-
-
-
+'''
+class AddLike(View):
+    def post(self, request):
+        data = json.loads(request.body)
+        
+        # '좋아요' 대상 post, comment 와 사용자정보
+'''     
 
 
 

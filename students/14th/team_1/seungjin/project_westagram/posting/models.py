@@ -1,9 +1,10 @@
 from django.db import models
 from user.models import Users
 
-# Create your models here.
 class Posts(models.Model):
     user            = models.ForeignKey(Users, on_delete=models.CASCADE)
+
+
     created_at      = models.DateTimeField()
     image_url       = models.CharField(max_length=300)
     article         = models.CharField(max_length=300)
@@ -25,4 +26,15 @@ class Comments(models.Model):
 
     def __str__(self):
         return self.name
+
+class Likes(models.Model):
+    user            = models.ForeignKey(Users, on_delete=models.CASCADE)
+    post            = models.ForeignKey(Posts, on_delete=models.CASCADE)
+    
+    class Meta:
+        db_table    = 'likes'
+
+    def __str__(self):
+        return self.name
+
 

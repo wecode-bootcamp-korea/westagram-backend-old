@@ -10,7 +10,11 @@ from .models import (
 
 class RegistView(View):
     def post(self, request):
-        data                = json.loads(request.body)
+        try:
+            data            = json.loads(request.body)
+        except Exception as ex:
+            return JsonResponse({"message":"You request with wrong format."}, status=400)
+        
         user_account        = {'name':'','phone_number':'','email':''}
         
         if 'name' in data:
@@ -21,8 +25,11 @@ class RegistView(View):
             user_account['email']           = data['email']
         
         # 입력 정보 중 name, phone_number, email 정보가 하나도 없거나 password 정보가 없으면 경고 response.
-        if len(user_account) == 0 or not 'password' in data:
+        if user_account['name'] == ''\
+            or (user_account['phone_number'] == '' and user_account['email'] == '')\
+            or not 'password' in data:
             return JsonResponse({"message":"KEY_ERROR"}, status=400)
+        
 
         # email이 password에 대해 정규식 포맷 생성
         email_pattern       = re.compile("\w+@\w+.+\w+")
@@ -56,7 +63,11 @@ class RegistView(View):
 
 class LoginView(View):
     def post(self, request):
-        data            = json.loads(request.body)
+        try:
+            data        = json.loads(request.body)
+        except Exception as ex:
+            return JsonResponse({"message":"You request with wrong format."}, status=400)
+
         login_info      = {'account':'', 'password':''}
         
         if not 'account' in data or not 'password' in data:
