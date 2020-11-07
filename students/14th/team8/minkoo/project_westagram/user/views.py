@@ -7,7 +7,7 @@ from django.db.models import Q
 
 from .models          import User
 
-class UserView(View):
+class SignUpView(View):
     def post(self, request):
         email_check          = re.compile('^[a-zA-Z0-9-_]+@[a-zA-Z0-9]+\.[a-zA-Z0-9]+$')
         password_check       = re.compile(r'^.*(?=.{8,18})(?=.*[a-zA-Z])(?=.*?[A-Z])(?=.*\d)[a-zA-Z0-9!@#£$%^&*()_+={}\-?:~\[\]]+$')

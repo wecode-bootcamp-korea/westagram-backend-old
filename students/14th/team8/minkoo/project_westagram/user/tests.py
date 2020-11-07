@@ -12,7 +12,7 @@ class TestView(TestCase):
         phone     = '01033334444'
         email     = 'kim@naver.com'
 
-        url  = reverse('user')
+        url  = reverse('sign_up')
         data = {
             'name'     : user_name,
             'password' : password,
@@ -22,7 +22,7 @@ class TestView(TestCase):
         response = self.client.post(url, data=json.dumps(data), content_type='application/json')
         
     def test_fail_create_no_name(self):
-        url = reverse('user')
+        url = reverse('sign_up')
         fail_data = {
             'password' : '123453*$G',
             'phone'    : '11122223333',
@@ -33,7 +33,7 @@ class TestView(TestCase):
         assert json.loads(response.content)['message'] == 'KEY_ERROR'
 
     def test_fail_create_no_password(self):
-        url = reverse('user')
+        url = reverse('sign_up')
         fail_data = {
             'name'  : 'min',
             'phone' : '11122223333',
@@ -43,7 +43,7 @@ class TestView(TestCase):
         assert json.loads(response.content)['message'] == 'KEY_ERROR'
 
     def test_fail_create_no_email(self):
-        url = reverse('user')
+        url = reverse('sign_up')
         fail_data = {
             'name'     : 'min',
             'phone'    : '11122223333',
@@ -54,7 +54,7 @@ class TestView(TestCase):
         assert json.loads(response.content)['message'] == 'KEY_ERROR'
 
     def test_fail_create_no_phone(self):
-        url = reverse('user')
+        url = reverse('sign_up')
         fail_data = {
             'name'     : 'min',
             'email'    : 'min@naver.com',
@@ -65,7 +65,7 @@ class TestView(TestCase):
         assert json.loads(response.content)['message'] == 'KEY_ERROR'
     
     def test_fail_create_wrong_name(self):
-        url = reverse('user')
+        url = reverse('sign_up')
         fail_data = {
             'name'     : '"@S2zl존전사S2@" ',
             'email'    : 'min@naver.com',
@@ -77,7 +77,7 @@ class TestView(TestCase):
         assert json.loads(response.content)['message'] == "BAD_NAME_REQUEST"
 
     def test_fail_create_wrong_email(self):
-        url = reverse('user')
+        url = reverse('sign_up')
         fail_data = {
             'name'     : 'min',
             'email'    : 'fjskdlw.com',
@@ -89,7 +89,7 @@ class TestView(TestCase):
         assert json.loads(response.content)['message'] == "BAD_EMAIL_REQUEST"
     
     def test_fail_create_wrong_password(self):
-        url = reverse('user')
+        url = reverse('sign_up')
         fail_data = {
             'name'     : 'min',
             'email'    : 'min@naver.com',
@@ -101,7 +101,7 @@ class TestView(TestCase):
         assert json.loads(response.content)['message'] == 'BAD_PASSWORD_REQUEST'
 
     def test_fail_create_too_short_phone_number(self):
-        url = reverse('user')
+        url = reverse('sign_up')
         fail_data = {
             'name'     : 'min',
             'email'    : 'min@naver.com',
@@ -113,7 +113,7 @@ class TestView(TestCase):
         assert json.loads(response.content)['message'] == 'BAD_PHONE_NUMBER_REQUEST'
     
     def test_fail_create_wrong_phone_number(self):
-        url = reverse('user')
+        url = reverse('sign_up')
         fail_data = {
             'name'     : 'min',
             'email'    : 'min@naver.com',
@@ -125,7 +125,7 @@ class TestView(TestCase):
         assert json.loads(response.content)['message'] == 'BAD_PHONE_NUMBER_REQUEST'
 
     def test_fail_create_user_exists(self):    
-        url = reverse('user')
+        url = reverse('sign_up')
         fail_data = {
             'name'     : 'kim',
             'email'    : 'min@naver.com',
