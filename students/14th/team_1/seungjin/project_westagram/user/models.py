@@ -1,6 +1,5 @@
 from django.db import models
 
-# Create your models here.
 class Users(models.Model):
     name            = models.CharField(max_length=50)
     phone_number    = models.CharField(max_length=20)
@@ -11,6 +10,17 @@ class Users(models.Model):
     
     class Meta:
         db_table = 'users'
+
+    def __str__(self):
+        return self.name
+
+
+class Follows(models.Model):
+    followed_user   = models.ForeignKey(Users, related_name='related_followed_user',  on_delete=models.CASCADE)
+    following_user  = models.ForeignKey(Users, related_name='related_following_user', on_delete=models.CASCADE)
+
+    class Meta:
+        db_table = 'follows'
 
     def __str__(self):
         return self.name

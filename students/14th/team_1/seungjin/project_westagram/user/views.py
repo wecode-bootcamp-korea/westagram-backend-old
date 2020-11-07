@@ -3,18 +3,28 @@ import re
 from django.views import View
 from django.http import JsonResponse
 from django.db.models import Q
+from share.utils import (
+                    getUserID,
+                    checkRequestBody,
+                    )
 from .models import (
-                Users
+                Users,
+                Follows,
                 )
 
 
 class RegistView(View):
     def post(self, request):
+        '''
         try:
             data            = json.loads(request.body)
         except Exception as ex:
             return JsonResponse({"message":"You request with wrong format."}, status=400)
-        
+        '''
+        hasProblem = checkRequestBody(request)
+        if hasProblem:
+            return hasProblem
+
         user_account        = {'name':'','phone_number':'','email':''}
         
         if 'name' in data:
@@ -63,11 +73,16 @@ class RegistView(View):
 
 class LoginView(View):
     def post(self, request):
+        '''
         try:
             data        = json.loads(request.body)
         except Exception as ex:
             return JsonResponse({"message":"You request with wrong format."}, status=400)
-
+        '''
+        hasProblem = checkRequestBody(request)
+        if hasProblem:
+            return hasProblem
+        
         login_info      = {'account':'', 'password':''}
         
         if not 'account' in data or not 'password' in data:
@@ -86,13 +101,30 @@ class LoginView(View):
         
 
 
+class Follow(View):
+    def post(self, request):
+        hasProblem = checkRequestBody(request)
+        if hasProblem:
+            return hasProblem
 
+        #checkRequestBody(request)
+        #data = json.loads(request.body)
 
+        FOLLOWED_USER_ID = 'followed_user_id'
 
+        if not "account" in data or not FOLLOWED_USER_ID in data:
+            return JsonResponse({"message":"[account] or [followed_user_id] is empty"}, status=400)
 
+        user_id          = getUserID(data['account'])
+        followed_user_id = data[FOLLOWED_USER_ID]
 
-
-
+        if not Users.objects.filter(id=followed_user_id).exists():
+            return JsonResponse({"message":"followed user is not exist."}, status=400)
+       
+        if not Follows.objects.filter(followed_user_id=followed_user_id, following_user_id=user_id):
+            Follows.objects.create(followed_user_id=followed_user_id, following_user_id=user_id)
+        
+        return JsonResponse({"message":"SUCCESS"}, status=201)
 
 
 

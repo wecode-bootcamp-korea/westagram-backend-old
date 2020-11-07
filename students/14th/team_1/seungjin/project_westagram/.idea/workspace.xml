@@ -37,8 +37,16 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="601cf390-ddba-4489-a1a0-67710e00ac87" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/posting/tests.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/posting/migrations/0001_initial.py" beforeDir="false" afterPath="$PROJECT_DIR$/posting/migrations/0001_initial.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/posting/migrations/0002_auto_20201105_0405.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/posting/migrations/0003_posts_article.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/posting/migrations/0004_comments.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/posting/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/posting/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/posting/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/posting/urls.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/posting/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/posting/views.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/readme.md" beforeDir="false" afterPath="$PROJECT_DIR$/readme.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/user/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/user/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/user/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/user/urls.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/user/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/user/views.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -115,6 +123,7 @@
         </entry>
       </map>
     </option>
+    <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="WindowStateProjectService">
     <state width="1821" height="272" key="GridCell.Tab.0.bottom" timestamp="1604634879474">
