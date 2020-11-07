@@ -31,13 +31,13 @@ class UserView(View):
 class LogInView(View):
     def post(self,request):
         data = json.loads(request.body)
-        if 'user_id' not in data and 'mobile_number' not in data and 'email' not in data:
+        if 'account' not in data:
             return JsonResponse({"message":"KeyError!"}, status=400)
         if 'password' not in data:
             return JsonResponse({"message":"KeyError!"}, status=400)
-        account = User.objects.filter(Q(user_id=data['user_id']) |
-                                       Q(mobile_number=data['mobile_number']) |
-                                       Q(email=data['email']))
+        account = User.objects.filter(Q(user_id=data['account']) |
+                                       Q(mobile_number=data['account']) |
+                                       Q(email=data['account']))
 #        print(data)
         if not account:
             return JsonResponse({"message":"invalid Error!"}, status=401)
