@@ -25,8 +25,15 @@ class PostsView(View):
                 image_url = data['image_url']
             )
             return JsonResponse({'message':'SUCCESS'}, status=200)
-        except User.DoseNotExist:
-            return JsonResponse({'message':'INVALID_USER'})
+        except User.DoesNotExist:
+            return JsonResponse({'message':'INVALID_USER'}, status=401)
     
     def get(self, request):
-        
+        posts = Post.objects.all()
+        return JsonResponse({
+            'posts' : [{
+                'name' : post.user.name,
+                'content' : post.content,
+                'image_url' : post.image_url,
+                'created_at' : post.created_at.strftime('%Y-%m-%d %H:%M:%S')
+            } for post in posts]}, status=200) if posts else JsonResponse({'message':'None_data'}, status=200)

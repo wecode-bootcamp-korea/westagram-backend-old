@@ -1,14 +1,12 @@
 import json
 
 from django.urls import reverse
-from django.test import TestCase,Client
+from django.test import TestCase
 
 from user.models import User
 
 class TestView(TestCase):
     def setUp(self):
-        client = Client()
-
         user_name = 'kim'
         password  = '123456W*weW'
         phone     = '01033334444'
@@ -23,7 +21,7 @@ class TestView(TestCase):
         }
         response = self.client.post(url, data=json.dumps(data), content_type='application/json')
         
-    def test_fail_no_name(self):
+    def test_fail_create_no_name(self):
         url = reverse('user')
         fail_data = {
             'password' : '123453*$G',
@@ -34,18 +32,17 @@ class TestView(TestCase):
         assert response.status_code == 400
         assert json.loads(response.content)['message'] == 'KEY_ERROR'
 
-    def test_fail_no_password(self):
+    def test_fail_create_no_password(self):
         url = reverse('user')
         fail_data = {
             'name'  : 'min',
             'phone' : '11122223333',
-            'email' : 'min@naver.com'
-        }
+            'email' : 'min@naver.com' }
         response = self.client.post(url, data=json.dumps(fail_data), content_type='application/json')
         assert response.status_code == 400
         assert json.loads(response.content)['message'] == 'KEY_ERROR'
 
-    def test_fail_no_email(self):
+    def test_fail_create_no_email(self):
         url = reverse('user')
         fail_data = {
             'name'     : 'min',
@@ -56,7 +53,7 @@ class TestView(TestCase):
         assert response.status_code == 400
         assert json.loads(response.content)['message'] == 'KEY_ERROR'
 
-    def test_fail_no_phone(self):
+    def test_fail_create_no_phone(self):
         url = reverse('user')
         fail_data = {
             'name'     : 'min',
@@ -66,8 +63,20 @@ class TestView(TestCase):
         response = self.client.post(url, data=json.dumps(fail_data), content_type='application/json')
         assert response.status_code == 400
         assert json.loads(response.content)['message'] == 'KEY_ERROR'
+    
+    def test_fail_create_wrong_name(self):
+        url = reverse('user')
+        fail_data = {
+            'name'     : '"@S2zl존전사S2@" ',
+            'email'    : 'min@naver.com',
+            'password' : '1234#Fe32@',
+            'phone'    : '01011112222'
+        }
+        response = self.client.post(url, data=json.dumps(fail_data), content_type='application/json')
+        assert response.status_code == 400
+        assert json.loads(response.content)['message'] == "BAD_NAME_REQUEST"
 
-    def test_fail_wrong_email(self):
+    def test_fail_create_wrong_email(self):
         url = reverse('user')
         fail_data = {
             'name'     : 'min',
@@ -79,7 +88,7 @@ class TestView(TestCase):
         assert response.status_code == 400
         assert json.loads(response.content)['message'] == "BAD_EMAIL_REQUEST"
     
-    def test_fail_wrong_password(self):
+    def test_fail_create_wrong_password(self):
         url = reverse('user')
         fail_data = {
             'name'     : 'min',
@@ -91,19 +100,31 @@ class TestView(TestCase):
         assert response.status_code == 400
         assert json.loads(response.content)['message'] == 'BAD_PASSWORD_REQUEST'
 
-    def test_fail_wrong_phone_number(self):
+    def test_fail_create_too_short_phone_number(self):
         url = reverse('user')
         fail_data = {
-            'name' : 'min',
-            'email' : 'min@naver.com',
+            'name'     : 'min',
+            'email'    : 'min@naver.com',
             'password' : '123werEOE*',
-            'phone' : '000111111'
+            'phone'    : '000111111'
+        }
+        response = self.client.post(url, data=json.dumps(fail_data), content_type='application/json')
+        assert response.status_code == 400
+        assert json.loads(response.content)['message'] == 'BAD_PHONE_NUMBER_REQUEST'
+    
+    def test_fail_create_wrong_phone_number(self):
+        url = reverse('user')
+        fail_data = {
+            'name'     : 'min',
+            'email'    : 'min@naver.com',
+            'password' : '123qwerER-#$',
+            'phone'    : 'skdjfi1234'
         }
         response = self.client.post(url, data=json.dumps(fail_data), content_type='application/json')
         assert response.status_code == 400
         assert json.loads(response.content)['message'] == 'BAD_PHONE_NUMBER_REQUEST'
 
-    def test_user_exists(self):    
+    def test_fail_create_user_exists(self):    
         url = reverse('user')
         fail_data = {
             'name'     : 'kim',
@@ -142,7 +163,7 @@ class TestView(TestCase):
         response = self.client.post(url, data=json.dumps(data), content_type='application/json')
         assert response.status_code == 200
     
-    def test_fail_wrong_user(self):
+    def test_fail_login_wrong_user(self):
         url = reverse('login')
         fail_data = {
             'name'     : 'lee',
