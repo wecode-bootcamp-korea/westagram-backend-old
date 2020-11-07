@@ -1,11 +1,11 @@
 import json
-import re
 
 from django.views import View
+from django.db.models import Q
 from django.http import JsonResponse
 
 from user.models import User
-from user.const import NONE, PASSWORD_LEN, REGEX_EMAIL, REGEX_PHONE
+from user.const import NONE, PASSWORD_LEN
 from user.validations import Validation
 from user.exceptions import (
     BlankFieldException,
@@ -27,11 +27,11 @@ class SignUpView(View):
     def post(self, request):
         data = json.loads(request.body)
         try:
-            email = data["email"]
-            phone = data["phone"]
-            name = data["name"]
+            email     = data["email"]
+            phone     = data["phone"]
+            name      = data["name"]
             user_name = data["user_name"]
-            password = data["password"]
+            password  = data["password"]
             
             for key, value in dict(data).items():
                 if key == "email" or key == "phone":
@@ -40,56 +40,52 @@ class SignUpView(View):
                 if value.strip() == "" or value == NONE:
                     raise BlankFieldException
             
-            email_or_phone = False
+            signup_key_email = False
             if email.strip() == "" and phone.strip() == "":
                 raise BlankFieldException
             elif email.strip() != "" and phone.strip() == "":
-                email_or_phone = True
+                signup_key_email = True
             elif email.strip() == "" and phone.strip() != "":
-                email_or_phone = False
+                signup_key_email = False
             
-            if email_or_phone:
-                if not re.search(REGEX_EMAIL, email):
+            if signup_key_email:
+                
+                if not Validation.is_valid_email(email):
                     raise EmailValidException
             else:
-                if not re.search(REGEX_PHONE, phone):
+                if not Validation.is_valid_phone_number(phone):
                     raise PhoneNumValidException
             
             # TODO REGEX_PASSWORD CHECK
             if len(password) < PASSWORD_LEN:
                 raise PasswordValidException
             
-            users = User.objects.\
-                filter(email=email).\
-                filter(phone=phone).\
-                filter(user_name=user_name)
+            users = User.objects.filter(
+                Q(email=email) |
+                Q(phone=phone) |
+                Q(user_name=user_name)
+            )
             
-            if users is not NONE:
+            if len(users) > 0:
                 raise AlreadyExistException
         
-        except KeyError as e:
-            return JsonResponse({'message': 'KEY_ERROR'}, status = 400)
+        except KeyError:
+            return JsonResponse({'message': 'KEY_ERROR'}, status=400)
         
         except BlankFieldException as e:
-            return JsonResponse({'message': e.__str__()}, status = 400)
-         
+            return JsonResponse({'message': e.__str__()}, status=400)
+        
         except EmailValidException as e:
-            return JsonResponse({'message': e.__str__()}, status = 400)
+            return JsonResponse({'message': e.__str__()}, status=400)
         
         except PhoneNumValidException as e:
-            return JsonResponse({'message': e.__str__()}, status = 400)
-        
-        except AlreadyExistException as e:
-            return JsonResponse({'message': e.__str__()}, status = 400)
-        
-        except User.MultipleObjectsReturned as e:
-            return JsonResponse({'message': e.__str__()}, status = 400)
-        
-        except User.DoesNotExist:
-            pass
+            return JsonResponse({'message': e.__str__()}, status=400)
         
         except PasswordValidException as e:
-            return JsonResponse({'message': e.__str__()}, status = 400)
+            return JsonResponse({'message': e.__str__()}, status=400)
+        
+        except AlreadyExistException as e:
+            return JsonResponse({'message': e.__str__()}, status=400)
         
         User.objects.create(
             email     = email.strip(),
@@ -99,16 +95,16 @@ class SignUpView(View):
             password  = password.strip(),
         )
         
-        return JsonResponse({"post": "SUCCESS"}, status = 200)
+        return JsonResponse({"post": "SUCCESS"}, status=200)
 
 class LoginView(View):
     def get(self, request):
-        return JsonResponse({"get": "user_login"}, status = 200)
+        return JsonResponse({"get": "user_login"}, status=200)
     
     def post(self, request):
         data = json.loads(request.body)
         try:
-            user_input = data['login_key'].strip()
+            login_info = data['login_key'].strip()
             password   = data['password'].strip()
             
             login_keys = {
@@ -119,50 +115,50 @@ class LoginView(View):
             
             get_user_result = NONE
             
-            if not Validation.is_not_blank(user_input, password):
+            if not Validation.is_not_blank(login_info, password):
                 raise BlankFieldException
             
-            if Validation.is_valid_email(user_input):
-                login_keys["email"] = user_input
+            if Validation.is_valid_email(login_info):
+                login_keys["email"] = login_info
             
-            elif Validation.is_valid_phone_number(user_input):
-                login_keys["phone"] = user_input
+            elif Validation.is_valid_phone_number(login_info):
+                login_keys["phone"] = login_info
             
             else:
-                login_keys["user_name"] = user_input
+                login_keys["user_name"] = login_info
             
             for key, value in login_keys.items():
                 if key == "email" and value != NONE:
                     get_user_result = User.objects.get(
-                        email    =value,
-                        password = password,
+                        email    = value,
+                        password = password
                     )
                     break
                 
-                if key == "phone" and value != NONE:
+                elif key == "phone" and value != NONE:
                     get_user_result = User.objects.get(
                         phone    = value,
                         password = password
                     )
                     break
                 
-                if key == "user_name" and value != NONE:
+                elif key == "user_name" and value != NONE:
                     get_user_result = User.objects.get(
-                        user_name = value,
-                        password  = password,
+                          user_name = value,
+                          password  = password,
                     )
                     break
         
         except KeyError:
-            return JsonResponse({"message": "KEY_ERROR"}, status = 400)
+            return JsonResponse({"message": "KEY_ERROR"}, status=400)
         
         except User.DoesNotExist:
-            return JsonResponse({"message": "INVALID_USER"}, status=401)
+            return JsonResponse({"message": "INVALID_USER"}, status=400)
         
         except BlankFieldException as e:
-            return JsonResponse({"message": e.__str__()}, status = 400)
+            return JsonResponse({"message": e.__str__()}, status=400)
         
         except Exception:
             return JsonResponse({"message": "UNKNOWN_EXCEPTION"}, status=400)
         
-        return JsonResponse({"message": "SUCCESS"}, status = 200)
+        return JsonResponse({"message": "SUCCESS"}, status=200)

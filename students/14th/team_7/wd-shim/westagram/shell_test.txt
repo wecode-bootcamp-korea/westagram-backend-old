@@ -1,0 +1,5 @@
+from django.db.models import Q
+from user.models import User
+
+users = User.objects.filter(Q(email='test@test1.com') | Q(phone='01011111111')
+| Q(user_name='user_1'))
