@@ -13,7 +13,7 @@ class TestPost(TransactionTestCase):
             'phone'    : '01012341234',
             'email'    : 'dooly@naver.com'
         }
-        url = reverse('user')
+        url = reverse('sign_up')
         reponse = self.client.post(url, data=json.dumps(data), content_type='application/json')
         
         data_2 = {
@@ -22,7 +22,7 @@ class TestPost(TransactionTestCase):
             'phone'    : '01043214321',
             'email'    : 'douner@naver.com'
         }
-        url = reverse('user')
+        url = reverse('sign_up')
         response = self.client.post(url, data=json.dumps(data_2), content_type='application/json')
     
     def tearDown(self):
@@ -131,13 +131,15 @@ class TestPost(TransactionTestCase):
                 'name'       : 'douner',
                 'content'    : '어이 둘리',
                 'image_url'  : 'http://image.dongascience.com/Photo/2020/03/5bddba7b6574b95d37b6079c199d7101.jpg',
-                'created_at' : timezone.now().strftime('%Y-%m-%d %H:%M:%S')
+                'created_at' : timezone.now().strftime('%Y-%m-%d %H:%M:%S'),
+                'like'       : 0
             },
             {
                 'name'       : 'dooly',
                 'content'    : '도우너 어서 오고',
                 'image_url'  : 'https://topclass.chosun.com/news_img/1807/1807_008_1.jpg',
-                'created_at' : timezone.now().strftime('%Y-%m-%d %H:%M:%S')
+                'created_at' : timezone.now().strftime('%Y-%m-%d %H:%M:%S'),
+                'like'       : 0
             }
         ]
 
@@ -155,7 +157,7 @@ class TestComment(TransactionTestCase):
             'phone'    : '01012341234',
             'email'    : 'dooly@naver.com'
         }
-        url = reverse('user')
+        url = reverse('sign_up')
         reponse = self.client.post(url, data=json.dumps(data), content_type='application/json')
         
         data_2 = {
@@ -164,7 +166,7 @@ class TestComment(TransactionTestCase):
             'phone'    : '01043214321',
             'email'    : 'douner@naver.com'
         }
-        url = reverse('user')
+        url = reverse('sign_up')
         response = self.client.post(url, data=json.dumps(data_2), content_type='application/json')
     
         create_data = {
@@ -325,3 +327,144 @@ class TestComment(TransactionTestCase):
         response = self.client.get(url)
         assert response.status_code == 404
         assert json.loads(response.content)['message'] == 'POST_NOT_FOUND'
+    
+class TestLike(TransactionTestCase):
+    def setUp(self):
+        data = {
+            'name'     : 'dooly',
+            'password' : '123456qwerT*',
+            'phone'    : '01012341234',
+            'email'    : 'dooly@naver.com'
+        }
+        url = reverse('sign_up')
+        reponse = self.client.post(url, data=json.dumps(data), content_type='application/json')
+        
+        data_2 = {
+            'name'     : 'douner',
+            'password' : '123456asdf*E',
+            'phone'    : '01043214321',
+            'email'    : 'douner@naver.com'
+        }
+        url = reverse('sign_up')
+        response = self.client.post(url, data=json.dumps(data_2), content_type='application/json')
+    
+        create_data = {
+            'user_id'   : 2,
+            'content'   : '어이 둘리',
+            'image_url' : 'http://image.dongascience.com/Photo/2020/03/5bddba7b6574b95d37b6079c199d7101.jpg'
+        }
+        url = reverse('post')
+        response = self.client.post(url, data=json.dumps(create_data), content_type='application/json')
+        assert response.status_code == 200
+        
+        create_data_2 = {
+            'user_id'   : 1,
+            'content'   : '도우너 어서 오고',
+            'image_url' : 'https://topclass.chosun.com/news_img/1807/1807_008_1.jpg'
+        }
+        response = self.client.post(url, data=json.dumps(create_data_2), content_type='application/json')
+        assert response.status_code == 200
+
+    def tearDown(self):
+        with connection.cursor() as cursor:
+            cursor.execute('set foreign_key_checks=0')
+            cursor.execute('truncate users')
+            cursor.execute('truncate posts')
+            cursor.execute('set foreign_key_checks=1')
+
+    def test_add_like(self):
+        url = reverse('like')
+        data = {
+            'user_id' : 1,
+            'post_id' : 1
+        }
+        response = self.client.post(url, data=json.dumps(data), content_type='application/json')
+        assert response.status_code == 200
+    
+    def test_fail_add_like_no_id(self):
+        url = reverse('like')
+        fail_data = {
+            'post_id' : 1
+        }
+        response = self.client.post(url, data=json.dumps(fail_data), content_type='application/json')    
+        assert response.status_code == 400
+        assert json.loads(response.content)['message'] == 'KEY_ERROR'
+
+    def test_fail_add_like_no_post(self):
+        url = reverse('like')
+        fail_data = {
+            'user_id' : 1
+        }
+        response = self.client.post(url, data=json.dumps(fail_data), content_type='application/json')
+        assert response.status_code == 400
+        assert json.loads(response.content)['message'] == 'KEY_ERROR'
+
+    def test_fail_add_like_user_not_exists(self):
+        url = reverse('like')
+        fail_data = {
+            'user_id' : 5,
+            'post_id' : 1
+        }
+        response = self.client.post(url, data=json.dumps(fail_data), content_type='application/json')
+        assert response.status_code == 401
+        assert json.loads(response.content)['message'] == 'INVALID_USER'
+
+    def test_fail_add_like_post_not_found(self):
+        url = reverse('like')
+        fail_data = {
+            'user_id' : 1,
+            'post_id' : 5
+        }
+        response = self.client.post(url, data=json.dumps(fail_data), content_type='application/json')
+        assert response.status_code == 404
+        assert json.loads(response.content)['message'] == 'POST_NOT_FOUND'
+
+    def test_get_like_list(self):
+        url = reverse('like')
+        data = {
+            'user_id' : 1,
+            'post_id' : 1
+        }
+        response = self.client.post(url, data=json.dumps(data), content_type='application/json')
+        assert response.status_code == 200
+
+        url = reverse('like')
+        data = {
+            'user_id' : 1,
+            'post_id' : 2
+        }
+        response = self.client.post(url, data=json.dumps(data), content_type='application/json')
+        assert response.status_code == 200
+        
+        url = reverse('like_list', args=[1])
+        response = self.client.get(url)
+        assert response.status_code == 200
+        assert json.loads(response.content)['posts'] == [
+            {
+                'name'       : 'douner',
+                'content'    : '어이 둘리',
+                'image_url'  : 'http://image.dongascience.com/Photo/2020/03/5bddba7b6574b95d37b6079c199d7101.jpg',
+                'created_at' : timezone.now().strftime('%Y-%m-%d %H:%M:%S'),
+                'like'       : 1 
+            },
+            {
+                'name'       : 'dooly',
+                'content'    : '도우너 어서 오고',
+                'image_url'  : 'https://topclass.chosun.com/news_img/1807/1807_008_1.jpg',
+                'created_at' : timezone.now().strftime('%Y-%m-%d %H:%M:%S'),
+                'like'       : 1
+            }
+        ]
+    
+    def test_get_like_list_None_data(self):
+        url = reverse('like_list', args=[1])
+        response = self.client.get(url)
+        assert response.status_code == 200
+        assert json.loads(response.content)['message'] == 'None_like_data'
+
+    def test_fail_get_like_list_not_exists(self):
+        url = reverse('like_list', args=[123])
+        response = self.client.get(url)
+        assert response.status_code == 401
+        assert json.loads(response.content)['message'] == 'INVALID_USER'
+
