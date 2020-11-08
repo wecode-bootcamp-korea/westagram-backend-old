@@ -50,7 +50,6 @@ class SignUpTestCase(TestCase):
 
     def test_check_get_necesser_keys(self):
         requests = []
-
         requests.append({
             'phone_number' : self.GOOD_PHONE_NUMBER,
             'email'        : self.GOOD_EMAIL,
@@ -102,7 +101,6 @@ class SignUpTestCase(TestCase):
             self.assertEqual(response.status_code,400)
 
     def test_check_password_vaildation(self):
-
         requests = []
         requests.append({
             'name'         : self.GOOD_NAME,
@@ -117,7 +115,6 @@ class SignUpTestCase(TestCase):
             self.assertEqual(response.status_code,400)
 
     def test_check_duplication(self):
-        # 크어어어어어어어 이건 못하겠다~~~~~
         request = {
             'name'         : self.DUMMY_NAME,
             'email'        : self.DUMMY_EMAIL,
@@ -128,7 +125,6 @@ class SignUpTestCase(TestCase):
         response = self.client.post(self.URL, request, content_type='application/json')
         self.assertEqual(response.json()['message'],'DATA_ALREADY_EXIST')
         self.assertEqual(response.status_code,400)
-        # 하지만 했죠?
 
 class LoginTestCase(TestCase):
     def setUp(self):
