@@ -23,8 +23,8 @@ class Posts(models.Model):
         return self.name
 
 class Comments(models.Model):
-    parent_comment = models.ForeignKey('self', on_delete = models.CASCADE, null=True)
-    content        = models.ForeignKey(Contents, on_delete = models.CASCADE)
+    parent_content = models.ForeignKey(Contents, related_name='related_parent_content',  on_delete = models.CASCADE, null=True)
+    content        = models.ForeignKey(Contents, related_name='related_content', on_delete = models.CASCADE)
 
     class Meta:
         db_table    = 'comments'

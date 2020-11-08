@@ -21,7 +21,7 @@ class RegistView(View):
         except Exception as ex:
             return JsonResponse({"message":"You request with wrong format."}, status=400)
         '''
-        hasProblem = checkRequestBody(request)
+        has_problem = checkRequestBody(request)
         if hasProblem:
             return hasProblem
 
@@ -79,8 +79,8 @@ class LoginView(View):
         except Exception as ex:
             return JsonResponse({"message":"You request with wrong format."}, status=400)
         '''
-        hasProblem = checkRequestBody(request)
-        if hasProblem:
+        has_problem = checkRequestBody(request)
+        if has_problem:
             return hasProblem
         
         login_info      = {'account':'', 'password':''}
@@ -103,8 +103,8 @@ class LoginView(View):
 
 class Follow(View):
     def post(self, request):
-        hasProblem = checkRequestBody(request)
-        if hasProblem:
+        has_problem = checkRequestBody(request)
+        if has_problem:
             return hasProblem
 
         #checkRequestBody(request)
