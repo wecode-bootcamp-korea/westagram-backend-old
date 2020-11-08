@@ -5,7 +5,7 @@ from django.views     import View
 from django.http      import JsonResponse
 from django.db.models import Q
 
-from .models          import User
+from .models          import User, FollowList
 
 class SignUpView(View):
     def post(self, request):
@@ -17,14 +17,19 @@ class SignUpView(View):
 
         if not 'email' in data or not 'password' in data or not 'name' in data or not 'phone' in data:
             return JsonResponse({'message':'KEY_ERROR'}, status=400)
+
         if not re.match(name_check, data['name']) or len(data['name']) > 15 or len(data['name']) < 3:
             return JsonResponse({'message':'BAD_NAME_REQUEST'}, status=400)
+
         if not re.match(email_check,data['email']):
             return JsonResponse({'message':'BAD_EMAIL_REQUEST'}, status=400)
+
         if not re.match(password_check,data['password']) or len(data['password']) < 8: 
             return JsonResponse({'message':'BAD_PASSWORD_REQUEST'},status=400)
+
         if not re.match(phone_check, data['phone']) or len(data['phone']) > 11 or len(data['phone']) < 10:
             return JsonResponse({'message':'BAD_PHONE_NUMBER_REQUEST'}, status=400)
+
         if User.objects.filter(Q(name=data['name']) | Q(email=data['email']) | Q(phone=data['phone'])):    
             return JsonResponse({'message':'USER_EXISTS'}, status=400)
 
@@ -53,6 +58,48 @@ class LoginView(View):
             if user[0].password != data['password']:
                 raise User.DoesNotExist
             return JsonResponse({'message':'SUCCESS'}, status=200)
+
         except User.DoesNotExist:
             return JsonResponse({'message':'INVALID_USER'}, status=401)
+
+class FollowView(View):
+
+    def post(self, request):
+        data = json.loads(request.body)
+
+        if 'user_id' not in data or 'follow_id' not in data or len(data) != 2:
+            return JsonResponse({'message':'KEY_ERROR'}, status=400)
+
+        try:
+            user = User.objects.get(id=data['user_id']).id
+            follow_user = User.objects.get(id=data['follow_id']).id
+            if FollowList.objects.filter(user_id=user, follow_user_id=follow_user):
+                return JsonResponse({'message':'THIS_USER_ALREADY_FOLLOING'}, status=400)
+            FollowList.objects.create(
+                user_id = data['user_id'],
+                follow_user_id = data['follow_id']
+            )
+            return JsonResponse({'message':'SUCCESS'}, status=200)
+        except User.DoesNotExist:
+            return JsonResponse({'message':'INVALID_USER'}, status=401)
+
+    def delete(self, request):
+        data = json.loads(request.body)
+
+        if 'user_id' not in data or 'follow_id' not in data or len(data) != 2:
+            return JsonResponse({'message':'KEY_ERROR'}, status=400)
+
+        try:
+            user = User.objects.get(id=data['user_id']).id
+            follow_user = User.objects.get(id=data['follow_id']).id
+            delete_follow = FollowList.objects.get(user_id=user, follow_user_id=follow_user)
+            delete_follow.delete()
+            return JsonResponse({'message':'SUCCESS'}, status=204)
+        except User.DoesNotExist:
+            return JsonResponse({'message':'INVALID_USER'}, status=401)
+
+        except FollowList.DoesNotExist:
+            return JsonResponse({'message':'USER_NOT_FOLLOWED'}, status=404)
+
+        
 
