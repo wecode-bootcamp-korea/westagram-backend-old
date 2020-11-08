@@ -16,4 +16,14 @@ class Post(models.Model):
     def __str__(self):
         return self.title
 
+class Comment(models.Model):
+    author = models.ForeignKey(User, on_delete = models.CASCADE)
+    post_id = models.ForeignKey(Post, on_delete = models.CASCADE)
+    content = models.TextField(max_length=200)
+    comment_created = models.DateTimeField(auto_now_add = True)
 
+    class Meta:
+        db_table ='comment'
+
+    def __str__(self):
+        return self.content
