@@ -10,6 +10,23 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 
+
+import json
+from django.core.exceptions import ImproperlyConfigured
+with open("project_westagram/secret.json") as s:
+    secrets = json.loads(s.read())
+def get_secret(setting, secrets = secrets):
+    try:
+        return secrets[setting]
+    except KeyError:
+        error_message = f"Set the {setting} environment variable"
+        raise ImproperlyConfigured(error_message)
+
+SECRET_KEY = get_secret("SECRET_KEY")
+
+
+
+
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -37,7 +54,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    #'corsheaders',
+    'corsheaders',
     'user',
 ]
 
@@ -126,7 +143,8 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-
+#REMOVE_APPEND_SLASH_WARNING
+APPEND_SLASH = False
 ##CORS
 CORS_ORIGIN_ALLOW_ALL=True
 CORS_ALLOW_CREDENTIALS = True

@@ -1,7 +1,12 @@
 import json
-from django.views import View
-from django.http  import JsonResponse
-from .models  import Account
+import bcrypt
+import jwt
+import re
+from django.views                import View
+from django.http                 import JsonResponse, HttpResponse
+from project_westagram.settings  import SECRET_KEY
+from .models                     import Account
+
 # 치킨먹고싶다...
 class SignUpView(View):
     def post(self, request): #포스트로 받을 시 저장
@@ -13,7 +18,8 @@ class SignUpView(View):
                 phone_number = data['phone_number'],
                 email        = data['email'],
                 password     = data['password'])
-            if "@" not in data['email'] or "." not in data['email']:
+            email_valid = re.compile('^[a-zA-Z0-9+-_.]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$')
+            if email_valid.match(data['email']) == None:
                 return JsonResponse({"message" : "email_error"}, status = 400)
             elif len(data['password']) < 8 :
                 return JsonResponse({"message" : "short_password"}, status = 400)
@@ -24,10 +30,10 @@ class SignUpView(View):
                     name         = data['name'],
                     phone_number = data['phone_number'],
                     email        = data['email'],
-                    password     = data['password'])
-                return JsonResponse({"message" : "SUCCESS"},                status = 201)
+                    password     = bcrypt.hashpw(data['password'].encode("UTF-8"), bcrypt.gensalt()).decode("UTF-8")).save()
+                return JsonResponse({"message" : "SUCCESS"}, status = 201)
         except KeyError:
-            return JsonResponse({"message" : "KEY_ERROR"},                  status = 400)
+            return JsonResponse({"message" : "KEY_ERROR"}, status = 400)
 
     def get(self, request): #겟으로 받을시 유저테이블에 있는것 출력
         account_data = Account.objects.values()
@@ -36,20 +42,24 @@ class SignUpView(View):
 class LoginView(View):
     def post(self, request):
         data        = json.loads(request.body)
-        user_password = data['password']
+        user_password = data['password'] #헷갈릴까바 안썼음
 
         try:
             if 'name' not in data and 'email' not in data and 'phone_number' not in data:
                 return JsonResponse({'message' : 'KEY_ERROR'},   status = 400)
             elif 'password' not in data:
                 return JsonResponse({'message' : 'KEY_ERROR'},   status = 400)
-            elif Account.objects.filter(email = data['email']).exists(): #계정이 존재한다면
+
+            elif Account.objects.filter(email = data['email']).exists():
                 exist_user = Account.objects.get(email = data['email'])
-                if exist_user.password == data['password']: #존재계정의 패스워드와 입력된 패스워드가 같다면
-                    return JsonResponse({"message" : "SUCCESS"}, status = 200)
+                if bcrypt.checkpw(data['password'].encode('UTF-8'), exist_user.password.encode('UTF-8')):
+                    token = jwt.encode({'user' : exist_user.id}, SECRET_KEY, algorithm='HS256').decode('UTF-8')
+                    return JsonResponse({'token' : token}, status = 200)
                 return JsonResponse({"message" : "INVALID_USER"}, status = 401)
+            return JsonResponse({"message" : "No_Exist_User"}, status = 401)
         except KeyError:
-            return JsonResponse({'MESSAGE' : 'KEY_ERROR'},  status = 400)
+            return JsonResponse({'message' : 'KEY_ERROR'},  status = 400)
+        
 
     def get(self, request): #get메쏘드로 회원가입된 데이터들을 list형태로 반환
         account_data = Account.objects.values()
