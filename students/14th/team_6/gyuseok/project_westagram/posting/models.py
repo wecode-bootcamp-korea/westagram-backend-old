@@ -8,6 +8,13 @@ class Post(models.Model):
     content  = models.TextField(null=True)
 
     class Meta:
-        db_table = 'borad'
+        db_table = 'board'
 
+class Comment(models.Model):
+    user     = models.ForeignKey('user.User', on_delete=models.CASCADE)
+    post     = models.ForeignKey('Post', on_delete=models.CASCADE)
+    content  = models.TextField(null=True)
+    data     = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        db_table = 'comment'

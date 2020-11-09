@@ -2,7 +2,7 @@ from django.test import TestCase, Client
 from user.models import User
 from .models     import Post
 
-class RegisterTestCase(TestCase):
+class CreateBoardTestCase(TestCase):
     def setUp(self):
         self.URL = '/posting/register/'
         self.client = Client()
