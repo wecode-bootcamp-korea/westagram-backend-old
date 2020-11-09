@@ -8,7 +8,7 @@ class Posting(models.Model):
     description = models.TextField(null=True)
     created_at  = models.DateTimeField(auto_now_add=True)
     updated_at  = models.DateTimeField(auto_now=True)
-    user        = models.ForeignKey('user.User', on_delete=models.CASCADE)
+    user        = models.ForeignKey('user.User', related_name='User', on_delete=models.CASCADE)
 
     @property
     def created_at_korean_time(self):
@@ -40,3 +40,9 @@ class Comment(models.Model):
 
     class Meta:
         db_table = 'comments'
+
+
+#class Like(models.Model):
+#
+#    class Meta:
+#        db_table = 'likes'

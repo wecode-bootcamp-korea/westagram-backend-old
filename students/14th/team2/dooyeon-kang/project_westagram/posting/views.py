@@ -5,7 +5,7 @@ from django.views import View
 from django.db.models import Q
 
 from posting.models import Posting, Comment
-from user.models import User
+from user.models import User, Like
 
 class PostingView(View):
 
@@ -22,7 +22,7 @@ class PostingView(View):
         try:
             user = User.objects.get(id=input_user)
         except Exception:
-            return JsonResponse({'message': 'INVALID USER'}, status = 401)
+            return JsonResponse({'message': 'INVALID USER'}, status = 400)
 
         try:
             Posting(
@@ -49,11 +49,17 @@ class PostingView(View):
                                 'username': User.objects.get(id=comment['user_id']).name,
                                 'posting_id': comment['posting_id'],
                                 'text': comment['text'],
-                                'created_at': comment['created_at']} for comment\
-                              in Comment.objects.filter(posting_id=post['id']).values()],
+                                'created_at': comment['created_at'],
+                              } for comment in Comment.objects.filter(posting_id=post['id']).values()],
                  'img_url': post['image_url'],
                  'description': post['description'],
                  'posting_id': post['id'],
+                 'likes': {
+                     'count': len(Like.objects.filter(posting_id=post['id'])),
+                     'liked_users': [{'user_id': like.user_id,
+                                      'username': User.objects.get(id=like.user_id).name,
+                                     } for like in Like.objects.filter(posting_id=post['id'])]
+                 },
                  'created_at': post['created_at']} for post in posts
             ]
 
@@ -77,12 +83,12 @@ class CommentView(View):
         try:
             user_obj = User.objects.get(id=input_user)
         except Exception:
-            return JsonResponse({'message': 'INVALID USER'}, status = 401)
+            return JsonResponse({'message': 'INVALID USER'}, status = 400)
 
         try:
             posting_obj = Posting.objects.get(id=posting_id)
         except Exception:
-            return JsonResponse({'message': 'INVALID POSTING'}, status = 401)
+            return JsonResponse({'message': 'INVALID POSTING'}, status = 400)
 
         if not comment_text:
             return JsonResponse({'message': 'Cannot be none'}, status = 400)
@@ -105,9 +111,9 @@ class CommentView(View):
         except Exception as error_message:
             return JsonResponse({'message': error_message}, status = 400)
 
-        try:
+        if Comment.objects.filter(posting_id=post_id).values():
             comments = Comment.objects.filter(posting_id=post_id).values()
-        except Exception:
+        else:
             return JsonResponse({'message': 'No comment for this posting'}, status = 400)
 
         result = [
@@ -124,3 +130,28 @@ class CommentView(View):
             return JsonResponse({'result': result}, status = 200)
         except Exception:
             return JsonResponse({'message': 'Something Wrong'}, status = 400)
+
+class LikeView(View):
+
+    def post(self, request):
+        data = json.loads(request.body)
+
+        try:
+            user_id = data['user_id']
+            posting_id = data['posting_id']
+
+        except KeyError:
+            return JsonResponse({'message': 'KeyError'}, status = 400)
+
+        try:
+            user = User.objects.get(id=user_id)
+            posting = Posting.objects.get(id=posting_id)
+
+            if not Like.objects.filter(user_id=user, posting_id=posting):
+                Like.objects.create(user=user, posting=posting)
+                return JsonResponse({'message': 'User liked SUCCESSFULLY'}, status = 201)
+            else:
+                return JsonResponse({'message': 'The user already liked the posting'}, status = 401)
+
+        except Exception as error_message:
+            return JsonResponse({'message': 'Invalid user or posting'}, status = 401)

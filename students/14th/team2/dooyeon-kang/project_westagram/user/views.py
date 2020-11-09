@@ -84,9 +84,9 @@ class LoginView(View):
         try:
             user = User.objects.get(Q(name=input_account)|Q(email=input_account)|Q(phone=input_account))
         except Exception:
-            return JsonResponse({'message': 'INVALID_USER'}, status = 401)
+            return JsonResponse({'message': 'INVALID_USER'}, status = 400)
 
         if input_password == user.password:
             return JsonResponse({'message': 'SUCCESS'}, status = 200)
         else:
-            return JsonResponse({'message': 'INVALID_USER'}, status = 401)
+            return JsonResponse({'message': 'INVALID_USER'}, status = 400)
