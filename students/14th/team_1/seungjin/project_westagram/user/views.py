@@ -5,11 +5,14 @@ import jwt
 import my_settings
 from django.views import View
 from django.http import JsonResponse
+from django.utils.decorators import method_decorator
 from django.db.models import Q
 from share.utils import (
-                    getUserID,
-                    checkRequestBody,
-                    checkAuthorization,
+                    #getUserID,
+                    #checkRequestBody,
+                    #checkAuthorization,
+                    checkAuthDecorator,
+                    checkRequestBodyDecorator,
                     )
 from .models import (
                 Users,
@@ -18,11 +21,8 @@ from .models import (
 
 
 class RegistView(View):
+    @method_decorator(checkRequestBodyDecorator()) 
     def post(self, request):
-        has_problem  = checkRequestBody(request)
-        if has_problem:
-            return has_problem
-
         data         = json.loads(request.body)
         user_account = {'name':'','phone_number':'','email':''}
         
@@ -73,11 +73,8 @@ class RegistView(View):
         return JsonResponse({"message":"Hello"}, status=200)
 
 class LoginView(View):
+    @method_decorator(checkRequestBodyDecorator()) 
     def post(self, request):
-        has_problem = checkRequestBody(request)
-        if has_problem:
-            return hasProblem
-
         data        = json.loads(request.body)
         login_info  = {'account':'', 'password':''}
 
@@ -102,12 +99,9 @@ class LoginView(View):
 
 
 class Follow(View):
+    @method_decorator(checkAuthDecorator())
+    @method_decorator(checkRequestBodyDecorator())
     def post(self, request):
-
-        has_problem      = checkRequestBody(request)
-        if has_problem:
-            return hasProblem
-
         data             = json.loads(request.body)
         user_id          = checkAuthorization(data['token'])
         if user_id == None:

@@ -7,10 +7,14 @@ from django.core import serializers
 from datetime import datetime
 from django.http import JsonResponse
 from django.views import View
+from django.utils.decorators import method_decorator
 from share.utils import (
-                        getUserID,
-                        checkRequestBody,
-                        checkAuthorization,
+                        #getUserID,
+                        getUserIDFromToken,
+                        #checkRequestBody,
+                        #checkAuthorization,
+                        checkRequestBodyDecorator,
+                        checkAuthDecorator,
                         )
 from .models import (
                     Posts,
@@ -23,12 +27,11 @@ from user.models import Users
 
 
 class Posting(View):
+    @method_decorator(checkAuthDecorator())
+    @method_decorator(checkRequestBodyDecorator())
     def post(self, request):
-        has_problem = checkRequestBody(request)
-        if has_problem:
-            return has_problem
-
-        data = json.loads(request.body)
+        data        = json.loads(request.body)
+        user_id     = getUserIDFromToken(data['token'])
 
         # image_url, token 정보를 추출하여 posts table에 추가 작업
         keys        = ['token', 'image_url', 'article'] 
@@ -38,10 +41,6 @@ class Posting(View):
             if not key in inputs:
                 return JsonResponse({"message":"we need to take all values [token, image_url, article]"},
                         status=400)
-        
-        user_id     = checkAuthorization(inputs['token']) 
-        if user_id == None:
-            return JsonResponse({"message":"[token] is not allowed."}, status=400)
 
         Contents.objects.create(
                         article     = inputs['article'], 
@@ -57,16 +56,9 @@ class Posting(View):
 
 
 class ShowAllPosts(View):
+    @method_decorator(checkAuthDecorator())
+    @method_decorator(checkRequestBodyDecorator())
     def get(self, request):
-        has_problem = checkRequestBody(request)
-        if has_problem:
-            return has_problem
-
-        data        = json.loads(request.body)
-        user_id     = checkAuthorization(data['token']) 
-        if user_id == None:
-            return JsonResponse({"message":"[token] is not allowed."}, status=400)
-
         posts       = []
         entries     = Posts.objects.select_related('content').select_related('content__user').all()
         
@@ -77,16 +69,11 @@ class ShowAllPosts(View):
         return JsonResponse({"posts":posts}, status=200)
 
 class AddComment(View):
+    @method_decorator(checkAuthDecorator())
+    @method_decorator(checkRequestBodyDecorator())
     def post(self, request):
-        has_problem = checkRequestBody(request)
-        if has_problem:
-            return has_problem
-        
         data        = json.loads(request.body)
-        user_id     = checkAuthorization(data['token']) 
-        if user_id == None:
-            return JsonResponse({"message":"[token] is not allowed."}, status=400)
-        
+        user_id     = getUserIDFromToken(data['token'])
         
         inputs      = {}
         ARTICLE     = 'article'
@@ -123,16 +110,9 @@ class AddComment(View):
             
 
 class ShowAllComments(View):
+    @method_decorator(checkAuthDecorator())
+    @method_decorator(checkRequestBodyDecorator())
     def get(self, request):
-        has_problem = checkRequestBody(request)
-        if has_problem:
-            return has_problem
-
-        data        = json.loads(request.body)
-        user_id     = checkAuthorization(data['token']) 
-        if user_id == None:
-            return JsonResponse({"message":"[token] is not allowed."}, status=400)
-        
         entries     = Comments.objects.select_related('content').select_related('content__user') \
                         .all()
         comments    = []
@@ -144,17 +124,11 @@ class ShowAllComments(View):
         return JsonResponse({"comments":comments}, status=200)
 
 class ShowCommentsOfContent(View):
+    @method_decorator(checkAuthDecorator())
+    @method_decorator(checkRequestBodyDecorator())
     def post(self, request):
-        has_problem = checkRequestBody(request)
-        if has_problem:
-            return has_problem
-        
         data        = json.loads(request.body)
-        user_id     = checkAuthorization(data['token']) 
-        if user_id == None:
-            return JsonResponse({"message":"[token] is not allowed."}, status=400)
-
-        content_id = None
+        content_id  = None
        
         if "content_id" in data:
             content_id = data['content_id']
@@ -171,15 +145,11 @@ class ShowCommentsOfContent(View):
         return JsonResponse({"comments":comments}, status=201)        
 
 class AddLike(View):
+    @method_decorator(checkAuthDecorator())
+    @method_decorator(checkRequestBodyDecorator())
     def post(self, request):
-        has_problem = checkRequestBody(request)
-        if has_problem:
-            return has_problem
-        
         data        = json.loads(request.body)        
         user_id     = checkAuthorization(data['token']) 
-        if user_id == None:
-            return JsonResponse({"message":"[token] is not allowed."}, status=400)
         
         # '좋아요' 대상 post, comment 와 사용자정보
         if not 'content_id' in data:
@@ -204,20 +174,15 @@ class AddLike(View):
         return JsonResponse({"message":"SUCCESS"}, status=201)
 
 class RemoveContent(View):
+    @method_decorator(checkAuthDecorator())
+    @method_decorator(checkRequestBodyDecorator())
     def post(self, request):
-        has_problem = checkRequestBody(request)
-        if has_problem:
-            return has_problem
-        
         data        = json.loads(request.body)
-        user_id     = checkAuthorization(data['token']) 
-        if user_id == None:
-            return JsonResponse({"message":"[token] is not allowed."}, status=400)
-
+        
         if not 'content_id' in data:
             return JsonResponse({"messge":"[content_id] is empty."}, status=400)
 
-        entries = Contents.objects.filter(id=data['content_id'])
+        entries     = Contents.objects.filter(id=data['content_id'])
 
         for row in entries:
             row.delete()
@@ -226,16 +191,11 @@ class RemoveContent(View):
 
 
 class UpdatePost(View):
+    @method_decorator(checkAuthDecorator())
+    @method_decorator(checkRequestBodyDecorator())
     def post(self, request):
-        has_problem = checkRequestBody(request)
-        if has_problem:
-            return has_problem
-        
         data        = json.loads(request.body)
-        user_id     = checkAuthorization(data['token']) 
-        if user_id == None:
-            return JsonResponse({"message":"[token] is not allowed."}, status=400)
-
+        
         if not 'content_id' in data:
             return JsonResponse({"messge":"[content_id] is empty."}, status=400)
 
@@ -245,10 +205,12 @@ class UpdatePost(View):
         if not 'image_url' in data:
             return JsonResponse({"messge":"[image_url] must not be empty."}, status=400)
 
-        targets = Posts.objects.filter(content_id=data['content_id'])
+        targets     = Posts.objects.filter(content_id=data['content_id'])
+        
         targets.update(image_url=data['image_url'])
 
-        targets = Contents.objects.filter(id=data['content_id'])
+        targets     = Contents.objects.filter(id=data['content_id'])
+        
         targets.update(
                 article     = data['article'], 
                 created_at  = datetime.now()
@@ -257,8 +219,9 @@ class UpdatePost(View):
         return JsonResponse({"messge":"SUCCESS"}, status=201)
 
 
-
 class GetMyPosts(View):    
+    @method_decorator(checkAuthDecorator())
+    @method_decorator(checkRequestBodyDecorator())
     def post(self, request):
         def findChildCommentsRecursive(self, parent_content_id):
             rows    = Comments.objects.select_related('content').select_related('content__user') \
@@ -280,16 +243,8 @@ class GetMyPosts(View):
 
             return childs
  
-
-        has_problem = checkRequestBody(request)
-        if has_problem:
-            return has_problem
-        
         data        = json.loads(request.body)
         user_id     = checkAuthorization(data['token']) 
-        if user_id == None:
-            return JsonResponse({"message":"[token] is not allowed."}, status=400)
-
 
         # 내가 만든 Post 및 해당 post 에 달린 댓글과 좋아요 정보 모두 제공하기.
         # 해당 user의 contents 정보를 검색, Post에 해당하는 content 없으면 안내문구 리턴
