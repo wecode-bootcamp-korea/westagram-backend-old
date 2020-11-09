@@ -53,7 +53,9 @@ class LoginView(View):
             elif Account.objects.filter(email = data['email']).exists():
                 exist_user = Account.objects.get(email = data['email'])
                 if bcrypt.checkpw(data['password'].encode('UTF-8'), exist_user.password.encode('UTF-8')):
-                    token = jwt.encode({'user' : exist_user.id}, SECRET_KEY, algorithm='HS256').decode('UTF-8')
+                    token = jwt.encode({'user_id' : exist_user.id}, SECRET_KEY, algorithm='HS256').decode('UTF-8')
+                    header = jwt.decode(token, SECRET_KEY, algorithm = 'HS256')
+                    print(header)
                     return JsonResponse({'token' : token}, status = 200)
                 return JsonResponse({"message" : "INVALID_USER"}, status = 401)
             return JsonResponse({"message" : "No_Exist_User"}, status = 401)
