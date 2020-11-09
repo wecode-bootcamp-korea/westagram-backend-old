@@ -2,26 +2,17 @@ import json
 from django.views import View
 from django.http import JsonResponse
 from posting.models import Posting
+from user.models import User
 
 
 class PostingView(View):
     def post(self, request):
         data = json.loads(request.body)
         try:
-            User.objects.get(id=1)
+            a1 = User.objects.get(id=data["id"])
+            Posting.objects.create(user=a1, image_url=data["image_url"])
 
-            posting = Posting(
-            user      = data["user"],
-            time      = data["time"],
-            image_url = data["image_url"],
-            )
-        #
-        # Posting.objects.get(id
-        # Posting.objects.create()
-        #
-        # Posting.objects.create(user="1", image="url")
-
-            return JsonResponse({'MESSAGE':'SUCCESS'}, status=201)
+            return JsonResponse({'MESSAGE':'SUCCESS'}, status=200)
 
         except KeyError:
             return JsonResponse({'message': 'INVALID_KEY'}, status=400)
@@ -33,4 +24,4 @@ class PostingView(View):
     def get(self, request):
 
 
-        return JsonResponse({"Hello":"World"}, status=200)
+        return JsonResponse({"Hello":"Good"}, status=200)
