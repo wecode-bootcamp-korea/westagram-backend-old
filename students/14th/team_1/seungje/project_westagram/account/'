@@ -1,7 +1,7 @@
-from django.views import View
-from .models import Account
 import json
-from django.http import request,JsonResponse
+from django.views import View
+from django.http import JsonResponse, request
+from .models import Account
 
 class SignUp(View):
 
@@ -52,36 +52,28 @@ class SignIn(View):
 
         try:
             data = json.loads(request.body)
+            if Account.objects.filter(user_password=data['password']).exists():
                  
-            if Account.objects.filter(user_number=data['number']).exists():
-                origin_user_number = Account.objects.get(user_number=data['number'])
-                if data['password'] == origin_user_number.user_password:
-                    return JsonResponse({'message':'SignIn SUCCESS'},status=200)
-                elif data['password'] == '':
-                    return JsonResponse({'message':'No password'})
-                elif data['password'] != origin_user_number.user_password:
-                    return JsonResponse({'message':'INVALID_USER'},status=401)
+                if Account.objects.filter(user_number=data['number']).exists():
+                    origin_user_number = Account.objects.get(user_number=data['number'])
+                    if origin_user_number == origin_user_number.user_password:
+                        return JsonResponse({'message':'SignIn SUCCESS'},status=200)
+                    elif origin_user_number != origin_user_number.password:
+                        return JsonResponse({'message':'INVALID_USER'},status=401)
 
-            elif Account.objects.filter(user_name=data['name']).exists():
-                origin_user_name = Account.objects.get(user_name=data['name'])
-                if origin_user_name.user_password==data['password']:
-                    return JsonResponse({'message':'SignIn SUCCESS'},status=200)
-                elif data['password'] == '':
-                    return JsonResponse({'message':'No password'})
-                elif origin_user_name.user_password!=data['password']:
-                    return JsonResponse({'message':'INVALID_USER'},status=401)
+                if Account.objects.filter(user_name=data['name']).exists():
+                    origin_user_name = Account.objects.get(user_name=data['name'])
+                    if origin_user_name.user_password==data['password']:
+                        return JsonResponse({'message':'SignIn SUCCESS'},status=200)
+                    elif origin_user_name.user_password!=data['password']:
+                        return JsonResponse({'message':'INVALID_USER'},status=402)
 
-            elif Account.objects.filter(user_email=data['email']).exists():
-                origin_user_email = Account.objects.get(user_name=data['email'])
-                if origin_user_email.user_password==data['password']:
-                    return JsonResponse({'message':'SignIn SUCCESS'},status=200)
-                elif data['password'] == '':
-                    return JsonResponse({'message':'No password'})
-                elif origin_user_name.user_password!=data['password']:
-                    return JsonResponse({'message':'INVALID_USER'},status=401)
-            else :
-                return JsonResponse({'message':'INVALID_USER'},status=401)
+                if Account.objects.filter(user_name=data['email']).exists():
+                    origin_user_email = Account.objects.get(user_name=data['email'])
+                    if origin_user_name.user_password==data['password']:
+                        return JsonResponse({'message':'SignIn SUCCESS'},status=200)
+                    elif origin_user_name.user_password!=data['password']:
+                        return JsonResponse({'message':'INVALID_USER'},status=401)
 
         except KeyError:
             return JsonResponse({'message':'KEY_ERROR'},status=400)
-       
