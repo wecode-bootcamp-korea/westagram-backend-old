@@ -1,12 +1,14 @@
 import json
 import re
 import bcrypt
+import jwt
 
 from django.http import JsonResponse
 from django.views import View
 from django.db.models import Q
 
 from user.models import User
+from my_db_settings import SECRET_KEY, ALGORITHM
 
 class UsersView(View):
 
@@ -91,6 +93,10 @@ class LoginView(View):
             return JsonResponse({'message': 'INVALID_USER'}, status = 400)
 
         if bcrypt.checkpw(input_password,user.password.encode('utf-8')):
-            return JsonResponse({'message': 'SUCCESS'}, status = 200)
+            SECRET = SECRET_KEY
+            access_token = jwt.encode({'id':user.id}, SECRET, algorithm='ALGORITHM')
+
+            return JsonResponse({'message': 'SUCCESS',
+                                 'access_token': access_token.decode('utf-8')}, status = 200)
 
         return JsonResponse({'message': 'INVALID PASSWORD OR ACCOUNT'}, status = 400)

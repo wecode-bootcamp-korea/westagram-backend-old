@@ -6,6 +6,7 @@ from django.db.models import Q
 
 from posting.models import Posting, Comment
 from user.models import User, Like
+from user.utils import login_check
 
 class PostingView(View):
 
@@ -132,7 +133,7 @@ class CommentView(View):
             return JsonResponse({'message': 'Something Wrong'}, status = 400)
 
 class LikeView(View):
-
+    @login_check
     def post(self, request):
         data = json.loads(request.body)
 
