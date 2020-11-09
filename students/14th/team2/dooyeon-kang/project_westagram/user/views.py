@@ -11,9 +11,6 @@ class UsersView(View):
 
     def post(self, request):
         data           = json.loads(request.body)
-        valid_email    = False
-        valid_password = False
-        valid_user     = False
         valid_email_re = '^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w+$'
 
         try:
@@ -31,20 +28,22 @@ class UsersView(View):
 #            return JsonResponse({'message': "Invalid Email"}, status = 400)
 
         #email validation using re
-        if re.search(valid_email_re, new_email):
-            valid_email = True
-        else:
+        if not re.search(valid_email_re, new_email):
+            valid_email = False
             return JsonResponse({'message': "Invalid Email"}, status = 400)
+        else:
+            valid_email = True
 
         #password validation
-        if len(new_password) >= 8:
-            valid_password = True
-        else:
+        if not len(new_password) >= 8:
+            valid_password = False
             return JsonResponse({'message': "Invalid Password"}, status = 400)
+        else:
+            valid_password = True
 
         #duplacted value validation
         exist_user = User.objects.filter(Q(name=new_name) | Q(phone=new_phone) | Q(email=new_email))
-        if len(exist_user) == 0:
+        if not exist_user:
             valid_user = True
         else:
             return JsonResponse({'message': "Name, Phone or Email is already exists"}, status = 400)
@@ -88,5 +87,5 @@ class LoginView(View):
 
         if input_password == user.password:
             return JsonResponse({'message': 'SUCCESS'}, status = 200)
-        else:
-            return JsonResponse({'message': 'INVALID_USER'}, status = 400)
+
+       return JsonResponse({'message': 'INVALID PASSWORD OR ACCOUNT'}, status = 400)

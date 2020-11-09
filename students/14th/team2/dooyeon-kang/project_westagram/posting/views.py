@@ -16,8 +16,8 @@ class PostingView(View):
             input_user  = data['user_id']
             image_url   = data['image_url']
             description = data['description']
-        except Exception as error_message:
-            return JsonResponse({'message': error_message}, status = 400)
+        except KeyError:
+            return JsonResponse({'message': 'KeyError'}, status = 400)
 
         try:
             user = User.objects.get(id=input_user)
@@ -150,8 +150,8 @@ class LikeView(View):
             if not Like.objects.filter(user_id=user, posting_id=posting):
                 Like.objects.create(user=user, posting=posting)
                 return JsonResponse({'message': 'User liked SUCCESSFULLY'}, status = 201)
-            else:
-                return JsonResponse({'message': 'The user already liked the posting'}, status = 401)
+
+            return JsonResponse({'message': 'The user has already liked the posting'}, status = 400)
 
         except Exception as error_message:
-            return JsonResponse({'message': 'Invalid user or posting'}, status = 401)
+            return JsonResponse({'message': 'Invalid user or posting'}, status = 400)
