@@ -1,6 +1,7 @@
 #-*- coding:utf-8 -*-
 from django.test import Client, TestCase
 from .models import User
+import bcrypt
 
 
 # Create your tests here.
@@ -41,12 +42,11 @@ class SignUpTestCase(TestCase):
 
         response = self.client.post(self.URL, request, content_type='application/json')
         self.assertEqual(response.json()['message'],'SUCCESS')
-        self.assertEqual(response.status_code,200)
+        self.assertEqual(response.status_code,201)
 
         self.assertEqual(User.objects.filter(name        =self.GOOD_NAME,\
                                              phone_number=self.GOOD_PHONE_NUMBER,\
-                                             email       =self.GOOD_EMAIL,\
-                                             password    =self.GOOD_PASSWORD).exists(),True)
+                                             email       =self.GOOD_EMAIL).exists(),True)
 
     def test_check_get_necesser_keys(self):
         requests = []
@@ -125,6 +125,23 @@ class SignUpTestCase(TestCase):
         response = self.client.post(self.URL, request, content_type='application/json')
         self.assertEqual(response.json()['message'],'DATA_ALREADY_EXIST')
         self.assertEqual(response.status_code,400)
+
+    def test_authentication(self):
+
+        request = {
+            'name'         : self.GOOD_NAME,
+            'phone_number' : self.GOOD_PHONE_NUMBER,
+            'email'        : self.GOOD_EMAIL,
+            'password'     : self.GOOD_PASSWORD
+        }
+
+        response = self.client.post(self.URL, request, content_type='application/json')
+        self.assertEqual(response.json()['message'],'SUCCESS')
+
+        hashed_password = User.objects.get(name=self.GOOD_NAME).password.encode('utf-8')
+        new_password = self.GOOD_PASSWORD.encode('utf-8')
+
+        self.assertEqual(bcrypt.checkpw(new_password, hashed_password),True)
 
 class LoginTestCase(TestCase):
     def setUp(self):

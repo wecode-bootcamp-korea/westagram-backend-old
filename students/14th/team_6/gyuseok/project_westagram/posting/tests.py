@@ -37,7 +37,7 @@ class CreateBoardTestCase(TestCase):
 
         response = self.client.post(self.URL, request, content_type='application/json')
         self.assertEqual(response.json()['message'],'SUCCESS')
-        self.assertEqual(response.status_code,200)
+        self.assertEqual(response.status_code,201)
 
         user_key = User.objects.get(name=self.DUMMY_NAME)
         self.assertEqual(Post.objects.filter(user = user_key).exists(),True)
