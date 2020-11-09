@@ -5,13 +5,13 @@ class User(models.Model):
     email    = models.EmailField()
     phone    = models.CharField(max_length=20)
     password = models.CharField(max_length=2000)
-    posting = models.ManyToManyField('posting.Posting', related_name='User', through='Like')
+    posting  = models.ManyToManyField('posting.Posting', related_name='User', through='Like')
 
     class Meta:
         db_table = 'users'
 
 class Like(models.Model):
-    user = models.ForeignKey('User', on_delete=models.CASCADE)
+    user    = models.ForeignKey('User', on_delete=models.CASCADE)
     posting = models.ForeignKey('posting.Posting', on_delete=models.CASCADE)
 
     class Meta:
@@ -19,8 +19,8 @@ class Like(models.Model):
 
 class Profile(models.Model):
     description = models.TextField(null=True)
-    image_url = models.CharField(max_length=2000)
-    user = models.ForeignKey('User', on_delete=models.CASCADE)
+    image_url   = models.CharField(max_length=2000)
+    user        = models.ForeignKey('User', on_delete=models.CASCADE)
 
     class Meta:
         db_table = 'user_profiles'

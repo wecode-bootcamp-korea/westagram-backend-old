@@ -137,14 +137,14 @@ class LikeView(View):
         data = json.loads(request.body)
 
         try:
-            user_id = data['user_id']
+            user_id    = data['user_id']
             posting_id = data['posting_id']
 
         except KeyError:
             return JsonResponse({'message': 'KeyError'}, status = 400)
 
         try:
-            user = User.objects.get(id=user_id)
+            user    = User.objects.get(id=user_id)
             posting = Posting.objects.get(id=posting_id)
 
             if not Like.objects.filter(user_id=user, posting_id=posting):

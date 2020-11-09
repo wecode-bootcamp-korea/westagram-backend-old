@@ -1,7 +1,6 @@
 from django.db import models
 from django.conf import settings
 from pytz import timezone
-#from user.models import User
 
 class Posting(models.Model):
     image_url   = models.CharField(max_length=1000)
@@ -39,10 +38,4 @@ class Comment(models.Model):
         return self.created_at.astimezone(korean_timezone)
 
     class Meta:
-        db_table = 'comments'
-
-
-#class Like(models.Model):
-#
-#    class Meta:
-#        db_table = 'likes'
+        db_table = 'comments' 
