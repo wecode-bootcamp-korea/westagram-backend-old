@@ -63,7 +63,6 @@ class LoginView(View):
             return JsonResponse({'message':'INVALID_USER'}, status=401)
 
 class FollowView(View):
-
     def post(self, request):
         data = json.loads(request.body)
 
@@ -100,6 +99,4 @@ class FollowView(View):
 
         except FollowList.DoesNotExist:
             return JsonResponse({'message':'USER_NOT_FOLLOWED'}, status=404)
-
-        
 
