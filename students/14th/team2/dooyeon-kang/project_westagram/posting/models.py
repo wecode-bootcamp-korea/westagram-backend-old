@@ -3,7 +3,7 @@ from django.conf import settings
 from pytz import timezone
 
 class Posting(models.Model):
-    image_url   = models.CharField(max_length=1000)
+    image_url   = models.CharField(max_length=2000)
     description = models.TextField(null=True)
     created_at  = models.DateTimeField(auto_now_add=True)
     updated_at  = models.DateTimeField(auto_now=True)

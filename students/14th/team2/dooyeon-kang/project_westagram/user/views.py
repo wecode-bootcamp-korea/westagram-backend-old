@@ -56,7 +56,7 @@ class UsersView(View):
                 password = new_password,
             )
 
-            return JsonResponse({'message': "SUCCESS"}, status = 200)
+        return JsonResponse({'message': "SUCCESS"}, status = 200)
 
 class LoginView(View):
 
@@ -88,4 +88,4 @@ class LoginView(View):
         if input_password == user.password:
             return JsonResponse({'message': 'SUCCESS'}, status = 200)
 
-       return JsonResponse({'message': 'INVALID PASSWORD OR ACCOUNT'}, status = 400)
+        return JsonResponse({'message': 'INVALID PASSWORD OR ACCOUNT'}, status = 400)
