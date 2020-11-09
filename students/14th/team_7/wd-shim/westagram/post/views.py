@@ -15,18 +15,37 @@ class PostIndex(View):
     def get(self, request):
         return JsonResponse({"get": "post index"}, status=200)
 
-class PostListAll(View):
-    def get(self, request):
-        pass
-
 class PostList(View):
     def get(self, request):
         data = json.loads(request.body)
         
         try:
-            user_name = data['user_name']
-            User.objects.get(user_name=user_name)
+            user_name = data['user_name'].strip()
+            post_list = []
             
+            if Validation.is_blank(user_name):
+                raise BlankFieldException
+            
+            user  = User.objects.get(user_name=user_name, is_deleted=0)
+            posts = user.post_set.all()
+            
+            if len(posts) == 0:
+                return JsonResponse({"message": post_list}, status=200)
+            else:
+                post_list = [
+                    {
+                        "post_key"        : post.post_key,
+                        "post_desc"       : post.post_desc,
+                        "updated_pub_date": post.updated_pub_date,
+                    }
+                    for post in posts
+                ]
+                
+                result = {
+                    "user_name": user_name,
+                    "posts"    : post_list
+                }
+        
         except KeyError:
             return JsonResponse({"message": "KEY_ERROR"}, status=400)
         
@@ -39,7 +58,28 @@ class PostList(View):
         except Exception as e:
             return JsonResponse({"message": "UNKNOWN_ERROR"}, status=400)
         
-        return JsonResponse({"post": "SUCCESS"}, status=200)
+        return JsonResponse({"get": result}, status=200)
+
+class PostListAll(View):
+    def get(self, request):
+        try:
+            posts = Post.objects.filter(is_deleted=0)[:100]
+            
+            post_list = [
+                {
+                    "post_desc"       : post.post_desc,
+                    "tags"            : post.tags,
+                    "location_info"   : post.location_info,
+                    "updated_pub_date": post.updated_pub_date,
+                    "user"            : post.user.name,
+                    "user_name"       : post.user.user_name,
+                } for post in posts
+            ]
+            
+        except Exception:
+            return JsonResponse({"message": "UNKNOWN_ERROR"}, status=400)
+        
+        return JsonResponse({"get": post_list}, status=200)
 
 class PostUp(View):
     def get(self, request):
@@ -57,8 +97,8 @@ class PostUp(View):
             
             user = User.objects.get(user_name=user_name)
             post = Post(
-                post_desc=post_desc.strip(),
-                user=user
+                post_desc = post_desc.strip(),
+                user      = user
             )
             
             if not post:
@@ -68,8 +108,8 @@ class PostUp(View):
                 AMAZON_STORAGE_URL = "/amazon/storage/" + user.user_name
                 
                 for image in post_images:
-                    img          = Image.open(image, mode='r')
                     img_byte_arr = io.BytesIO()
+                    img          = Image.open(image, mode='r')
                     img.save(
                         img_byte_arr,
                         format = img.format

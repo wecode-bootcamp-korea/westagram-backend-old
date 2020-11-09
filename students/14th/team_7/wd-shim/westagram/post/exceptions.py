@@ -17,3 +17,7 @@ class PasswordValidException(Exception):
 class AlreadyExistException(Exception):
     def __init__(self):
         super().__init__('이미 존재하는 정보입니다.')
+
+class UserNoPostsException(Exception):
+    def __init__(self):
+        super().__init__('업로드한 포스트가 없습니다.')

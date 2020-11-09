@@ -13,7 +13,7 @@ class Post(models.Model):
     location_info = models.CharField(max_length=500, null=True)
     pub_date = models.DateTimeField(auto_now=True)
     updated_pub_date = models.DateTimeField(auto_now_add=True)
-    is_delete = models.BooleanField(default=False)
+    is_deleted = models.BooleanField(default=False)
     user = models.ForeignKey('user.User', on_delete=models.CASCADE)
     
     def __str__(self):
@@ -35,7 +35,7 @@ class PostImage(models.Model):
     post = models.ForeignKey('post.Post', on_delete=models.CASCADE)
     
     def __str__(self):
-        return f'img_name:{self.img_name}, posting:{self.posting}, ' \
+        return f'img_name:{self.img_name}, posting:{self.post}, ' \
                f'img_url:{self.img_url}'
     
     class Meta:
