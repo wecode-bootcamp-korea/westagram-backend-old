@@ -1,5 +1,5 @@
-                      import json
-                      import re
+import json
+import re
 from django.views     import View
 from django.http      import JsonResponse
 from django.db.models import Q
@@ -25,7 +25,7 @@ class SignUpView(View):
         validation_password = re.search(valid_password, signup_password)
 
         try:
-
+            # vaildation check
             if validation_name :
                 pass
             else:
