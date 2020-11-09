@@ -1,5 +1,6 @@
 import json
 import re
+import bcrypt
 
 from django.http import JsonResponse
 from django.views import View
@@ -14,10 +15,10 @@ class UsersView(View):
         valid_email_re = '^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w+$'
 
         try:
-            new_name     = data['name']
-            new_email    = data['email']
-            new_password = data['password']
-            new_phone    = data['phone']
+            new_name        = data['name']
+            new_email       = data['email']
+            new_password    = data['password']
+            new_phone       = data['phone']
         except KeyError:
             return JsonResponse({'message': "KEY_ERROR"}, status = 400)
 
@@ -48,12 +49,19 @@ class UsersView(View):
         else:
             return JsonResponse({'message': "Name, Phone or Email is already exists"}, status = 400)
 
+        try:
+            new_profile_pic = data['profile_image']
+        except KeyError:
+            new_profile_pic = ''
+
         if valid_email and valid_password and valid_user:
+            hashed_password = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
             user = User.objects.create(
-                name     = new_name,
-                email    = new_email,
-                phone    = new_phone,
-                password = new_password,
+                name          = new_name,
+                email         = new_email,
+                phone         = new_phone,
+                profile_image = new_profile_pic,
+                password      = hashed_password,
             )
 
         return JsonResponse({'message': "SUCCESS"}, status = 200)
@@ -62,14 +70,11 @@ class LoginView(View):
 
     def post(self, request):
         data           = json.loads(request.body)
-        is_phone       = False
-        is_email       = False
-        is_name        = False
         valid_email_re = '^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w+$'
 
         try:
             input_account  = data['account']
-            input_password = data['password']
+            input_password = data['password'].encode('utf-8')
         except Exception as error_msg:
             return JsonResponse({'message': 'KEY_ERROR'}, status = 400)
 
@@ -85,7 +90,7 @@ class LoginView(View):
         except Exception:
             return JsonResponse({'message': 'INVALID_USER'}, status = 400)
 
-        if input_password == user.password:
+        if bcrypt.checkpw(input_password,user.password.encode('utf-8')):
             return JsonResponse({'message': 'SUCCESS'}, status = 200)
 
         return JsonResponse({'message': 'INVALID PASSWORD OR ACCOUNT'}, status = 400)
