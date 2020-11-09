@@ -1,11 +1,15 @@
 import json
 import re
+import bcrypt
+import jwt
+import my_settings
 from django.views import View
 from django.http import JsonResponse
 from django.db.models import Q
 from share.utils import (
                     getUserID,
                     checkRequestBody,
+                    checkAuthorization,
                     )
 from .models import (
                 Users,
@@ -15,17 +19,12 @@ from .models import (
 
 class RegistView(View):
     def post(self, request):
-        '''
-        try:
-            data            = json.loads(request.body)
-        except Exception as ex:
-            return JsonResponse({"message":"You request with wrong format."}, status=400)
-        '''
-        has_problem = checkRequestBody(request)
-        if hasProblem:
-            return hasProblem
+        has_problem  = checkRequestBody(request)
+        if has_problem:
+            return has_problem
 
-        user_account        = {'name':'','phone_number':'','email':''}
+        data         = json.loads(request.body)
+        user_account = {'name':'','phone_number':'','email':''}
         
         if 'name' in data:
             user_account['name']            = data['name']
@@ -58,12 +57,14 @@ class RegistView(View):
             return JsonResponse({"message":"same phone_number is already exist."}, status=400)
         if Users.objects.filter(name=user_account['email']).exists():
             return JsonResponse({"message":"same email is already exist."}, status=400)
+        
+        hashed_pw = bcrypt.hashpw(data['password'].encode(), bcrypt.gensalt())
 
         Users(
                 name            = user_account['name'],
                 email           = user_account['email'],
                 phone_number    = user_account['phone_number'],
-                password        = data['password'],
+                password        = hashed_pw.decode(),
                 ).save()
 
         return JsonResponse({"message":"SUCCESS"}, status=200)
@@ -73,49 +74,50 @@ class RegistView(View):
 
 class LoginView(View):
     def post(self, request):
-        '''
-        try:
-            data        = json.loads(request.body)
-        except Exception as ex:
-            return JsonResponse({"message":"You request with wrong format."}, status=400)
-        '''
         has_problem = checkRequestBody(request)
         if has_problem:
             return hasProblem
-        
-        login_info      = {'account':'', 'password':''}
-        
+
+        data        = json.loads(request.body)
+        login_info  = {'account':'', 'password':''}
+
         if not 'account' in data or not 'password' in data:
             return JsonResponse({"message":"KEY_ERROR"}, status=400)
 
         login_info['account']   = data['account']
         login_info['password']  = data['password']
         
-        if Users.objects.filter(Q(name=login_info['account'])
-                                | Q(email=login_info['account'])
-                                | Q(phone_number=login_info['account'])
-                                , password=login_info['password']).exists():
-            return JsonResponse({"message":"SUCCESS"}, status=200)
-        else:
+        account     = Users.objects.filter(Q(name=login_info['account'])
+                               | Q(email=login_info['account'])
+                               | Q(phone_number=login_info['account']))
+        
+        if not account.exists() or not bcrypt.checkpw(login_info['password'].encode(), account[0].password.encode()):
             return JsonResponse({"message":"INVALID_USER"}, status=401)
         
+        # Token 발급
+        user_id     = getUserID(login_info['account'])        
+        token       = jwt.encode({"user_id":user_id}, my_settings.SECRET['secret'], algorithm='HS256')
+        
+        return JsonResponse({"message":token.decode()}, status=200)
 
 
 class Follow(View):
     def post(self, request):
-        has_problem = checkRequestBody(request)
+
+        has_problem      = checkRequestBody(request)
         if has_problem:
             return hasProblem
 
-        #checkRequestBody(request)
-        #data = json.loads(request.body)
-
+        data             = json.loads(request.body)
+        user_id          = checkAuthorization(data['token'])
+        if user_id == None:
+            return JsonResponse({"message":"[token] is not allowed."}, status=400)
+        
         FOLLOWED_USER_ID = 'followed_user_id'
 
-        if not "account" in data or not FOLLOWED_USER_ID in data:
-            return JsonResponse({"message":"[account] or [followed_user_id] is empty"}, status=400)
+        if not FOLLOWED_USER_ID in data:
+            return JsonResponse({"message":"[followed_user_id] is empty"}, status=400)
 
-        user_id          = getUserID(data['account'])
         followed_user_id = data[FOLLOWED_USER_ID]
 
         if not Users.objects.filter(id=followed_user_id).exists():
@@ -125,8 +127,5 @@ class Follow(View):
             Follows.objects.create(followed_user_id=followed_user_id, following_user_id=user_id)
         
         return JsonResponse({"message":"SUCCESS"}, status=201)
-
-
-
 
 

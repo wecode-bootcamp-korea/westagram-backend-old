@@ -1,5 +1,7 @@
 import json
 import re
+import jwt
+import my_settings
 from django.db.models import Q
 from django.core import serializers
 from datetime import datetime
@@ -8,6 +10,7 @@ from django.views import View
 from share.utils import (
                         getUserID,
                         checkRequestBody,
+                        checkAuthorization,
                         )
 from .models import (
                     Posts,
@@ -27,16 +30,18 @@ class Posting(View):
 
         data = json.loads(request.body)
 
-        # image_url, user account 정보를 추출하여 posts table에 추가 작업
-        keys        = ['account', 'image_url', 'article'] 
+        # image_url, token 정보를 추출하여 posts table에 추가 작업
+        keys        = ['token', 'image_url', 'article'] 
         inputs      = {k:v for k,v in data.items() if k in keys}
         
         for key in keys:
             if not key in inputs:
-                return JsonResponse({"message":"we need to take all values [account, image_url, article]"},
+                return JsonResponse({"message":"we need to take all values [token, image_url, article]"},
                         status=400)
         
-        user_id     = getUserID(inputs['account'])
+        user_id     = checkAuthorization(inputs['token']) 
+        if user_id == None:
+            return JsonResponse({"message":"[token] is not allowed."}, status=400)
 
         Contents.objects.create(
                         article     = inputs['article'], 
@@ -53,6 +58,15 @@ class Posting(View):
 
 class ShowAllPosts(View):
     def get(self, request):
+        has_problem = checkRequestBody(request)
+        if has_problem:
+            return has_problem
+
+        data        = json.loads(request.body)
+        user_id     = checkAuthorization(data['token']) 
+        if user_id == None:
+            return JsonResponse({"message":"[token] is not allowed."}, status=400)
+
         posts       = []
         entries     = Posts.objects.select_related('content').select_related('content__user').all()
         
@@ -67,19 +81,18 @@ class AddComment(View):
         has_problem = checkRequestBody(request)
         if has_problem:
             return has_problem
-        data = json.loads(request.body)
+        
+        data        = json.loads(request.body)
+        user_id     = checkAuthorization(data['token']) 
+        if user_id == None:
+            return JsonResponse({"message":"[token] is not allowed."}, status=400)
+        
         
         inputs      = {}
         ARTICLE     = 'article'
-        ACCOUNT     = 'account'
         CONTENT_ID  = 'content_id'
 
         # article, user_id, post_id, created_at 에 대해 comments table에 추가.
-        if ACCOUNT in data:
-            inputs[ACCOUNT] = data[ACCOUNT]
-        else:
-            return JsonResponse({"message":"user info to comment is empty."}, status=400) 
-        
         if ARTICLE in data:
             inputs[ARTICLE] = data[ARTICLE]
         else:
@@ -89,11 +102,6 @@ class AddComment(View):
             inputs[CONTENT_ID] = data[CONTENT_ID]
         else:
             return JsonResponse({"message":"content_id is empty."}, status=400) 
-
-        user_id     = getUserID(inputs[ACCOUNT])
-        
-        if user_id == None:
-            return JsonResponse({"message":"Can't find user."}, status=400)
 
         if Contents.objects.filter(id=inputs[CONTENT_ID]).exists():
             inputs['parent_content_id'] = inputs[CONTENT_ID]
@@ -116,9 +124,19 @@ class AddComment(View):
 
 class ShowAllComments(View):
     def get(self, request):
+        has_problem = checkRequestBody(request)
+        if has_problem:
+            return has_problem
+
+        data        = json.loads(request.body)
+        user_id     = checkAuthorization(data['token']) 
+        if user_id == None:
+            return JsonResponse({"message":"[token] is not allowed."}, status=400)
+        
         entries     = Comments.objects.select_related('content').select_related('content__user') \
                         .all()
         comments    = []
+        
         for row in entries:
             comments.append({'article':row.content.article, 'created_at':row.content.created_at,
                             'user':row.content.user.name})
@@ -131,16 +149,20 @@ class ShowCommentsOfContent(View):
         if has_problem:
             return has_problem
         
-        data       = json.loads(request.body)
+        data        = json.loads(request.body)
+        user_id     = checkAuthorization(data['token']) 
+        if user_id == None:
+            return JsonResponse({"message":"[token] is not allowed."}, status=400)
+
         content_id = None
        
         if "content_id" in data:
             content_id = data['content_id']
         else:
-            return JsonResponse({"message":"content_id is empty"}, status=400)
+            return JsonResponse({"message":"[content_id] is empty"}, status=400)
 
         comments    = []
-        entries     = Comments.objects.select_related('content').filter(content_id=content_id)
+        entries     = Comments.objects.select_related('content').filter(parent_content_id=content_id)
         
         for row in entries:
             comments.append({'article':row.content.article, 'created_at':row.content.created_at,
@@ -154,15 +176,16 @@ class AddLike(View):
         if has_problem:
             return has_problem
         
-        data        = json.loads(request.body)
+        data        = json.loads(request.body)        
+        user_id     = checkAuthorization(data['token']) 
+        if user_id == None:
+            return JsonResponse({"message":"[token] is not allowed."}, status=400)
         
         # '좋아요' 대상 post, comment 와 사용자정보
-        if not 'content_id' in data or not 'account' in data:
-            return JsonResponse({"message":"[content_id or [account] is empty."}, status=400)
+        if not 'content_id' in data:
+            return JsonResponse({"message":"[content_id] is empty."}, status=400)
 
         content_id = data['content_id']
-        account    = data['account']
-        user_id    = getUserID(account)
         
         if not Users.objects.filter(id=user_id).exists():
             return JsonResponse({"message":"Can't find user."}, status=400)
@@ -186,7 +209,10 @@ class RemoveContent(View):
         if has_problem:
             return has_problem
         
-        data    = json.loads(request.body)
+        data        = json.loads(request.body)
+        user_id     = checkAuthorization(data['token']) 
+        if user_id == None:
+            return JsonResponse({"message":"[token] is not allowed."}, status=400)
 
         if not 'content_id' in data:
             return JsonResponse({"messge":"[content_id] is empty."}, status=400)
@@ -205,7 +231,10 @@ class UpdatePost(View):
         if has_problem:
             return has_problem
         
-        data    = json.loads(request.body)
+        data        = json.loads(request.body)
+        user_id     = checkAuthorization(data['token']) 
+        if user_id == None:
+            return JsonResponse({"message":"[token] is not allowed."}, status=400)
 
         if not 'content_id' in data:
             return JsonResponse({"messge":"[content_id] is empty."}, status=400)
@@ -257,27 +286,23 @@ class GetMyPosts(View):
             return has_problem
         
         data        = json.loads(request.body)
+        user_id     = checkAuthorization(data['token']) 
+        if user_id == None:
+            return JsonResponse({"message":"[token] is not allowed."}, status=400)
+
 
         # 내가 만든 Post 및 해당 post 에 달린 댓글과 좋아요 정보 모두 제공하기.
-        if not 'account' in data:
-            return JsonResponse({"message":"Can't receive [account] info"}, status=400)
-        
-        # 1. request 정보 중 'account'를 통해 user id 추출시도한다. 없으면 안내문구  리턴
-        user_id = getUserID(data['account'])
-        if user_id == None:
-            return JsonResponse({"message":"Can't find user."}, status=400)
-
-        # 2. 해당 user의 contents 정보를 검색, Post에 해당하는 content 없으면 안내문구 리턴
+        # 해당 user의 contents 정보를 검색, Post에 해당하는 content 없으면 안내문구 리턴
         if not Contents.objects.select_related('user').filter(user_id=user_id).exists():
             return JsonResponse({"message":"User's post is not exist."}, status=400)
 
         contents    = Contents.objects.select_related('user').filter(user_id=user_id)
         result      = []
 
-        # 3. Contents rows 중 user id에 매칭되는 contents 만 추출하여 looping
+        # Contents rows 중 user id에 매칭되는 contents 만 추출하여 looping
         for content in contents:
 
-            # 4. post에 해당하는 content 추출.
+            # post에 해당하는 content 추출.
             posts       = Posts.objects.select_related('content').select_related('content__user') \
                             .filter(content_id=content.id)
             
@@ -286,7 +311,7 @@ class GetMyPosts(View):
 
             post_info   = {}
             
-            # 5. User가 작성한 post가 있다면 관련 정보를 dictionary로 저장
+            # User가 작성한 post가 있다면 관련 정보를 dictionary로 저장
             for post in posts:
                 post_info['content_id'] = content.id
                 post_info['image_url']  = post.image_url
@@ -294,7 +319,7 @@ class GetMyPosts(View):
                 post_info['created_at'] = post.content.created_at
                 post_info['user']       = post.content.user.name
 
-                # 6. post를 기준으로 댓글 tree 정보를 재귀호출방식으로 추출.
+                # post를 기준으로 댓글 tree 정보를 재귀호출방식으로 추출.
                 post_info['comments']   = findChildCommentsRecursive(self, content.id)
                 
                 result.append(post_info)
