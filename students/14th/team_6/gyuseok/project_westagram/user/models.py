@@ -8,8 +8,8 @@ class User(models.Model):
     password      = models.CharField(max_length=100)
 
     class Meta:
-        db_table = 'user' # 이러면 테이블에 데이터베이스 명이 붙지 않는다.
+        db_table = 'users'
 
-    def __str__(self): # 클래스 호출 시 name을 출력 
+    def __str__(self):
         return self.name
 
