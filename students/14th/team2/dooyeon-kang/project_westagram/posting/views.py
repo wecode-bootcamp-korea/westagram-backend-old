@@ -70,25 +70,20 @@ class PostingView(View):
             return JsonResponse({'message': error_message}, status = 400)
 
     @login_check
-    def delete(self, request, **kwargs):
-        posting_id = request.GET.get('post')
+    def delete(self, request):
         user_id = request.user.id
 
-#        try:
-#            posting_id = kwargs.get('id')
-#        except KeyError:
-#            return JsonResponse({'message': 'KEY_ERROR'}, status = 400)
+        try:
+            posting_id = request.GET.get('post')
+        except KeyError:
+            return JsonResponse({'message': 'KEY_ERROR'}, status = 400)
 
         try:
-            posting = Posting.objects.get(id=posting_id)
+            posting = Posting.objects.get(id=posting_id, user_id=user_id)
+            posting.delete()
+            return JsonResponse({'message': 'SUCCESS'}, status = 200)
         except Exception:
-            return JsonResponse({'message': 'INVALID POSTING'}, status = 400)
-
-        if not user_id == posting.user_id:
-            return JsonResponse({'message': 'INVALID USER OF THE POSTING'}, status = 401)
-
-        posting.delete()
-        return JsonResponse({'message': 'SUCCESS'}, status = 200) 
+            return JsonResponse({'message': 'INVALID USER OR POSTING'}, status = 400)
 
 class CommentView(View):
     @login_check
@@ -152,6 +147,22 @@ class CommentView(View):
             return JsonResponse({'result': result}, status = 200)
         except Exception:
             return JsonResponse({'message': 'Something Wrong'}, status = 400)
+
+    @login_check
+    def delete(self, request):
+        user_id = request.user.id
+
+        try:
+            comment_id = request.GET.get('comment')
+        except KeyError:
+            return JsonResponse({'message': 'KEY_ERROR'}, status = 400)
+
+        try:
+            comment = Comment.objects.get(id=comment_id, user_id=user_id)
+            comment.delete()
+            return JsonResponse({'message': 'SUCCESS'}, status = 200)
+        except Exception:
+            return JsonResponse({'message': 'INVALID USER OR COMMENT'}, status = 400)
 
 class LikeView(View):
     @login_check
