@@ -50,15 +50,16 @@ class PostDetailView(View):
             posts = Post.objects.prefetch_related('comment_set')
             return JsonResponse({
                 'post' : [{
-                    'name' : post.user.name,
-                    'content' : post.content,
-                    'image_url' : post.image_url,
+                    'name'       : post.user.name,
+                    'content'    : post.content,
+                    'image_url'  : post.image_url,
                     'created_at' : post.created_at.strftime('%Y-%m-%d %H:%M:%S'),
-                    'like' : post.like_user.all().count(),
-                    'comments' : [{
-                        'name' : comment.user.name,
-                        'comment' : comment.comment,
-                        'created_at' : comment.created_at.strftime('%Y-%m-%d %H:%M:%S')
+                    'like'       : post.like_user.all().count(),
+                    'comments'   : [{
+                        'name'       : comment.user.name,
+                        'comment'    : comment.comment,
+                        'created_at' : comment.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+                        'parent_id'  : comment.parent_id if comment.parent_id else None 
                     } for comment in comments] if comments else '' 
                 } for post in posts]
             }, status=200)
@@ -184,7 +185,8 @@ class CommentListView(View):
                 'comments' : [{
                     'name'       : comment.user.name,
                     'comment'    : comment.comment,
-                    'created_at' : comment.created_at.strftime('%Y-%m-%d %H:%M:%S')
+                    'created_at' : comment.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+                    'parent_id'  : comment.parent_id if comment.parent_id else None
                 } for comment in comments]}, status=200) if comments else JsonResponse({'message':'None_comment_data'}, status=200)
         except Post.DoesNotExist:
             return JsonResponse({'message':'POST_NOT_FOUND'}, status=404)

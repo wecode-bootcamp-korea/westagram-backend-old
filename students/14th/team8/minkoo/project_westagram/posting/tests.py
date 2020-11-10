@@ -295,11 +295,14 @@ class TestComment(TransactionTestCase):
             {
                 'name'       : 'douner',
                 'comment'    : '깐따삐야',
-                'created_at' : timezone.now().strftime('%Y-%m-%d %H:%M:%S')
+                'created_at' : timezone.now().strftime('%Y-%m-%d %H:%M:%S'),
+                'parent_id'  : None
             },{
                 'name'       : 'dooly',
                 'comment'    : '어서 오고',
-                'created_at' : timezone.now().strftime('%Y-%m-%d %H:%M:%S')
+                'created_at' : timezone.now().strftime('%Y-%m-%d %H:%M:%S'),
+                'parent_id'  : None
+
             }
         ]
 
@@ -696,11 +699,13 @@ class TestPostDetail(TransactionTestCase):
             'comments'   : [{
                 'name'       : 'dooly',
                 'comment'    : '대충 댓글',
-                'created_at' : timezone.now().strftime('%Y-%m-%d %H:%M:%S')
+                'created_at' : timezone.now().strftime('%Y-%m-%d %H:%M:%S'),
+                'parent_id'  : None
             },{
                 'name'       : 'dooly',
                 'comment'    : '대충 대댓글',
-                'created_at' : timezone.now().strftime('%Y-%m-%d %H:%M:%S')
+                'created_at' : timezone.now().strftime('%Y-%m-%d %H:%M:%S'),
+                'parent_id'  : 1
             }] 
         }]
 
