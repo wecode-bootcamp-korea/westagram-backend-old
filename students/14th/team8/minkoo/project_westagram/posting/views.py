@@ -39,7 +39,7 @@ class PostsView(View):
                 'content'    : post.content,
                 'image_url'  : post.image_url,
                 'created_at' : post.created_at.strftime('%Y-%m-%d %H:%M:%S'),
-                'like'       : post.like_user.all().count()
+                'like'       : post.like_user.count()
             } for post in posts]}, status=200) if posts else JsonResponse({'message':'None_post_data'}, status=200)
 
 class PostDetailView(View):
@@ -54,7 +54,7 @@ class PostDetailView(View):
                     'content'    : post.content,
                     'image_url'  : post.image_url,
                     'created_at' : post.created_at.strftime('%Y-%m-%d %H:%M:%S'),
-                    'like'       : post.like_user.all().count(),
+                    'like'       : post.like_user.count(),
                     'comments'   : [{
                         'name'       : comment.user.name,
                         'comment'    : comment.comment,
@@ -219,7 +219,7 @@ class LikeListView(View):
                     'content'    : like_post.content,
                     'image_url'  : like_post.image_url,
                     'created_at' : like_post.created_at.strftime('%Y-%m-%d %H:%M:%S'),
-                    'like'       : like_post.like_user.all().count() 
+                    'like'       : like_post.like_user.count() 
                 } for like_post in like_posts]}, status=200) if like_posts else JsonResponse({'message':'None_like_data'}, status=200)
         except User.DoesNotExist:
             return JsonResponse({'message':'INVALID_USER'}, status=401)
