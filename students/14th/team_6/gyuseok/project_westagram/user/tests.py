@@ -1,10 +1,15 @@
 #-*- coding:utf-8 -*-
 from django.test import Client, TestCase
-from .models import User
+from django.conf import settings
+from django.http import JsonResponse
+
+import json
 import bcrypt
+import jwt
 
+from .models     import User
+from .utils      import login_decorator
 
-# Create your tests here.
 class SignUpTestCase(TestCase):
     def setUp(self):
         self.URL = '/user/signup/'
@@ -26,7 +31,6 @@ class SignUpTestCase(TestCase):
             password     = self.DUMMY_PASSWORD
         )
         self.user.save()
-
 
     def tearsDown(self):
         pass
@@ -146,6 +150,7 @@ class SignUpTestCase(TestCase):
 class LoginTestCase(TestCase):
     def setUp(self):
         self.URL = '/user/login/'
+        self.SING_UP_URL = '/user/signup/'
         self.client = Client()
         self.GOOD_NAME         = 'myname'
         self.GOOD_EMAIL        = 'abcdefg@gmail.com'
@@ -157,14 +162,16 @@ class LoginTestCase(TestCase):
         self.DUMMY_PHONE_NUMBER = '1234567890'
         self.DUMMY_PASSWORD     = '1234567890'
 
-        self.user = User(
-            name         = self.DUMMY_NAME,
-            email        = self.DUMMY_EMAIL,
-            phone_number = self.DUMMY_PHONE_NUMBER,
-            password     = self.DUMMY_PASSWORD
-        )
-        self.user.save()
-        self.user.save()
+        request = {
+            'name'         : self.DUMMY_NAME,
+            'email'        : self.DUMMY_EMAIL,
+            'phone_number' : self.DUMMY_PHONE_NUMBER,
+            'password'     : self.DUMMY_PASSWORD
+        }
+        self.client.post(self.SING_UP_URL, request, content_type='application/json')
+        # 인증 확인 용
+        self.user = User.objects.get(name=self.DUMMY_NAME)
+        self.access_token = jwt.encode({'id': self.user.pk}, settings.SECRET_KEY, algorithm = 'HS256').decode('utf-8')
 
     def tearsDown(self):
         pass
@@ -219,8 +226,64 @@ class LoginTestCase(TestCase):
             'password' : self.DUMMY_PASSWORD
         })
 
+        user = User.objects.get(name=self.DUMMY_NAME)
+
         for request in requests:
             response = self.client.post(self.URL, request, content_type='application/json')
             self.assertEqual(response.json()['message'],'SUCCESS')
             self.assertEqual(response.status_code,200)
 
+    def test_token(self):
+        request = {
+            'account'  : self.DUMMY_NAME,
+            'password' : self.DUMMY_PASSWORD
+        }
+
+        response = self.client.post(self.URL, request, content_type='application/json')
+        self.assertEqual(response.json()['authorization'], self.access_token)
+
+class LoginDecoratorTestCase(TestCase):
+    def setUp(self):
+        # 어떤 SUCCESS를 반환해주는 함수를 만들고
+        # Model DATA를 넣어 주고
+        # 데코레이터 써서 invalid 확인
+        # login해서 token 받을 필요있나?
+        # 
+
+        self.URL                = '/user/dummy/'
+        self.DUMMY_NAME         = 'mr.dummy'
+        self.DUMMY_EMAIL        = 'dummy@email.com'
+        self.DUMMY_PHONE_NUMBER = '1234567890'
+        self.DUMMY_PASSWORD     = '1234567890'
+
+        self.user = User(
+            name         = self.DUMMY_NAME,
+            email        = self.DUMMY_EMAIL,
+            phone_number = self.DUMMY_PHONE_NUMBER,
+            password     = self.DUMMY_PASSWORD
+        )
+        self.user.save()
+
+        user = User.objects.get(name=self.DUMMY_NAME)
+        self.user_id = { 'id' : user.pk }
+
+        self.good_token = jwt.encode(self.user_id, settings.SECRET_KEY, algorithm='HS256').decode('utf-8')
+
+    def test_success(self):
+        request = {
+            'authorization' : self.good_token,
+            'id'            : self.user_id['id']
+        }
+
+        response = self.client.post(self.URL, request, content_type='application/json')
+
+        self.assertEqual(response.json()['message'],'SUCCESS')
+
+    def test_invail_token(self):
+        request = {
+            'unknown_value' : 0,
+            'id'            : self.user_id['id']
+        }
+        response = self.client.post(self.URL, request, content_type='application/json')
+
+        self.assertEqual(response.json()['message'],'DO_NOT_EXIST_TOKEN')

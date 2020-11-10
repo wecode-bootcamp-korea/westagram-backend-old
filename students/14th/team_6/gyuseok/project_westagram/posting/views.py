@@ -3,11 +3,13 @@ import json
 from django.views import View
 from django.http  import JsonResponse
 from django.db.models import Q
+from django.db import IntegrityError
 
-from .models import Post, Comment
+from .models     import Post, Comment
 from user.models import User
-
+from user.utils  import login_decorator
 class BoardView(View):
+    @login_decorator
     def post(self, request):
 
         NECESSERY_KEYS = ('user_id', 'content', 'image_url')
@@ -16,20 +18,23 @@ class BoardView(View):
         if list(filter(lambda x: x not in data.keys(),NECESSERY_KEYS)):
             return JsonResponse({'message': 'KEY_ERROR'}, status=400)
         try:
-            post = Post.objects.get( content = data['content'],
-                                     image   = data['image_url'],
-                                     user    = data['user_id'],
-                                    )
+            post    = Post.objects.create(content = data['content'],
+                                          image   = data['image_url'],
+                                          user_id = data['user_id'],
+                                          )
             post.save()
             return JsonResponse({'message': 'SUCCESS'}, status=201)
 
-        except Post.DoesNotExist:
+        except IntegrityError:
             return JsonResponse({'message': 'NOT_EXIST_USER'}, status=400)
 
+    @login_decorator
     def get(self, request):
         return JsonResponse({'data' : list(Post.objects.values())}, status=200)
 
 class CommentView(View):
+
+    @login_decorator
     def post(self, request):
         NECESSERY_KEYS = ('user_id', 'post_id', 'content')
         data = json.loads(request.body)

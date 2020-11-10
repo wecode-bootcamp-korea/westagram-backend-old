@@ -1,10 +1,13 @@
+import json
+
 from django.test import TestCase, Client
+
 from user.models import User
 from .models     import Post
 
-class CreateBoardTestCase(TestCase):
+class BoardTestCase(TestCase):
     def setUp(self):
-        self.URL = '/posting/register/'
+        self.URL = '/posting/board/'
         self.client = Client()
 
         self.DUMMY_NAME         = 'mr.dummy'
@@ -15,7 +18,7 @@ class CreateBoardTestCase(TestCase):
         self.DUMMY_CONTENT      = 'unknown_content'
         self.DUMMY_IMAGE_URL    = 'unknown_image_url'
 
-        self.user = User(
+        self.user = User.objects.create(
             name         = self.DUMMY_NAME,
             email        = self.DUMMY_EMAIL,
             phone_number = self.DUMMY_PHONE_NUMBER,
@@ -23,20 +26,20 @@ class CreateBoardTestCase(TestCase):
         )
         self.user.save()
 
-
-
     def tearsDown(self):
         pass
 
     def test_success(self):
+
+        user = User.objects.get(name=self.DUMMY_NAME)
         request = {
-            'username'  : self.DUMMY_NAME,
+            'user_id'   : user.pk,
             'content'   : self.DUMMY_CONTENT,
             'image_url' : self.DUMMY_IMAGE_URL,
         }
 
         response = self.client.post(self.URL, request, content_type='application/json')
-        self.assertEqual(response.json()['message'],'SUCCESS')
+        self.assertEqual(response.json()['message'], 'SUCCESS')
         self.assertEqual(response.status_code,201)
 
         user_key = User.objects.get(name=self.DUMMY_NAME)
@@ -44,12 +47,12 @@ class CreateBoardTestCase(TestCase):
 
     def test_not_exist(self):
         request = {
-            'username'  : 'anonymous',
+            'user_id'  : 1234,
             'content'   : self.DUMMY_CONTENT,
             'image_url' : self.DUMMY_IMAGE_URL,
         }
 
         response = self.client.post(self.URL, request, content_type='application/json')
-        self.assertEqual(response.json()['message'],'NOT EXIST USER')
+        self.assertEqual(response.json()['message'], 'NOT_EXIST_USER')
         self.assertEqual(response.status_code,400)
 
