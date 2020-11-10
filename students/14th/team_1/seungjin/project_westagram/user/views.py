@@ -7,7 +7,6 @@ import my_settings
 
 from django.views import View
 from django.http import JsonResponse
-#from django.utils.decorators import method_decorator
 from django.db.models import Q
 
 from share.utils import (
@@ -25,7 +24,6 @@ from .models import (
 
 
 class RegistView(View):
-    #@method_decorator(checkRequestBodyDecorator()) 
     @checkRequestBodyDecorator
     def post(self, request):
         data         = json.loads(request.body)
@@ -68,7 +66,6 @@ class RegistView(View):
         return JsonResponse({"message":"Hello"}, status=200)
 
 class LoginView(View):
-    #@method_decorator(checkRequestBodyDecorator()) 
     @checkRequestBodyDecorator
     def post(self, request):
         data        = json.loads(request.body)
@@ -85,9 +82,10 @@ class LoginView(View):
                                            | Q(email=login_info['account'])
                                            | Q(phone_number=login_info['account']))
         
-            if bcrypt.checkpw(login_info['password'].encode(), account.password.encode()):            
-                # Token 발급
-                token       = jwt.encode({"user_id":account.id}, my_settings.SECRET['secret'], algorithm='HS256')
+            if bcrypt.checkpw(login_info['password'].encode(), account.password.encode()):
+                token       = jwt.encode({"user_id":account.id}, my_settings.SECRET['secret'],\
+                                        algorithm='HS256')
+
                 return JsonResponse({"message":token.decode()}, status=200)
 
             return JsonResponse({"message":"INVALID_USER"}, status=401)

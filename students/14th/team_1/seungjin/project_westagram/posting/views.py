@@ -9,7 +9,6 @@ from django.db.models import Q
 from django.core import serializers
 from django.http import JsonResponse
 from django.views import View
-from django.utils.decorators import method_decorator
 
 from share.utils import (
                         getUserIDFromToken,
@@ -26,8 +25,6 @@ from user.models import User
 
 
 class Posting(View):
-    #@method_decorator(checkAuthDecorator())
-    #@method_decorator(checkRequestBodyDecorator())
     @checkAuthDecorator
     @checkRequestBodyDecorator
     def post(self, request):
@@ -56,8 +53,6 @@ class Posting(View):
         return JsonResponse({"message":"SUCCESS"}, status=201)
 
 class ShowAllPosts(View):
-    #@method_decorator(checkAuthDecorator())
-    #@method_decorator(checkRequestBodyDecorator())
     @checkAuthDecorator
     @checkRequestBodyDecorator
     def get(self, request):
@@ -71,8 +66,6 @@ class ShowAllPosts(View):
         return JsonResponse({"posts":posts}, status=200)
 
 class AddComment(View):
-    #@method_decorator(checkAuthDecorator())
-    #@method_decorator(checkRequestBodyDecorator())
     @checkAuthDecorator
     @checkRequestBodyDecorator
     def post(self, request):
@@ -114,8 +107,6 @@ class AddComment(View):
             
 
 class ShowAllComments(View):
-    #@method_decorator(checkAuthDecorator())
-    #@method_decorator(checkRequestBodyDecorator())
     @checkAuthDecorator
     @checkRequestBodyDecorator
     def get(self, request):
@@ -129,8 +120,6 @@ class ShowAllComments(View):
         return JsonResponse({"comments":comments}, status=200)
 
 class ShowCommentsOfContent(View):
-    #@method_decorator(checkAuthDecorator())
-    #@method_decorator(checkRequestBodyDecorator())
     @checkAuthDecorator
     @checkRequestBodyDecorator
     def post(self, request):
@@ -152,8 +141,6 @@ class ShowCommentsOfContent(View):
         return JsonResponse({"comments":comments}, status=201)        
 
 class AddLike(View):
-    #@method_decorator(checkAuthDecorator())
-    #@method_decorator(checkRequestBodyDecorator())
     @checkAuthDecorator
     @checkRequestBodyDecorator
     def post(self, request):
