@@ -46,7 +46,7 @@ class PostDetailView(View):
     def get(self, request, post_id):
         try:
             post_model = Post.objects.get(id=post_id)
-            comments = Comment.objects.filter(post_id=post_id).prefetch_related() 
+            comments = Comment.objects.filter(post_id=post_id).prefetch_related('user') 
             posts = Post.objects.prefetch_related('comment_set')
             return JsonResponse({
                 'post' : [{
@@ -180,7 +180,7 @@ class CommentListView(View):
         
         try:
             post_model = Post.objects.get(id=post_id)
-            comments   = Comment.objects.filter(post_id=post_id).prefetch_related() 
+            comments   = Comment.objects.filter(post_id=post_id).prefetch_related('user') 
             return JsonResponse({
                 'comments' : [{
                     'name'       : comment.user.name,
@@ -212,7 +212,7 @@ class LikeListView(View):
     def get(self, request, user_id):
         try:
             user_model      = User.objects.get(id=user_id)
-            like_posts      = user_model.like.prefetch_related()
+            like_posts      = user_model.like.prefetch_related('like_user')
             return JsonResponse({
                 'posts' : [{
                     'name'       : like_post.user.name,
