@@ -1,5 +1,5 @@
 import re
-from user.const import REGEX_EMAIL, PHONE_NUM_LEN, NONE
+from user.const import REGEX_EMAIL, PHONE_NUM_LEN
 
 class Validation:
     

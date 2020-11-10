@@ -1,15 +1,39 @@
 import json
 import io
-from PIL import Image
+from PIL              import Image
 
-from django.views import View
-from django.http import JsonResponse
-from django.db import IntegrityError, transaction
+from django.views     import View
+from django.http      import JsonResponse
+from django.db        import IntegrityError, transaction
 
-from user.models import User
-from post.models import Post, PostImage
-from post.exceptions import BlankFieldException
+from user.models      import User
+from post.models      import Post, PostImage, Comment
+from post.exceptions  import BlankFieldException
 from post.validations import Validation
+# from common_util.authorization import authorization_decorator
+
+class PostListAll(View):
+    
+    def get(self, request):
+        try:
+            # TODO:Paging
+            posts = Post.objects.filter(is_deleted=0)[:100]
+            
+            post_list = [
+                {
+                    "post_desc"       : post.post_desc,
+                    "tags"            : post.tags,
+                    "location_info"   : post.location_info,
+                    "updated_pub_date": post.updated_pub_date,
+                    "user"            : post.user.name,
+                    "user_name"       : post.user.user_name,
+                } for post in posts
+            ]
+            
+        except Exception:
+            return JsonResponse({"message": "UNKNOWN_ERROR"}, status=400)
+        
+        return JsonResponse({"get": post_list}, status=200)
 
 class PostList(View):
     
@@ -30,10 +54,10 @@ class PostList(View):
             else:
                 post_list = [
                     {
-                        "post_key"        : post.user.user_name,
+                        "post_key"        : post.post_key,
                         "post_desc"       : post.post_desc,
                         "updated_pub_date": post.updated_pub_date,
-                        "img_info"        :
+                        "first_img_url"   :
                             post.postimage_set.all().first().img_url
                     }
                     for post in posts
@@ -58,28 +82,6 @@ class PostList(View):
             return JsonResponse({"message": "UNKNOWN_ERROR"}, status=400)
         
         return JsonResponse({"get": result}, status=200)
-
-class PostListAll(View):
-    
-    def get(self, request):
-        try:
-            posts = Post.objects.filter(is_deleted=0)[:100]
-            
-            post_list = [
-                {
-                    "post_desc"       : post.post_desc,
-                    "tags"            : post.tags,
-                    "location_info"   : post.location_info,
-                    "updated_pub_date": post.updated_pub_date,
-                    "user"            : post.user.name,
-                    "user_name"       : post.user.user_name,
-                } for post in posts
-            ]
-            
-        except Exception:
-            return JsonResponse({"message": "UNKNOWN_ERROR"}, status=400)
-        
-        return JsonResponse({"get": post_list}, status=200)
 
 class PostUp(View):
     
@@ -132,7 +134,6 @@ class PostUp(View):
                 
                 try:
                     with transaction.atomic():
-                        post.save()
                         for p_img in post_imgs:
                             p_img.save()
                 
@@ -150,6 +151,47 @@ class PostUp(View):
             return JsonResponse({"message": "INVALID_USER"}, status=400)
         
         except Exception as e:
+            return JsonResponse({"message": "UNKNOWN_ERROR"}, status=400)
+        
+        return JsonResponse({"post": "SUCCESS"}, status=200)
+
+# ============================================================================
+# comment 기능
+
+class AddComment(View):
+    
+    def get(self, request):
+        pass
+        
+    def post(self, request):
+        data = json.loads(request.body)
+        try:
+            post_key = data["post_key"]
+            user_id  = data["user_id"]
+            user_name = data["user_name"].strip()
+            user_comment  = data["comment"].strip()
+            
+            user = User.objects.get(
+                id         = user_id,
+                user_name  = user_name,
+                is_deleted = 0
+            )
+            
+            post = Post.objects.get(post_key=post_key, is_deleted=0)
+            
+            Comment.objects.create(
+                comment = user_comment,
+                post    = post,
+                user    = user
+            )
+            
+        except User.DoesNotExist:
+            return JsonResponse({"message": "USER NOT EXIST"}, status=400)
+            
+        except Post.DoesNotExist:
+            return JsonResponse({"message": "POST NOT EXIST"}, status=400)
+            
+        except Exception:
             return JsonResponse({"message": "UNKNOWN_ERROR"}, status=400)
         
         return JsonResponse({"post": "SUCCESS"}, status=200)
