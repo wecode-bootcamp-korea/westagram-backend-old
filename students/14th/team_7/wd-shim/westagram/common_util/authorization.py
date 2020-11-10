@@ -2,7 +2,6 @@ import jwt
 import bcrypt
 
 from django.http import JsonResponse
-from django.core.exceptions import ObjectDoesNotExist
 
 from my_settings import SECRET, ALGO
 from user.models import User
@@ -23,8 +22,8 @@ def authorization_decorator(func):
         except jwt.exceptions.DecodeError:
             return JsonResponse({"message": "INVALID_TOKEN"}, status=400)
         
-        except ObjectDoesNotExist:
-            return JsonResponse({"message": "INVALID_USER"}, status=400)
+        except User.DoesNotExist:
+            return JsonResponse({"message": "NOT_EXIST_USER"}, status=400)
         
         return func(self, request, *args, **kwargs)
     

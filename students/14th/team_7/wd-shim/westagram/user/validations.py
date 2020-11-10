@@ -1,7 +1,7 @@
 import re
 import bcrypt
 
-from user.const import REGEX_EMAIL, PHONE_NUM_LEN, NONE, UTF8
+from user.const import REGEX_EMAIL, PHONE_NUM_LEN, UTF8
 
 class Validation:
     
@@ -11,21 +11,12 @@ class Validation:
     
     @staticmethod
     def is_valid_email(email):
-        if re.search(REGEX_EMAIL, email):
-            return True
-        else:
-            return False
+        return re.search(REGEX_EMAIL, email)
     
     @staticmethod
     def is_valid_phone_number(phone):
-        if phone.isdecimal() and len(phone) == PHONE_NUM_LEN:
-            return True
-        else:
-            return False
+        return phone.isdecimal() and len(phone) == PHONE_NUM_LEN
     
     @staticmethod
     def is_valid_password(password, hashed_password):
-        if bcrypt.checkpw(password.encode(UTF8), hashed_password):
-            return True
-        else:
-            return False
+        return bcrypt.checkpw(password.encode(UTF8), hashed_password)

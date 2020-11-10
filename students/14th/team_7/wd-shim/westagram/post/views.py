@@ -15,31 +15,38 @@ from post.validations import Validation
 class PostListAll(View):
     
     def get(self, request):
+        data = json.loads(request.body)
         try:
+            get_number_of_post = data["get_number_of_post"]
+            
             # TODO:Paging
-            posts = Post.objects.filter(is_deleted=0)[:100]
+            posts = Post.objects.filter(is_deleted=0)[:get_number_of_post]
             
-            post_list = [
-                {
-                    "post_desc"       : post.post_desc,
-                    "tags"            : post.tags,
-                    "location_info"   : post.location_info,
-                    "updated_pub_date": post.updated_pub_date,
-                    "user"            : post.user.name,
-                    "user_name"       : post.user.user_name,
-                } for post in posts
-            ]
+            post_list = {
+                "count": len(posts),
+                "posts": [{
+                    "post_key"      : post.post_key,
+                    "post_desc"     : post.post_desc,
+                    "tags"          : post.tags,
+                    "location_info" : post.location_info,
+                    "updated_at"    : post.updated_at,
+                    "user"          : post.user.name,
+                    "user_name"     : post.user.user_name,
+                    } for post in posts]
+            }
             
-        except Exception:
-            return JsonResponse({"message": "UNKNOWN_ERROR"}, status=400)
+            return JsonResponse({"get": post_list}, status=200)
+            
+        except KeyError:
+            return JsonResponse({"message": "KEY_ERROR"}, status=400)
         
-        return JsonResponse({"get": post_list}, status=200)
+        except AttributeError:
+            return JsonResponse({"message": "ATTRIBUTE_ERROR"}, status=400)
 
 class PostList(View):
     
     def get(self, request):
         data = json.loads(request.body)
-        
         try:
             user_name = data['user_name'].strip()
             
@@ -48,27 +55,32 @@ class PostList(View):
             
             user  = User.objects.get(user_name=user_name, is_deleted=0)
             posts = user.post_set.all()
-            
-            if len(posts) == 0:
-                return JsonResponse({"message": []}, status=200)
-            else:
+            post_list = []
+            if posts:
                 post_list = [
                     {
-                        "post_key"        : post.post_key,
-                        "post_desc"       : post.post_desc,
-                        "updated_pub_date": post.updated_pub_date,
-                        "first_img_url"   :
-                            post.postimage_set.all().first().img_url
+                        "post_key"     : post.post_key,
+                        "post_desc"    : post.post_desc,
+                        "updated_at"   : post.updated_at,
+                        "first_img_url":
+                            post.postimage_set.all().first().img_url,
+                        "comments"     : [{
+                            "comment"   : comment.comment,
+                            "updated_at": comment.updated_at,
+                            "user"      : comment.user.user_name
+                        } for comment in post.comment_set.all()]
                     }
                     for post in posts
                 ]
-                
-                result = {
-                    user_name: {
-                        "posts": post_list
-                    }
+            
+            result = {
+                user_name: {
+                    "posts": post_list
                 }
-                
+            }
+            
+            return JsonResponse({"get": result}, status=200)
+            
         except KeyError:
             return JsonResponse({"message": "KEY_ERROR"}, status=400)
         
@@ -78,10 +90,8 @@ class PostList(View):
         except User.DoesNotExist:
             return JsonResponse({"message": "INVALID_USER"}, status=400)
         
-        except Exception as e:
-            return JsonResponse({"message": "UNKNOWN_ERROR"}, status=400)
-        
-        return JsonResponse({"get": result}, status=200)
+        except AttributeError:
+            return JsonResponse({"message": "ATTRIBUTE_ERROR"}, status=400)
 
 class PostUp(View):
     
@@ -105,16 +115,17 @@ class PostUp(View):
             )
             
             if not post:
-                raise Exception("Post 객체가 정상적으로 생성 안됐음")
+                raise Exception("게시물이 정상저으로 생성되지 않았습니다.")
             else:
                 post.save()
+                
                 post_imgs = []
                 AMAZON_STORAGE_URL = "/amazon/storage/" + user.user_name
                 
                 for image in post_images:
                     img_byte_arr = io.BytesIO()
                     img          = Image.open(image, mode='r')
-                    img.save(img_byte_arr, format = img.format)
+                    img.save(img_byte_arr, format=img.format)
                     
                     # TODO: restore to AMAZON STORAGE
                     img_binary = img_byte_arr.getvalue()
@@ -128,7 +139,7 @@ class PostUp(View):
                     )
                     
                     if not post_img:
-                        raise Exception("이미지 정보 추출 오류 발생!")
+                        raise Exception("이미지 정보 추출 중 에러가 발생하였습니다.")
                     else:
                         post_imgs.append(post_img)
                 
@@ -137,39 +148,66 @@ class PostUp(View):
                         for p_img in post_imgs:
                             p_img.save()
                 
-                except IntegrityError as e:
+                except IntegrityError:
                     return JsonResponse(
                         {"message": "Transaction Error"}, status=400)
-        
+            
+            return JsonResponse({"post": "SUCCESS"}, status=200)
+            
         except KeyError:
             return JsonResponse({"message": "KEY_ERROR"}, status=400)
         
-        except BlankFieldException as e:
-            return JsonResponse({"message": e.__str__()}, status=400)
+        except AttributeError:
+            return JsonResponse({"message": "ATTRIBUTE_ERROR"}, status=400)
         
         except User.DoesNotExist:
             return JsonResponse({"message": "INVALID_USER"}, status=400)
         
-        except Exception as e:
-            return JsonResponse({"message": "UNKNOWN_ERROR"}, status=400)
-        
-        return JsonResponse({"post": "SUCCESS"}, status=200)
+        except BlankFieldException as e:
+            return JsonResponse({"message": e.__str__()}, status=400)
 
 # ============================================================================
 # comment 기능
+class GetAllComments(View):
+    
+    def get(self, request):
+        data = json.loads(request.body)
+        try:
+            num          = data['get_comments_num']
+            all_comments = Comment.objects.all().filter(is_deleted=0)[:num]
+            
+            comment_to_100 = [{}]
+            result = {"comments_num": 0, "comments": []}
+            
+            if all_comments:
+                comment_to_100 = [{
+                    "post_key"     : comment.post.post_key,
+                    "user_id"      : comment.user.pk,
+                    "comment"      : comment.comment,
+                    "created_date" : comment.created_at,
+                    "updated_at"   : comment.updated_at,
+                } for comment in all_comments]
+                
+                result["comments_num"] = len(all_comments)
+                result["comments"]     = comment_to_100
+            
+            return JsonResponse({"comments": result}, status=200)
+            
+        except KeyError:
+            return JsonResponse({"message": "KEY_ERROR"}, status=400)
+        
+        except AttributeError:
+            return JsonResponse({"message": "ATTRIBUTE_ERROR"}, status=400)
 
 class AddComment(View):
     
-    def get(self, request):
-        pass
-        
     def post(self, request):
         data = json.loads(request.body)
         try:
-            post_key = data["post_key"]
-            user_id  = data["user_id"]
-            user_name = data["user_name"].strip()
-            user_comment  = data["comment"].strip()
+            post_key     = data["post_key"]
+            user_id      = data["user_id"]
+            user_name    = data["user_name"].strip()
+            user_comment = data["comment"].strip()
             
             user = User.objects.get(
                 id         = user_id,
@@ -185,13 +223,16 @@ class AddComment(View):
                 user    = user
             )
             
+            return JsonResponse({"post": "SUCCESS"}, status=200)
+            
+        except KeyError:
+            return JsonResponse({"message": "KEY_ERROR"}, status=400)
+        
+        except AttributeError:
+            return JsonResponse({"message": "ATTRIBUTE_ERROR"}, status=400)
+        
         except User.DoesNotExist:
             return JsonResponse({"message": "USER NOT EXIST"}, status=400)
             
         except Post.DoesNotExist:
             return JsonResponse({"message": "POST NOT EXIST"}, status=400)
-            
-        except Exception:
-            return JsonResponse({"message": "UNKNOWN_ERROR"}, status=400)
-        
-        return JsonResponse({"post": "SUCCESS"}, status=200)

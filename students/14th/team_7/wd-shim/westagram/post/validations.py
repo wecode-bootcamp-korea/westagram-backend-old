@@ -9,14 +9,8 @@ class Validation:
     
     @staticmethod
     def is_valid_email(email):
-        if re.search(REGEX_EMAIL, email):
-            return True
-        else:
-            return False
+        return re.search(REGEX_EMAIL, email)
     
     @staticmethod
     def is_valid_phone_number(phone):
-        if phone.isdecimal() and len(phone) == PHONE_NUM_LEN:
-            return True
-        else:
-            return False
+        return phone.isdecimal() and len(phone) == PHONE_NUM_LEN

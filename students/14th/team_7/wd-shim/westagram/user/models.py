@@ -8,7 +8,7 @@ class User(models.Model):
     password   = models.BinaryField(max_length=255)
     created_at = models.DateTimeField(auto_now=True)
     updated_at = models.DateTimeField(auto_now_add=True)
-    is_deleted  = models.BooleanField(default=False)
+    is_deleted = models.BooleanField(default=False)
     
     def __str__(self):
         return f"email:{self.email}, phone:{self.phone}, name:{self.name}," \
