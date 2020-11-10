@@ -18,7 +18,7 @@ class PostingView(View):
             image_url   = data['image_url']
             description = data['description']
         except KeyError:
-            return JsonResponse({'message': 'KeyError'}, status = 400)
+            return JsonResponse({'message': 'KEY_ERROR'}, status = 400)
 
         try:
             user = User.objects.get(id=user_id)
@@ -37,7 +37,7 @@ class PostingView(View):
             return JsonResponse({'message': 'Somthing wrong'}, status = 400)
 
     def get(self, request):
-        posts = Posting.objects.values()
+        posts = Posting.objects.all().order_by('-id').values()
 
         try:
             result = [
@@ -68,6 +68,27 @@ class PostingView(View):
 
         except Exception as error_message:
             return JsonResponse({'message': error_message}, status = 400)
+
+    @login_check
+    def delete(self, request, **kwargs):
+        posting_id = request.GET.get('post')
+        user_id = request.user.id
+
+#        try:
+#            posting_id = kwargs.get('id')
+#        except KeyError:
+#            return JsonResponse({'message': 'KEY_ERROR'}, status = 400)
+
+        try:
+            posting = Posting.objects.get(id=posting_id)
+        except Exception:
+            return JsonResponse({'message': 'INVALID POSTING'}, status = 400)
+
+        if not user_id == posting.user_id:
+            return JsonResponse({'message': 'INVALID USER OF THE POSTING'}, status = 401)
+
+        posting.delete()
+        return JsonResponse({'message': 'SUCCESS'}, status = 200) 
 
 class CommentView(View):
     @login_check
@@ -142,7 +163,7 @@ class LikeView(View):
             posting_id = data['posting_id']
 
         except KeyError:
-            return JsonResponse({'message': 'KeyError'}, status = 400)
+            return JsonResponse({'message': 'KEY_ERROR'}, status = 400)
 
         try:
             user    = User.objects.get(id=user_id)

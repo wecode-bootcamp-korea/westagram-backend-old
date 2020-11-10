@@ -38,4 +38,4 @@ class Comment(models.Model):
         return self.created_at.astimezone(korean_timezone)
 
     class Meta:
-        db_table = 'comments' 
+        db_table = 'comments'
