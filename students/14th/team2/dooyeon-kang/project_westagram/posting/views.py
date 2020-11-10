@@ -45,7 +45,7 @@ class PostingView(View):
                     'user_id': post['user_id'],
                     'username': User.objects.get(id=post['user_id']).name
                  },
-                 'comments': [{ 'id': comment['id'],
+                 'comments': [{ 'comment_id': comment['id'],
                                 'user_id': comment['user_id'],
                                 'username': User.objects.get(id=comment['user_id']).name,
                                 'posting_id': comment['posting_id'],
@@ -88,7 +88,7 @@ class PostingView(View):
     @login_check
     def patch(self, request):
         user_id = request.user.id
-        data = json.loads(request.body)
+        data    = json.loads(request.body)
 
         try:
             posting_id = request.GET.get('post')
@@ -130,11 +130,6 @@ class CommentView(View):
             return JsonResponse({'message': error_message}, status = 400)
 
         try:
-            user_obj = User.objects.get(id=user_id)
-        except Exception:
-            return JsonResponse({'message': 'INVALID USER'}, status = 400)
-
-        try:
             posting_obj = Posting.objects.get(id=posting_id)
         except Exception:
             return JsonResponse({'message': 'INVALID POSTING'}, status = 400)
@@ -171,8 +166,17 @@ class CommentView(View):
                 'user_id': comment['user_id'],
                 'username': User.objects.get(id=comment['user_id']).name
              },
+             'replies': [
+                 {'reply_id': reply['id'],
+                  'text': reply['text'],
+                  'created_at': reply['created_at'],
+                  'user_id': reply['user_id'],
+                  'username': User.objects.get(id=reply['user_id']).name,
+                 } for reply in Comment.objects.filter(reply_on_id=comment['id']).values()
+             ],
+             'comment_id': comment['id'],
              'text': comment['text'],
-             'created_at': comment['created_at'] } for comment in comments
+             'created_at': comment['created_at'] } for comment in comments if not comment['reply_on_id']
         ]
 
         try:
@@ -204,7 +208,6 @@ class LikeView(View):
 
         try:
             posting_id = data['posting_id']
-
         except KeyError:
             return JsonResponse({'message': 'KEY_ERROR'}, status = 400)
 
@@ -220,3 +223,31 @@ class LikeView(View):
 
         except Exception as error_message:
             return JsonResponse({'message': 'Invalid user or posting'}, status = 400)
+
+class ReplyView(View):
+    @login_check
+    def post(self, request):
+        user_id = request.user.id
+        data    = json.loads(request.body)
+
+        try:
+            comment_id = request.GET.get('comment')
+            user       = User.objects.get(id=user_id)
+            comment    = Comment.objects.get(id=comment_id)
+            text       = data['text']
+        except KeyError:
+            return JsonResponse({'message': 'KEY_ERROR'}, status = 400)
+        except Exception:
+            return JsonResponse({'message': 'wrong id'}, status = 400)
+
+        if not text:
+            return JsonResponse({'message': 'Reply message cannot be none'}, status = 400)
+
+        Comment(
+            text       = text,
+            user_id    = user.id,
+            posting_id = comment.posting_id,
+            reply_on   = comment,
+        ).save()
+
+        return JsonResponse({'message': 'SUCCESS'}, status = 200)

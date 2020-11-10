@@ -30,6 +30,7 @@ class Comment(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     user       = models.ForeignKey('user.User', on_delete=models.CASCADE)
     posting    = models.ForeignKey('Posting', on_delete=models.CASCADE)
+    reply_on   = models.ForeignKey('self', related_name='replies', null=True, on_delete=models.CASCADE)
 
     @property
     def created_at_korean_time(self):
