@@ -7,7 +7,8 @@ from django.http import JsonResponse
 from django.views import View
 from django.db.models import Q
 
-from user.models import User
+from user.models import User, Follow
+from user.utils import login_check
 from my_db_settings import SECRET_KEY, ALGORITHM
 
 class UsersView(View):
@@ -94,9 +95,33 @@ class LoginView(View):
 
         if bcrypt.checkpw(input_password,user.password.encode('utf-8')):
             SECRET = SECRET_KEY
-            access_token = jwt.encode({'id':user.id}, SECRET, algorithm='ALGORITHM')
+            access_token = jwt.encode({'id':user.id}, SECRET, algorithm=ALGORITHM)
 
             return JsonResponse({'message': 'SUCCESS',
                                  'access_token': access_token.decode('utf-8')}, status = 200)
 
         return JsonResponse({'message': 'INVALID PASSWORD OR ACCOUNT'}, status = 400)
+
+class FollowView(View):
+    @login_check
+    def post(self, request):
+        data = json.loads(request.body)
+        user_id = request.user.id
+
+        try:
+            followee_id = data['followee']
+        except KeyError:
+            return JsonResponse({'message': 'KEY_ERROR'}, status = 400)
+
+        try:
+            user = User.objects.get(id=user_id)
+            followee = User.objects.get(id=followee_id)
+        except Exception:
+            return JsonResponse({'message': 'INVALID_USER'}, status = 400)
+
+        Follow(
+            follower = user,
+            followee = followee,
+        ).save()
+
+        return JsonResponse({'message': 'SUCCESS'}, status = 400)

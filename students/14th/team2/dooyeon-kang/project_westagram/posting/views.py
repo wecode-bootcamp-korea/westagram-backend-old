@@ -9,19 +9,19 @@ from user.models import User, Like
 from user.utils import login_check
 
 class PostingView(View):
-
+    @login_check
     def post(self, request):
         data = json.loads(request.body)
+        user_id = request.user.id
 
         try:
-            input_user  = data['user_id']
             image_url   = data['image_url']
             description = data['description']
         except KeyError:
             return JsonResponse({'message': 'KeyError'}, status = 400)
 
         try:
-            user = User.objects.get(id=input_user)
+            user = User.objects.get(id=user_id)
         except Exception:
             return JsonResponse({'message': 'INVALID USER'}, status = 400)
 
@@ -70,19 +70,19 @@ class PostingView(View):
             return JsonResponse({'message': error_message}, status = 400)
 
 class CommentView(View):
-
+    @login_check
     def post(self, request):
         data = json.loads(request.body)
+        user_id = request.user.id
 
         try:
-            input_user   = data['user_id']
             comment_text = data['text']
             posting_id   = data['posting_id']
         except Exception as error_message:
             return JsonResponse({'message': error_message}, status = 400)
 
         try:
-            user_obj = User.objects.get(id=input_user)
+            user_obj = User.objects.get(id=user_id)
         except Exception:
             return JsonResponse({'message': 'INVALID USER'}, status = 400)
 
@@ -136,9 +136,9 @@ class LikeView(View):
     @login_check
     def post(self, request):
         data = json.loads(request.body)
+        user_id = request.user.id
 
         try:
-            user_id    = data['user_id']
             posting_id = data['posting_id']
 
         except KeyError:
