@@ -105,7 +105,7 @@ class LoginView(View):
 class FollowView(View):
     @login_check
     def post(self, request):
-        data = json.loads(request.body)
+        data    = json.loads(request.body)
         user_id = request.user.id
 
         try:
@@ -114,7 +114,7 @@ class FollowView(View):
             return JsonResponse({'message': 'KEY_ERROR'}, status = 400)
 
         try:
-            user = User.objects.get(id=user_id)
+            user     = User.objects.get(id=user_id)
             followee = User.objects.get(id=followee_id)
         except Exception:
             return JsonResponse({'message': 'INVALID_USER'}, status = 400)

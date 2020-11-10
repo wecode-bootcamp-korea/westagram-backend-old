@@ -11,7 +11,7 @@ from user.utils import login_check
 class PostingView(View):
     @login_check
     def post(self, request):
-        data = json.loads(request.body)
+        data    = json.loads(request.body)
         user_id = request.user.id
 
         try:
@@ -72,7 +72,7 @@ class PostingView(View):
 class CommentView(View):
     @login_check
     def post(self, request):
-        data = json.loads(request.body)
+        data    = json.loads(request.body)
         user_id = request.user.id
 
         try:
@@ -135,7 +135,7 @@ class CommentView(View):
 class LikeView(View):
     @login_check
     def post(self, request):
-        data = json.loads(request.body)
+        data    = json.loads(request.body)
         user_id = request.user.id
 
         try:
