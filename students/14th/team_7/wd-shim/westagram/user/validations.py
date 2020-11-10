@@ -1,15 +1,13 @@
 import re
-from user.const import REGEX_EMAIL, PHONE_NUM_LEN, NONE
+import bcrypt
+
+from user.const import REGEX_EMAIL, PHONE_NUM_LEN, NONE, UTF8
 
 class Validation:
     
     @staticmethod
-    def is_not_blank(*args):
-        for value in args:
-            if value == "" or value == NONE:
-                return False
-            else:
-                return True
+    def is_blank(*args):
+        return not all([value for value in args])
     
     @staticmethod
     def is_valid_email(email):
@@ -26,8 +24,8 @@ class Validation:
             return False
     
     @staticmethod
-    def is_valid_object(user_object):
-        if user_object is not NONE:
+    def is_valid_password(password, hashed_password):
+        if bcrypt.checkpw(password.encode(UTF8), hashed_password):
             return True
         else:
             return False

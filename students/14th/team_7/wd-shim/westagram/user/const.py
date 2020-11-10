@@ -4,3 +4,4 @@ NONE           = None
 BLANK          = ''
 PHONE_NUM_LEN  = 11
 PASSWORD_LEN   = 8
+UTF8           = 'utf-8'

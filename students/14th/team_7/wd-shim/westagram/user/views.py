@@ -9,56 +9,54 @@ from user.const import NONE, PASSWORD_LEN
 from user.validations import Validation
 from user.exceptions import (
     BlankFieldException,
-    EmailValidException,
-    PhoneNumValidException,
+    EmailFormatException,
+    PhoneFormatException,
     AlreadyExistException,
-    PasswordValidException
+    PasswordFormatException,
+    AuthenticationException
 )
-
-class SignUpIndexView(View):
-    
-    def get(self, request):
-        return JsonResponse({"get": "user_index"}, status=200)
+from common_util import authorization
 
 class SignUpView(View):
+    
     def get(self, request):
         return JsonResponse({"get": "user_signup"}, status=200)
-    
+
     def post(self, request):
         data = json.loads(request.body)
         try:
-            email     = data["email"]
-            phone     = data["phone"]
-            name      = data["name"]
-            user_name = data["user_name"]
-            password  = data["password"]
+            email     = data["email"].strip()
+            phone     = data["phone"].strip()
+            name      = data["name"].strip()
+            user_name = data["user_name"].strip()
+            password  = data["password"].strip()
             
             for key, value in dict(data).items():
                 if key == "email" or key == "phone":
                     continue
                 
-                if value.strip() == "" or value == NONE:
+                if Validation.is_blank(value.strip()):
                     raise BlankFieldException
             
             signup_key_email = False
-            if email.strip() == "" and phone.strip() == "":
+            if Validation.is_blank(email, phone):
                 raise BlankFieldException
-            elif email.strip() != "" and phone.strip() == "":
+            elif email != "" and phone == "":
                 signup_key_email = True
-            elif email.strip() == "" and phone.strip() != "":
+            elif email == "" and phone != "":
                 signup_key_email = False
             
             if signup_key_email:
                 
                 if not Validation.is_valid_email(email):
-                    raise EmailValidException
+                    raise EmailFormatException
             else:
                 if not Validation.is_valid_phone_number(phone):
-                    raise PhoneNumValidException
+                    raise PhoneFormatException
             
             # TODO REGEX_PASSWORD CHECK
             if len(password) < PASSWORD_LEN:
-                raise PasswordValidException
+                raise PasswordFormatException
             
             users = User.objects.filter(
                 Q(email=email) |
@@ -75,31 +73,29 @@ class SignUpView(View):
         except BlankFieldException as e:
             return JsonResponse({'message': e.__str__()}, status=400)
         
-        except EmailValidException as e:
+        except EmailFormatException as e:
             return JsonResponse({'message': e.__str__()}, status=400)
         
-        except PhoneNumValidException as e:
+        except PhoneFormatException as e:
             return JsonResponse({'message': e.__str__()}, status=400)
         
-        except PasswordValidException as e:
+        except PasswordFormatException as e:
             return JsonResponse({'message': e.__str__()}, status=400)
         
         except AlreadyExistException as e:
             return JsonResponse({'message': e.__str__()}, status=400)
         
         User.objects.create(
-            email     = email.strip(),
-            phone     = phone.strip(),
-            name      = name.strip(),
-            user_name = user_name.strip(),
-            password  = password.strip(),
+            email     = email,
+            phone     = phone,
+            name      = name,
+            user_name = user_name,
+            password  = authorization.get_hashed_pw(password)
         )
         
         return JsonResponse({"post": "SUCCESS"}, status=200)
 
-class LoginView(View):
-    def get(self, request):
-        return JsonResponse({"get": "user_login"}, status=200)
+class SignInView(View):
     
     def post(self, request):
         data = json.loads(request.body)
@@ -113,41 +109,37 @@ class LoginView(View):
                 "user_name" : NONE,
             }
             
-            get_user_result = NONE
+            get_user = NONE
             
-            if not Validation.is_not_blank(login_info, password):
+            if Validation.is_blank(login_info, password):
                 raise BlankFieldException
             
             if Validation.is_valid_email(login_info):
                 login_keys["email"] = login_info
-            
+                
             elif Validation.is_valid_phone_number(login_info):
                 login_keys["phone"] = login_info
-            
+                
             else:
                 login_keys["user_name"] = login_info
             
             for key, value in login_keys.items():
                 if key == "email" and value != NONE:
-                    get_user_result = User.objects.get(
-                        email    = value,
-                        password = password
-                    )
+                    get_user = User.objects.get(email=value, is_deleted=0)
                     break
                 
                 elif key == "phone" and value != NONE:
-                    get_user_result = User.objects.get(
-                        phone    = value,
-                        password = password
-                    )
+                    get_user = User.objects.get(phone=value, is_deleted=0)
                     break
                 
                 elif key == "user_name" and value != NONE:
-                    get_user_result = User.objects.get(
-                          user_name = value,
-                          password  = password,
-                    )
+                    get_user = User.objects.get(user_name=value, is_deleted=0)
                     break
+            
+            if not Validation.is_valid_password(password, get_user.password):
+                raise AuthenticationException
+            
+            access_token = authorization.get_access_token(get_user.id)
         
         except KeyError:
             return JsonResponse({"message": "KEY_ERROR"}, status=400)
@@ -158,7 +150,12 @@ class LoginView(View):
         except BlankFieldException as e:
             return JsonResponse({"message": e.__str__()}, status=400)
         
+        except AuthenticationException as e:
+            return JsonResponse({"message": e.__str__()}, status=400)
+        
         except Exception:
             return JsonResponse({"message": "UNKNOWN_EXCEPTION"}, status=400)
         
-        return JsonResponse({"message": "SUCCESS"}, status=200)
+        return JsonResponse({
+            "message"      : "SUCCESS",
+            "access_token" : access_token}, status=200)

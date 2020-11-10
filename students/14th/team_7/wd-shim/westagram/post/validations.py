@@ -20,10 +20,3 @@ class Validation:
             return True
         else:
             return False
-    
-    @staticmethod
-    def is_valid_object(user_object):
-        if user_object is not NONE:
-            return True
-        else:
-            return False
