@@ -139,8 +139,8 @@ class CommentView(View):
 
         try:
             user_model = User.objects.get(id=data['user_id'])
-            comment = Comment.objects.get(
-                id = data['comment_id'],
+            comment    = Comment.objects.get(
+                id      = data['comment_id'],
                 user_id = user_model.id,
         )
             comment.comment = data['comment']
@@ -162,8 +162,8 @@ class CommentView(View):
 
         try:
             user_model = User.objects.get(id=data['user_id'])
-            comment = Comment.objects.get(
-                id = data['comment_id'],
+            comment    = Comment.objects.get(
+                id      = data['comment_id'],
                 user_id = user_model.id
         )
             comment.delete()
@@ -180,7 +180,7 @@ class CommentListView(View):
         
         try:
             post_model = Post.objects.get(id=post_id)
-            comments = Comment.objects.filter(post_id=post_id).prefetch_related() 
+            comments   = Comment.objects.filter(post_id=post_id).prefetch_related() 
             return JsonResponse({
                 'comments' : [{
                     'name'       : comment.user.name,
