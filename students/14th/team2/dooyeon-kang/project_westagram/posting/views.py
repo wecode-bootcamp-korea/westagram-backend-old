@@ -85,6 +85,38 @@ class PostingView(View):
         except Exception:
             return JsonResponse({'message': 'INVALID USER OR POSTING'}, status = 400)
 
+    @login_check
+    def patch(self, request):
+        user_id = request.user.id
+        data = json.loads(request.body)
+
+        try:
+            posting_id = request.GET.get('post')
+        except KeyError:
+            return JsonResponse({'message': 'POSTING ID IS REQUIRED'}, status = 400)
+
+        if not data.keys():
+            return JsonResponse({'message': 'KEY_ERROR'}, status = 400)
+
+        try:
+            posting = Posting.objects.get(id=posting_id, user_id=user_id)
+        except Exception as error_message:
+            return JsonResponse({'message': 'INVALID USER OR POSTING'}, status = 400)
+
+        for key, value in data.items():
+            if not key == 'image_url' and not key == 'description':
+                return JsonResponse({'message': 'KEY_ERROR'}, status = 400)
+            elif key == 'image_url':
+                posting.image_url = value
+            elif key == 'description':
+                posting.description = value
+
+        try:
+            posting.save()
+            return JsonResponse({'message': 'SUCCESS'}, status = 200)
+        except Exception as error_message:
+            return JsonResponse({'message': error_message}, status = 400)
+
 class CommentView(View):
     @login_check
     def post(self, request):
