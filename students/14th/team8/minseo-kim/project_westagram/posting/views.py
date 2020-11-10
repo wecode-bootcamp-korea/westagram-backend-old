@@ -1,6 +1,8 @@
 import json
+
 from django.http import JsonResponse, HttpResponse
 from django.views import View
+
 from .models import Post
 from user.models import User
 
@@ -13,9 +15,9 @@ class PostView(View):
                 return JsonResponse({'message':'INVALID_USER'},status=401)
 
             Post.objects.create(
-                image_url=data['image_url'],
-                user_id=data['user_id'],
-                content=data['content']
+                image_url = data['image_url'],
+                user_id   = data['user_id'],
+                content   = data['content']
             )
 
             return JsonResponse({'message':'SUCCESS'},status=200)
@@ -31,10 +33,10 @@ class DisplayPostView(View):
 
             for user_post in user_posts:
                 posts.append({
-                    'name':User.objects.filter(id=user_post.user_id)[0].name,
-                    'created_time': user_post.created_time,
-                    'content': user_post.content,
-                    'image_url': user_post.image_url
+                    'name'         : User.objects.filter(id=user_post.user_id)[0].name,
+                    'created_time' : user_post.created_time,
+                    'content'      : user_post.content,
+                    'image_url'    : user_post.image_url
                 })
 
             return JsonResponse({'result':posts}, status=200)

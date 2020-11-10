@@ -1,53 +1,41 @@
 import json
 import re
+import bcrypt
+import jwt
 from django.views import View
-from django.http import JsonResponse, HttpResponse
+from django.http import JsonResponse
 from .models import User
-
 
 class SignupView(View):
     def post(self, request):
         try:
             data = json.loads(request.body)
-            user_data = {
-                'name': data['name'],
-                'email': data['email'],
-                'password': data['password'],
-                'number': data['number']
-            }
-
-            email_validation = re.compile(
-                r'^[a-zA-Z0-9+-_.]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$')
-
-            if len(user_data['password']) < 8:
-                return JsonResponse(
-                    {'message':'PASSWORD_VALIDATION'}, status=400
-                )
-
-            if not re.match(email_validation, user_data['email']):
-                return JsonResponse(
-                    {'message':'EMAIL_VALIDATION'}, status=400
-                    )
-
-            if User.objects.filter(name=user_data['name']):
-                return JsonResponse(
-                    {'message':'INVALID_NAME'},status=400)
             
-            if User.objects.filter(email=user_data['email']):
-                return JsonResponse(
-                    {'message':'INVALID_EMAIL'},status=400)
-            if User.objects.filter(number=user_data['number']):
-                return JsonResponse(
-                    {'message':'INVALID_NUMBER'}, status=400)
-                
+            email_validation = re.compile(r'^[a-zA-Z0-9+-_.]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$')
+
+            if len(data['password']) < 8:
+                return JsonResponse({'message':'PASSWORD_VALIDATION'}, status=400)
+
+            if not re.match(email_validation,data['email']):
+                return JsonResponse({'message':'EMAIL_VALIDATION'}, status=400)
+
+            if User.objects.filter(name=data['name']):
+                return JsonResponse({'message':'INVALID_NAME'},status=400)
+
+            if User.objects.filter(email=data['email']):
+                return JsonResponse({'message':'INVALID_EMAIL'},status=400)
+
+            if User.objects.filter(number=data['number']):
+                return JsonResponse({'message':'INVALID_NUMBER'}, status=400)
+
             User.objects.create(
-                name=user_data['name'],
-                email=user_data['email'],
-                password=user_data['password'],
-                number=user_data['number']
+                name     = data['name'],
+                email    = data['email'],
+                password = bcrypt.hashpw(data['password'].encode('utf-8'),bcrypt.gensalt()).decode('utf-8'),
+                number   = data['number']
             )
 
-            return JsonResponse({'message':'SUCCESS'},status=200)
+            return JsonResponse({'message':'SIGN_UP_SUCCESS'},status=200)
 
         except KeyError:
             return JsonResponse({'message':'KEY_ERROR'}, status=400)
@@ -59,13 +47,17 @@ class SigninView(View):
 
             if User.objects.filter(email=signin_data['email']).exists():
                 user = User.objects.get(email=signin_data['email'])
-                if user.password == signin_data['password']:
-                    return JsonResponse({'message':'LOGIN_SUCCESS'},status=200)
+                SECRET_KEY = '0_i-v1!p2f4c5hq^46_!3vq-m1clee%edh-x17u)%dl!tfg9tl'
+
+                if bcrypt.checkpw(signin_data['password'].encode('utf-8'),user.password.encode('utf-8')):
+                    access_token = jwt.encode({'id': user.id},SECRET_KEY,algorithm='HS256')                     
+                    return JsonResponse({'message':'LOGIN_SUCCESS','token': access_token.decode('utf-8')},status=200)
                 else:
                     return JsonResponse({'message':'WRONG_PASSWORD'},status=400)
-            else:
-                return JsonResponse({'message':'NOT_EXIST_USER'},status=400)
+
+            return JsonResponse({'message':'NOT_EXIST_USER'},status=400)
 
         except KeyError:
             return JsonResponse({'message':'KEY_ERROR'},status=400)
+
 
