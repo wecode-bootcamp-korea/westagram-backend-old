@@ -1,10 +1,8 @@
 from django.urls import path
 
-from .views import CreateView, ReadView, CommentRegister,CommentRead
+from .views      import PostingView, CommentView
 
 urlpatterns = [
-    path('/create',CreateView.as_view()),
-    path('/postread', ReadView.as_view()),
-    path('/commentregister',CommentRegister.as_view()),
-    path('/commentread',CommentRead.as_view())
+    path('/posting',PostingView.as_view()),
+    path('/comment',CommentView.as_view()),
 ]

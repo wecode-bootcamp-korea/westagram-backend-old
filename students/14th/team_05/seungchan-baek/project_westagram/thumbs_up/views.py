@@ -1,18 +1,11 @@
-from django.shortcuts import render
-
-from .models import ThumbsUp
-from user.models import User
-from post.models import Posting
-
-# Create your views here.
 import json
 
-from django.views    import View
-from django.http     import JsonResponse, request
+from django.views import View
+from django.http  import JsonResponse, request
 
-from .models         import ThumbsUp
-from user.models     import User
-from post.models     import Posting
+from .models      import ThumbsUp
+from user.models  import User
+from post.models  import Posting
 
 
 class ThumbsUp(View):
@@ -21,5 +14,9 @@ class ThumbsUp(View):
         user = User.objects.get(id = data['user_id'])
         post = Posting.objects.get(id = data['post_id'])
 
-        ThumbsUp.objects.create(good=data['thumbs'], user=user, post=post)
-        return JsonResponse({'message' : "SUCCESS"}, status=201)
+        try:
+            ThumbsUp.objects.create(user = user, post = post)
+            return JsonResponse({'message' : "SUCCESS"}, status=201)
+            
+        except KeyError:
+            return JsonResponse({'message' : 'KEY_ERORR'}, status=400)
