@@ -1,34 +1,35 @@
 import json
 import re
 import jwt
+
 import my_settings
+
+#from datetime import datetime
 from django.db.models import Q
 from django.core import serializers
-from datetime import datetime
 from django.http import JsonResponse
 from django.views import View
 from django.utils.decorators import method_decorator
+
 from share.utils import (
-                        #getUserID,
                         getUserIDFromToken,
-                        #checkRequestBody,
-                        #checkAuthorization,
                         checkRequestBodyDecorator,
                         checkAuthDecorator,
                         )
 from .models import (
-                    Posts,
-                    Comments,
-                    Contents,
-                    Likes,
+                    Post,
+                    Comment,
+                    Content,
+                    Like,
                     )
-from user.models import Users
-
+from user.models import User
 
 
 class Posting(View):
-    @method_decorator(checkAuthDecorator())
-    @method_decorator(checkRequestBodyDecorator())
+    #@method_decorator(checkAuthDecorator())
+    #@method_decorator(checkRequestBodyDecorator())
+    @checkAuthDecorator
+    @checkRequestBodyDecorator
     def post(self, request):
         data        = json.loads(request.body)
         user_id     = getUserIDFromToken(data['token'])
@@ -42,25 +43,26 @@ class Posting(View):
                 return JsonResponse({"message":"we need to take all values [token, image_url, article]"},
                         status=400)
 
-        Contents.objects.create(
+        new_content = Content.objects.create(
                         article     = inputs['article'], 
-                        created_at  = datetime.now(), 
+                        #created_at  = datetime.now(), 
                         user_id     = user_id
                         )
-        Posts.objects.create(
+        Post.objects.create(
                         image_url   = inputs['image_url'],
-                        content_id  = Contents.objects.last().id
+                        content_id  = new_content.id
                         )
 
         return JsonResponse({"message":"SUCCESS"}, status=201)
 
-
 class ShowAllPosts(View):
-    @method_decorator(checkAuthDecorator())
-    @method_decorator(checkRequestBodyDecorator())
+    #@method_decorator(checkAuthDecorator())
+    #@method_decorator(checkRequestBodyDecorator())
+    @checkAuthDecorator
+    @checkRequestBodyDecorator
     def get(self, request):
         posts       = []
-        entries     = Posts.objects.select_related('content').select_related('content__user').all()
+        entries     = Post.objects.select_related('content', 'content__user').all()
         
         for row in entries:
             posts.append({"article":row.content.article, "image_url":row.image_url, 
@@ -69,8 +71,10 @@ class ShowAllPosts(View):
         return JsonResponse({"posts":posts}, status=200)
 
 class AddComment(View):
-    @method_decorator(checkAuthDecorator())
-    @method_decorator(checkRequestBodyDecorator())
+    #@method_decorator(checkAuthDecorator())
+    #@method_decorator(checkRequestBodyDecorator())
+    @checkAuthDecorator
+    @checkRequestBodyDecorator
     def post(self, request):
         data        = json.loads(request.body)
         user_id     = getUserIDFromToken(data['token'])
@@ -90,19 +94,19 @@ class AddComment(View):
         else:
             return JsonResponse({"message":"content_id is empty."}, status=400) 
 
-        if Contents.objects.filter(id=inputs[CONTENT_ID]).exists():
+        if Content.objects.filter(id=inputs[CONTENT_ID]).exists():
             inputs['parent_content_id'] = inputs[CONTENT_ID]
         else:
             return JsonResponse({"message":"can't find target content."}, status=401)
         
-        Contents.objects.create(
+        new_content = Content.objects.create(
                         article     = inputs[ARTICLE], 
-                        created_at  = datetime.now(), 
+                        #created_at  = datetime.now(), 
                         user_id     = user_id
                         )
         
-        Comments.objects.create(
-                            content_id          = Contents.objects.last().id,
+        Comment.objects.create(
+                            content_id          = new_content.id,
                             parent_content_id   = inputs["parent_content_id"],
                             )
 
@@ -110,11 +114,12 @@ class AddComment(View):
             
 
 class ShowAllComments(View):
-    @method_decorator(checkAuthDecorator())
-    @method_decorator(checkRequestBodyDecorator())
+    #@method_decorator(checkAuthDecorator())
+    #@method_decorator(checkRequestBodyDecorator())
+    @checkAuthDecorator
+    @checkRequestBodyDecorator
     def get(self, request):
-        entries     = Comments.objects.select_related('content').select_related('content__user') \
-                        .all()
+        entries     = Comment.objects.select_related('content', 'content__user').all()
         comments    = []
         
         for row in entries:
@@ -124,8 +129,10 @@ class ShowAllComments(View):
         return JsonResponse({"comments":comments}, status=200)
 
 class ShowCommentsOfContent(View):
-    @method_decorator(checkAuthDecorator())
-    @method_decorator(checkRequestBodyDecorator())
+    #@method_decorator(checkAuthDecorator())
+    #@method_decorator(checkRequestBodyDecorator())
+    @checkAuthDecorator
+    @checkRequestBodyDecorator
     def post(self, request):
         data        = json.loads(request.body)
         content_id  = None
@@ -136,7 +143,7 @@ class ShowCommentsOfContent(View):
             return JsonResponse({"message":"[content_id] is empty"}, status=400)
 
         comments    = []
-        entries     = Comments.objects.select_related('content').filter(parent_content_id=content_id)
+        entries     = Comment.objects.select_related('content').filter(parent_content_id=content_id)
         
         for row in entries:
             comments.append({'article':row.content.article, 'created_at':row.content.created_at,
@@ -145,11 +152,13 @@ class ShowCommentsOfContent(View):
         return JsonResponse({"comments":comments}, status=201)        
 
 class AddLike(View):
-    @method_decorator(checkAuthDecorator())
-    @method_decorator(checkRequestBodyDecorator())
+    #@method_decorator(checkAuthDecorator())
+    #@method_decorator(checkRequestBodyDecorator())
+    @checkAuthDecorator
+    @checkRequestBodyDecorator
     def post(self, request):
         data        = json.loads(request.body)        
-        user_id     = checkAuthorization(data['token']) 
+        user_id     = getUserIDFromToken(data['token']) 
         
         # '좋아요' 대상 post, comment 와 사용자정보
         if not 'content_id' in data:
@@ -157,16 +166,18 @@ class AddLike(View):
 
         content_id = data['content_id']
         
-        if not Users.objects.filter(id=user_id).exists():
+        if not User.objects.filter(id=user_id).exists():
             return JsonResponse({"message":"Can't find user."}, status=400)
             
-        if not Contents.objects.filter(id=content_id).exists():
+        if not Content.objects.filter(id=content_id).exists():
             return JsonResponse({"message":"Can't find target."}, status=400)
 
-        if Likes.objects.filter(user_id=user_id, content_id=content_id).exists():
-            pass
+        likes = Like.objects.filter(user_id=user_id, content_id=content_id)
+        
+        if likes.exists():
+            likes.delete()
         else:
-            Likes.objects.create(
+            Like.objects.create(
                     user_id    = user_id,
                     content_id = content_id
                     )
@@ -174,27 +185,30 @@ class AddLike(View):
         return JsonResponse({"message":"SUCCESS"}, status=201)
 
 class RemoveContent(View):
-    @method_decorator(checkAuthDecorator())
-    @method_decorator(checkRequestBodyDecorator())
+    @checkAuthDecorator
+    @checkRequestBodyDecorator
     def post(self, request):
         data        = json.loads(request.body)
-        
+        user_id     = getUserIDFromToken(data['token'])
+
         if not 'content_id' in data:
             return JsonResponse({"messge":"[content_id] is empty."}, status=400)
 
-        entries     = Contents.objects.filter(id=data['content_id'])
-
-        for row in entries:
+        try:
+            row     = Content.objects.get(id=data['content_id'], user_id=user_id)
             row.delete()
+        except Content.DoesNotExist:
+            return JsonResponse({"messge":"It is not you content or not exist."}, 
+                                status=400)
             
         return JsonResponse({"messge":"SUCCESS"}, status=201)
 
-
 class UpdatePost(View):
-    @method_decorator(checkAuthDecorator())
-    @method_decorator(checkRequestBodyDecorator())
+    @checkAuthDecorator
+    @checkRequestBodyDecorator
     def post(self, request):
         data        = json.loads(request.body)
+        user_id     = getUserIDFromToken(data['token'])
         
         if not 'content_id' in data:
             return JsonResponse({"messge":"[content_id] is empty."}, status=400)
@@ -204,27 +218,32 @@ class UpdatePost(View):
 
         if not 'image_url' in data:
             return JsonResponse({"messge":"[image_url] must not be empty."}, status=400)
-
-        targets     = Posts.objects.filter(content_id=data['content_id'])
         
-        targets.update(image_url=data['image_url'])
+        try:
+            target      = Post.objects.select_related('content', 'content__user') \
+                            .get(content_id=data['content_id'])     
 
-        targets     = Contents.objects.filter(id=data['content_id'])
+            if target.content.user.id == user_id:
+                target.image_url=data['image_url']
+                target.save()
+            else:
+                raise Post.DoesNotExist
+            
+            target      = Content.objects.get(id=data['content_id'], user_id=user_id)
+            target.article = data['article']
+            target.save()
         
-        targets.update(
-                article     = data['article'], 
-                created_at  = datetime.now()
-                )
+        except Post.DoesNotExist:
+            return JsonResponse({"messge":"This post is not exist or not your post "}, status=201)
                 
         return JsonResponse({"messge":"SUCCESS"}, status=201)
 
-
 class GetMyPosts(View):    
-    @method_decorator(checkAuthDecorator())
-    @method_decorator(checkRequestBodyDecorator())
+    @checkAuthDecorator
+    @checkRequestBodyDecorator
     def post(self, request):
         def findChildCommentsRecursive(self, parent_content_id):
-            rows    = Comments.objects.select_related('content').select_related('content__user') \
+            rows    = Comment.objects.select_related('content').select_related('content__user') \
                     .filter(parent_content_id = parent_content_id)
             
             childs  = []
@@ -235,7 +254,7 @@ class GetMyPosts(View):
                     "name"       : row.content.user.name,
                     "article"    : row.content.article,
                     "created_at" : row.content.created_at,
-                    "comments"   : []
+                    "comments"   : findChildCommentsRecursive(self, row.content_id)
                      }
 
                 data['comments'] = findChildCommentsRecursive(self, row.content_id)
@@ -244,42 +263,42 @@ class GetMyPosts(View):
             return childs
  
         data        = json.loads(request.body)
-        user_id     = checkAuthorization(data['token']) 
+        user_id     = getUserIDFromToken(data['token'])
 
         # 내가 만든 Post 및 해당 post 에 달린 댓글과 좋아요 정보 모두 제공하기.
         # 해당 user의 contents 정보를 검색, Post에 해당하는 content 없으면 안내문구 리턴
-        if not Contents.objects.select_related('user').filter(user_id=user_id).exists():
+        if not Content.objects.select_related('user').filter(user_id=user_id).exists():
             return JsonResponse({"message":"User's post is not exist."}, status=400)
 
-        contents    = Contents.objects.select_related('user').filter(user_id=user_id)
+        contents    = Content.objects.select_related('user').filter(user_id=user_id)
         result      = []
 
         # Contents rows 중 user id에 매칭되는 contents 만 추출하여 looping
         for content in contents:
 
             # post에 해당하는 content 추출.
-            posts       = Posts.objects.select_related('content').select_related('content__user') \
+            posts       = Post.objects.select_related('content').select_related('content__user') \
                             .filter(content_id=content.id)
             
-            if len(posts) == 0:
+            if not len(posts):
                 continue
-
-            post_info   = {}
             
             # User가 작성한 post가 있다면 관련 정보를 dictionary로 저장
             for post in posts:
-                post_info['content_id'] = content.id
-                post_info['image_url']  = post.image_url
-                post_info['article']    = post.content.article
-                post_info['created_at'] = post.content.created_at
-                post_info['user']       = post.content.user.name
+                post_info  = {                        
+                        'content_id' : content.id,
+                        'image_url'  : post.image_url,
+                        'article'    : post.content.article,
+                        'created_at' : post.content.created_at,
+                        'user'       : post.content.user.name
+                }
 
                 # post를 기준으로 댓글 tree 정보를 재귀호출방식으로 추출.
                 post_info['comments']   = findChildCommentsRecursive(self, content.id)
                 
                 result.append(post_info)
 
-        if len(result) == 0:
+        if not len(result):
             return JsonResponse({"message":"User's post is not exist."}, status=400)
         
         return JsonResponse({"result":result}, status=201)
