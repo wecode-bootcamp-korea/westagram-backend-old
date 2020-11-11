@@ -53,7 +53,7 @@ MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware' ,
 ]
 
-ROOT_URLCONF = 'project_westagram.urls'
+ROOT_URLCONF = 'project_westagram.urls' # 처음 접속하였을 때 가는 파일 http://127.0.0.1:8000 경로
 
 TEMPLATES = [
     {
@@ -151,3 +151,5 @@ CORS_ALLOW_HEADERS = (
     'x-csrftoken',
     'x-requested-with',
 )
+
+APPEND_SLASH =False
