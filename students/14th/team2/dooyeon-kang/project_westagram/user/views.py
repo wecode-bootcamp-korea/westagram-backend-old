@@ -33,23 +33,18 @@ class UsersView(View):
 
         #email validation using re
         if not re.search(valid_email_re, new_email):
-            valid_email = False
             return JsonResponse({'message': "Invalid Email"}, status = 400)
-        else:
-            valid_email = True
+
+        if new_name.isspace():
+            return JsonResponse({'message': "INVALID_NAME"}, status = 400)
 
         #password validation
         if not len(new_password) >= 8:
-            valid_password = False
             return JsonResponse({'message': "Invalid Password"}, status = 400)
-        else:
-            valid_password = True
 
         #duplacted value validation
         exist_user = User.objects.filter(Q(name=new_name) | Q(phone=new_phone) | Q(email=new_email))
-        if not exist_user:
-            valid_user = True
-        else:
+        if exist_user:
             return JsonResponse({'message': "Name, Phone or Email is already exists"}, status = 400)
 
         try:
@@ -57,15 +52,14 @@ class UsersView(View):
         except KeyError:
             new_profile_pic = ''
 
-        if valid_email and valid_password and valid_user:
-            hashed_password = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
-            user = User.objects.create(
-                name          = new_name,
-                email         = new_email,
-                phone         = new_phone,
-                profile_image = new_profile_pic,
-                password      = hashed_password,
-            )
+        hashed_password = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+        user = User.objects.create(
+            name          = new_name,
+            email         = new_email,
+            phone         = new_phone,
+            profile_image = new_profile_pic,
+            password      = hashed_password,
+        )
 
         return JsonResponse({'message': "SUCCESS"}, status = 200)
 
@@ -80,13 +74,6 @@ class LoginView(View):
             input_password = data['password'].encode('utf-8')
         except Exception as error_msg:
             return JsonResponse({'message': 'KEY_ERROR'}, status = 400)
-
-        if re.search(valid_email_re, input_account):
-            is_email = True
-        elif input_account.isdigit():
-            is_phone = True
-        else:
-            is_name = True
 
         try:
             user = User.objects.get(Q(name=input_account)|Q(email=input_account)|Q(phone=input_account))

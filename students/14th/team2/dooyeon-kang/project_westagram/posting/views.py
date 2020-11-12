@@ -21,6 +21,9 @@ class PostingView(View):
         except KeyError:
             return JsonResponse({'message': 'KEY_ERROR'}, status = 400)
 
+        if description.isspace():
+            return JsonResponse({'message': 'INVALID_TEXT'}, status = 400)
+
         try:
             Posting(
                 image_url   = image_url,
@@ -106,6 +109,8 @@ class PostingView(View):
             elif key == 'image_url':
                 posting.image_url = value
             elif key == 'description':
+                if value.isspace():
+                    return JsonResponse({'message': 'INVALID_TEXT'}, status = 400)
                 posting.description = value
 
         try:
@@ -126,16 +131,16 @@ class CommentView(View):
 
         try:
             comment_text = data['text']
-        except Exception as error_message:
-            return JsonResponse({'message': error_message}, status = 400)
+        except KeyError:
+            return JsonResponse({'message': 'KEY_ERROR'}, status = 400)
 
         try:
             posting_obj = Posting.objects.get(id=posting_id)
         except Exception:
             return JsonResponse({'message': 'INVALID POSTING'}, status = 400)
 
-        if not comment_text:
-            return JsonResponse({'message': 'Cannot be none'}, status = 400)
+        if not comment_text or comment_text.isspace():
+            return JsonResponse({'message': 'INVALID_TEXT'}, status = 400)
 
         try:
             Comment(
@@ -238,8 +243,8 @@ class ReplyView(View):
         except Exception:
             return JsonResponse({'message': 'wrong id'}, status = 400)
 
-        if not text:
-            return JsonResponse({'message': 'Reply message cannot be none'}, status = 400)
+        if not text or text.isspace():
+            return JsonResponse({'message': 'INVALID_TEXT'}, status = 400)
 
         Comment(
             text       = text,
