@@ -1,33 +1,29 @@
 import jwt
 import my_settings
+from functools   import wraps
 
 from django.http import JsonResponse
-from .models import User
+from django.conf import settings
 
-secret = my_settings.SECRET
-algorithm = my_settings.ALGORITHM
+from .models     import User
 
 def login_required(func) :
     @wraps(func)
     def wrapper(self, request, *arg, **kwargs) :
-        access_token = request.headers.get('Authorization', None)
+        try:
+            access_token = request.headers.get('Authorization', None)
 
-        if access_token is not None :
-            try :
-                payload = jwt.encode(access_token, secret, algorithm)
-            except jwt.InvalidTokenError :
-                payload = None
+            key          = settings.SECRET_KEY
+            algorithm    = settings.ALGORITHM
+            payload      = jwt.decode(access_token, key, algorithm)
 
-            if payload is None :
-                return JsonResponse({"message" : "TOKEN_DNEY"}, status = 400)
+            user_id      = User.objects.get(id = payload["id"])
+            request.id   = user_id
 
-            user_id = payload['user_id']
-            get_user = get_user_info(user_id)
+        except Jwt.DecodeError :
+            return JsonResponse({"message":"TOKEN_ERROR"}, status = 400)
+        except User.DoesNotExist :
+            return JsonResponse({"message":"USER_NOT_EXIST"}, status = 400)
 
-            if user_id else None :
-                pass
-            else :
-                return JsonResponse({"message" : "USER_ID_NONE"}, status = 401)
-
-            return wrapper(*arg, **kwargs)
-        return check_token
+        return wrapper(self,request,*arg,**kwargs)
+    return login_required(func)

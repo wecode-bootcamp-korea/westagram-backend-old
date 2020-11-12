@@ -5,9 +5,9 @@ from django.http  import JsonResponse
 
 from .models      import Post
 from user.models  import User
-import my_settings
 
 class CreatePostView(View):
+    @login_required
     def post(self,request):
         data = json.loads(request.body)
 
@@ -30,27 +30,26 @@ class CreatePostView(View):
             JsonResponse({"message" : "KEY_ERROR"}, status = 400)
 
 class ReadPostView(View):
+    @login_required
     def get(self,request):
         data    = json.loads(request.body)
         post_id = data["post_id"]
 
         try:
-            post_qs = Post.objects.filter(pk = post_id)
+            post_query = Post.objects.filter(pk = post_id)
             result  = []
 
-            if post_qs.exists():
-                for post in post_qs:
-                    sample = {
+            if post_query.exists():
+                for post in post_query:
+                    post_dict = {
                         "post_id"        : post.pk,
                         "post_author"    : post.author_id,
                         "post_image_url" : post.image_url,
                         "post_content"   : post.content,
                         "post_time"      : post.created_at
                     }
-                    result.append(sample)
-                    return JsonResponse({"result" : result }, status = 200)
-
-            else:
+                    result.append(post_dict)
+                    return JsonResponse({"result" : result}, status = 200)
                 return JsonResponse({"message" : "NO_POST"}, status = 400)
 
         except KeyError:

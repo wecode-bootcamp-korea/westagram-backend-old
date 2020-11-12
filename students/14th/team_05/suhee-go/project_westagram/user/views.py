@@ -20,7 +20,7 @@ class SignUpView(View):
         signup_password     = data["password"]
 
         valid_name          = re.compile(r'[a-z0-9_.]{5,30}')
-        valid_email         = re.compile(r'^[a-zA-Z0-9+-_.]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$')
+        valid_email         = re.compile(r'^[a-za-z0-9+-_.]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$')
         vaild_phone         = re.compile(r'^[0-9]*$')
         valid_password      = re.compile(r'[a-z0-9@#$]{8,12}')
 
@@ -31,18 +31,17 @@ class SignUpView(View):
 
         try:
             # validation check
-
             if not validation_name :
                 return JsonResponse({"messgage" : "INVAILD_NAME"}, status = 400)
 
             if not validation_email :
-                return JsonResponse({"message" : "INVAILD_EMAIL"}, status = 400)
+                return JsonResponse({"message":"INVAILD_EMAIL"}, status = 400)
 
             if not validation_phone :
-                return JsonResponse({"message" : "INVAILD_PHONE_NUMBER"}, status = 400)
+                return JsonResponse({"message":"INVAILD_PHONE_NUMBER"}, status = 400)
 
             if not validation_password :
-                return JsonResponse({"message" : "INVAILD_PASSWORD"}, status = 400)
+                return JsonResponse({"message":"INVAILD_PASSWORD"}, status = 400)
 
             #기존 유저와의 중복 체크 
             if User.objects.filter(
@@ -50,53 +49,51 @@ class SignUpView(View):
                 Q(email        = signup_email)|
                 Q(phone_number = signup_phone)
             ) :
-                return JsonResponse({"message" : "ALREADY_EXSIST"}, status = 400)
+                return JsonResponse({"message":"ALREADY_EXSIST"}, status = 400)
 
             # password 암호화
-            hashed_password      = bcrypt.hashpw(signup_password.encode('utf-8'), bcrypt.gensalt())
-            decoded_password     = hashed_password.decode('utf-8')
+            hashed_password      = bcrypt.hashpw(signup_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
             User.objects.create(
             name                 = signup_name,
             email                = signup_email,
             phone_number         = signup_phone,
-            password             = decoded_password
+            password             = hashed_password
             )
 
-            return JsonResponse({"message" : "SUCCESS"}, status = 201)
+            return JsonResponse({"message" :"SUCCESS"}, status = 201)
 
         except KeyError :
-            return JsonResponse({"message" : "KEY_ERROR"}, statu = 400)
+            return JsonResponse({"message" : "KEY_ERROR"}, status = 400)
 
 class SignInView(View):
     def post(self,request):
-        signin_data     = json.loads(request.body)
-
-        signin_name     = signin_data["username"]
-        signin_password = signin_data["password"]
+        data            = json.loads(request.body)
+        signin_name     = data["username"]
+        signin_password = data["password"]
 
         try :
-            user_qs = User.objects.filter(
+            account = User.objects.filter(
                 Q(name         = signin_name)|
                 Q(email        = signin_name)|
                 Q(phone_number = signin_name)
             )
 
-            if user_qs.exists() :
-                user     = User.objects.get(name = signin_name)
-                code     = user.pk
-                password = user.password
+            if account.exists() :
+                user     = account.first()
+                code     = account.pk
+                password = account.password
 
                 if bcrypt.checkpw(signin_password.encode('utf-8'), password.encode('utf-8')) == True :
                     #token 발행
                     key       = settings.SECRET_KEY
                     algorithm = settings.ALGORITHM
-                    token     = jwt.encode({'user': code}, key, algorithm).decode('utf-8')
+                    token     = jwt.encode({"user" : code}, key, algorithm).decode('utf-8')
                     return JsonResponse({"token" : token}, status = 200)
                     return JsonResponse({"message" : "INVAILD_USER"}, status = 401)
-
-                return JsonResponse({"message" : "INVAILD_USER"}, status = 401)
+            return JsonResponse({"message" : "INVAILD_USER"}, status = 401)
 
         except KeyError:
                 return JsonResponse({"message" : "KEY_ERROR"}, status = 400)
+
 
