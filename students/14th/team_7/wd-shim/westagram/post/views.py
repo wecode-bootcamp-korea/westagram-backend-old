@@ -14,7 +14,6 @@ from post.exceptions  import (
     ImageUploadFailException,
     PostUploadFailException
 )
-
 from common_util.authorization import check_valid_user
 
 class PostListAll(View):
@@ -42,8 +41,8 @@ class PostListAll(View):
             
             return JsonResponse({"get": post_list}, status=200)
             
-        except KeyError:
-            return JsonResponse({"message": "KEY_ERROR"}, status=400)
+        except KeyError as e:
+            return JsonResponse({'message': f'KEY_ERROR:{e} Field'}, status=400)
         
         except AttributeError:
             return JsonResponse({"message": "ATTRIBUTE_ERROR"}, status=400)
@@ -63,12 +62,11 @@ class PostList(View):
             if posts:
                 post_list = [
                     {
-                        "post_key"     : post.post_key,
-                        "post_desc"    : post.post_desc,
-                        "updated_at"   : post.updated_at,
-                        "first_img_url":
-                            post.postimage_set.all().first().img_url,
-                        "comments"     : [{
+                        "post_key"      : post.post_key,
+                        "post_desc"     : post.post_desc,
+                        "updated_at"    : post.updated_at,
+                        "first_img_url" : post.postimage_set.all().first().img_url,
+                        "comments"      : [{
                             "comment"   : comment.comment,
                             "updated_at": comment.updated_at,
                             "user"      : comment.user.user_name
@@ -85,17 +83,17 @@ class PostList(View):
             
             return JsonResponse({"post": result}, status=200)
             
-        except KeyError:
-            return JsonResponse({"message": "KEY_ERROR"}, status=400)
+        except KeyError as e:
+            return JsonResponse({'message': f'KEY_ERROR:{e} Field'}, status=400)
+        
+        except AttributeError as e:
+            return JsonResponse({"message": f"{e}"}, status=400)
         
         except BlankFieldException as e:
-            return JsonResponse({"message": e.__str__()}, status=400)
+            return JsonResponse({"message": f"{e}"}, status=400)
         
-        except User.DoesNotExist:
-            return JsonResponse({"message": "INVALID_USER"}, status=400)
-        
-        except AttributeError:
-            return JsonResponse({"message": "ATTRIBUTE_ERROR"}, status=400)
+        except User.DoesNotExist as e:
+            return JsonResponse({"message": f"{e}"}, status=400)
 
 class PostUp(View):
     
@@ -157,46 +155,44 @@ class PostUp(View):
                     with transaction.atomic():
                         for p_img in post_imgs:
                             p_img.save()
-
+                
                 except IntegrityError:
                     return JsonResponse(
                         {"message": "Transaction Error"}, status=400)
             
             return JsonResponse({"post": "post upload success"}, status=201)
             
-        except KeyError:
-            return JsonResponse({"message": "KEY_ERROR"}, status=400)
+        except KeyError as e:
+            return JsonResponse({'message': f'KEY_ERROR:{e} Field'}, status=400)
         
-        except AttributeError:
-            return JsonResponse({"message": "ATTRIBUTE_ERROR"}, status=400)
+        except AttributeError as e:
+            return JsonResponse({"message": f"{e}"}, status=400)
         
         except BlankFieldException as e:
-            return JsonResponse({"message": e.__str__()}, status=400)
+            return JsonResponse({"message": f"{e}"}, status=400)
         
-        except User.DoesNotExist:
-            return JsonResponse({"message": "INVALID_USER"}, status=400)
+        except User.DoesNotExist as e:
+            return JsonResponse({"message": f"{e}"}, status=400)
         
         except ImageUploadFailException as e:
-            return JsonResponse({"message": e.__str__()}, status=400)
+            return JsonResponse({"message": f"{e}"}, status=400)
         
         except PostUploadFailException as e:
-            return JsonResponse({"message": e.__str__()}, status=400)
+            return JsonResponse({"message": f"{e}"}, status=400)
 
 class PostLike(View):
     
     def post(self, request):
         data = json.loads(request.body)
         try:
-            user_id = data['user_id']
-            post_id = data['post_id']
-
-            likes = Post.objects.select_related('like_posts').all()
+            pass
+            # TODO: Like 기능 구현 중
+            # user_id = data['user_id']
+            # post_id = data['post_id']
+            # likes = Post.objects.select_related('like_posts').all()
             
-            print(likes)
-            
-            
-        except User.DoesNotExist:
-            return JsonResponse({"message": "INVALID_USER"}, status=400)
+        except User.DoesNotExist as e:
+            return JsonResponse({"message": f"{e}"}, status=400)
         
         return JsonResponse({"message": "SUCCESS"}, status=200)
 
@@ -225,9 +221,9 @@ class GetComments(View):
                     "comment"      : comment.comment,
                     "created_date" : comment.created_at,
                     "updated_at"   : comment.updated_at
-                    } for comment in comments]
+                } for comment in comments]
                 
-                result["count"] = len(comments)
+                result["count"]         = len(comments)
                 result["post_comments"] = post_comments
             
             return JsonResponse({"result": result}, status=200)

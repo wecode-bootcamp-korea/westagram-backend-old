@@ -4,8 +4,8 @@ from django.views     import View
 from django.http      import JsonResponse
 from django.db.models import Q
 
-from user.models import User
-from user.const  import NONE, PASSWORD_LEN
+from user.models      import User
+from user.const       import NONE, PASSWORD_LEN
 from user.validations import Validation
 from user.exceptions  import (
     BlankFieldException,
@@ -32,18 +32,15 @@ class SignUpView(View):
             password  = data["password"].strip()
             
             for key, value in dict(data).items():
-                if key == "email":
-                    continue
-                
-                if key == "phone":
+                if key == "email" or key == "phone":
                     continue
                 
                 if Validation.is_blank(value):
                     raise BlankFieldException
             
             signup_key_email = False
-            
-            if Validation.is_blank(email, phone):
+            print("===================")
+            if Validation.is_any_blank(email, phone):
                 raise BlankFieldException
             elif email != "" and phone == "":
                 signup_key_email = True
@@ -71,8 +68,8 @@ class SignUpView(View):
             if users:
                 raise AlreadyExistException
             
-        except KeyError:
-            return JsonResponse({'message': 'KEY_ERROR'}, status=400)
+        except KeyError as e:
+            return JsonResponse({'message': f'KEY_ERROR:{e} Field'}, status=400)
         
         except BlankFieldException as e:
             return JsonResponse({'message': f'{e}'}, status=400)
@@ -116,7 +113,7 @@ class SignInView(View):
             
             get_user = NONE
             
-            if Validation.is_blank(login_info, password):
+            if Validation.is_all_blank(login_info, password):
                 raise BlankFieldException
             
             if Validation.is_valid_email(login_info):
@@ -149,13 +146,13 @@ class SignInView(View):
         except KeyError as e:
             return JsonResponse({"message": f"{e}"}, status=400)
         
-        except User.DoesNotExist as e:
-            return JsonResponse({"message": f"{e}"}, status=400)
-        
         except BlankFieldException as e:
             return JsonResponse({"message": f"{e}"}, status=400)
         
         except WrongPasswordException as e:
+            return JsonResponse({"message": f"{e}"}, status=400)
+        
+        except User.DoesNotExist as e:
             return JsonResponse({"message": f"{e}"}, status=400)
         
         return JsonResponse({

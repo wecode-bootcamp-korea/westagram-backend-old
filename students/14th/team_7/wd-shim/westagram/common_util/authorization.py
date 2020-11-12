@@ -11,23 +11,20 @@ def check_valid_user(func):
     def wrapper(self, request, *args, **kwargs):
         try:
             access_token = request.headers.get("Authorization", None)
-            print("access_token====================================")
             payload = jwt.decode(
                 access_token,
                 SECRET['secret'],
                 algorithms = ALGO
             )
-            print("payload=========================================")
             
             login_user   = User.objects.get(id=payload['userID'], is_deleted=0)
             request.user = login_user
-            print("login_user_valid================================")
             
-        except jwt.exceptions.DecodeError:
-            return JsonResponse({"message": "401 UNAUTHORIZED"}, status=401)
+        except jwt.exceptions.DecodeError as e:
+            return JsonResponse({"message": "UNAUTHORIZED"}, status=401)
         
-        except User.DoesNotExist:
-            return JsonResponse({"message": "NOT_EXIST_USER"}, status=400)
+        except User.DoesNotExist as e:
+            return JsonResponse({"message": f"{e}"}, status=400)
         
         return func(self, request, *args, **kwargs)
     

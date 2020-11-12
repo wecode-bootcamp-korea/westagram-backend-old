@@ -1,24 +1,23 @@
 class BlankFieldException(Exception):
-    pass
-    # def __init__(self):
-    #     super().__init__('필수입력 항목을 작성해주세요.')
+    def __init__(self):
+        super().__init__('BlankFieldException')
 
 class EmailFormatException(Exception):
     def __init__(self):
-        super().__init__('올바른 이메일 형식이 아닙니다.')
+        super().__init__('EmailFormatException')
 
 class PhoneFormatException(Exception):
     def __init__(self):
-        super().__init__('올바른 전화번호 형식이 아닙니다.')
+        super().__init__('PhoneFormatException')
 
 class PasswordFormatException(Exception):
     def __init__(self):
-        super().__init__('올바른 비밀번호 형식이 아닙니다.')
+        super().__init__('PasswordFormatException')
 
 class AlreadyExistException(Exception):
     def __init__(self):
-        super().__init__('이미 존재하는 정보입니다.')
+        super().__init__('AlreadyExistException')
 
 class WrongPasswordException(Exception):
     def __init__(self):
-        super().__init__('비밀번호가 일치하지 않습니다. 다시 확인하여 주세요.')
+        super().__init__('WrongPasswordException')

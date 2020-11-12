@@ -6,7 +6,11 @@ from user.const import REGEX_EMAIL, PHONE_NUM_LEN, UTF8
 class Validation:
     
     @staticmethod
-    def is_blank(*args):
+    def is_any_blank(*args):
+        return not any([value for value in args])
+    
+    @staticmethod
+    def is_all_blank(*args):
         return not all([value for value in args])
     
     @staticmethod
@@ -19,11 +23,6 @@ class Validation:
     
     @staticmethod
     def is_valid_password(password, hashed_password):
-        print("===================================")
-        print(password.encode(UTF8))
-        print(hashed_password.encode(UTF8))
-        print("===================================")
-        
         return bcrypt.checkpw(
             password.encode(UTF8), hashed_password.encode(UTF8)
         )

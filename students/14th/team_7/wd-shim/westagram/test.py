@@ -155,15 +155,32 @@ return [1,2]
 # b = MAC()
 # print(b.name)
 
-import re
-REGEX_EMAIL   = '^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w{2,3}$'
+# import re
+# REGEX_EMAIL   = '^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w{2,3}$'
+#
+# def is_valid_email(email):
+#     return re.search(REGEX_EMAIL, email)
+#
+# if is_valid_email("alsdfj@test.com"):
+#     print("1")
+# else:
+#     print("2")
 
-def is_valid_email(email):
-    return re.search(REGEX_EMAIL, email)
+data = {
+    "email": "testtest10.com",
+    "phone": "",
+    "name": "user10",
+    "user_name": "user_10",
+    "password": "password123"
+}
 
-if is_valid_email("alsdfj@test.com"):
-    print("1")
-else:
-    print("2")
 
+for key, value in data.items():
+    
+    if key == "email" or key == "phone":
+        print("email or phone")
+        continue
+    print(key, value)
+    if value == "":
+        print("비어있음")
 
