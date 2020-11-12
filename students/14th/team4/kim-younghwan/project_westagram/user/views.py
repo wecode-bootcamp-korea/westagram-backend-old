@@ -45,14 +45,14 @@ class Login(View):
         data = json.loads(request.body)
         
         try:
-            account = Accounts.objects.get(name = data['name'])
+            account = Accounts.objects.get(email = data['email'])
             if bcrypt.checkpw(data['password'].encode('utf-8'),account.password.encode('utf-8')):
                 
                 #---토큰 발행---#
                 token = jwt.encode({'id':account.id},SECRET_KEY,algorithm=ABC)
                 token = token.decode('utf-8')
                 
-                return JsonResponse({'message':f'로그인 성공! token : {token}'},status=201)
+                return JsonResponse({'message':'로그인 성공!', 'token' :f'{token}'},status=201)
             
             else:
                 return JsonResponse({'message':'비밀번호가 다릅니다'},status=401)

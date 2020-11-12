@@ -4,7 +4,7 @@ from django.http        import JsonResponse, HttpResponse
 from django.views       import View
 
 from .models            import Broads, Comments
-from user.models        import Accounts
+from user.models        import Accounts, Broadlikes
 from user.utils         import login_decorator
 
 
@@ -15,17 +15,33 @@ class Post(View):
         data = json.loads(request.body)
         try:
             user = Accounts.objects.filter(name=data['name'],email=data['email'])
-    
+            
+            user_id = Accounts.objects.all().first()  #index해서 제일 첫번째
+            print(user_id)
+            like_list = user_id.likes.all()
+
+            if 
+                print(like_list.count())
+            else:
+                Broadlikes.objects.create(
+                    account   = Accounts.objects.get(email=data['email']),
+                    broad   = Broads.objects.get(id=data['id'])
+                )
+
             if user.exists():
                 Broads.objects.create(
                     title = data['title'],
                     photo = data['photo'],         
-                    name = Accounts.objects.get(name=data['name'],email=data['email'])
-
+                    name = Accounts.objects.get(name=data['name'],email=data['email']),
                 )
+
                 return JsonResponse({'message':'게시물 업로드 완료'},status=200)
             else:
                 return JsonResponse({'message':'로그인이 필요합니다'},status=400)
+            
+ 
+
+            
                
         except Exception as ex:
                 return JsonResponse({'error':f'{ex}'},status=200)
@@ -56,6 +72,7 @@ class Comment(View):
          
         except Exception as ex:
             return JsonResponse({'error':f'{ex}'},status=400)
+
 
 
 

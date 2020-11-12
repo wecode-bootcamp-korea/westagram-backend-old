@@ -6,7 +6,11 @@ class Broads(models.Model):
     photo               = models.ImageField(blank=True)
     name                = models.ForeignKey('user.Accounts',on_delete = models.CASCADE)
     created             = models.DateTimeField(auto_now=True)
-    updated             = models.DateTimeField(auto_now_add=True)        
+    updated             = models.DateTimeField(auto_now_add=True)
+    like                = models.ManyToManyField('user.Accounts',through='user.Broadlikes',related_name='likes')
+        
+    class Meta:
+        db_table = 'broads'       
 
 
 class Comments(models.Model):
@@ -15,7 +19,8 @@ class Comments(models.Model):
     content             = models.TextField(null=True)
     created             = models.DateTimeField(auto_now=True)
     updated             = models.DateTimeField(auto_now_add=True) 
-
+    class Meta:
+            db_table = 'comments'
 
 
     

@@ -7,3 +7,15 @@ class Accounts(models.Model):
         created_at      = models.DateTimeField(auto_now_add = True)
         updated_at      = models.DateTimeField(auto_now = True)
 
+        class Meta:
+                db_table = 'accounts'
+
+class Broadlikes(models.Model):
+        account         = models.ForeignKey('Accounts', on_delete=models.CASCADE, null=True)
+        broad           = models.ForeignKey('posting.Broads', on_delete=models.CASCADE,null=True)
+        
+        class Meta:
+                db_table = 'accounts_borads'
+
+
+
