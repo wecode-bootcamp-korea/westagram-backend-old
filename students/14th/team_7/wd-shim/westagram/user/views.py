@@ -1,26 +1,26 @@
 import json
 
-from django.views import View
+from django.views     import View
+from django.http      import JsonResponse
 from django.db.models import Q
-from django.http import JsonResponse
 
 from user.models import User
-from user.const import NONE, PASSWORD_LEN
+from user.const  import NONE, PASSWORD_LEN
 from user.validations import Validation
-from user.exceptions import (
+from user.exceptions  import (
     BlankFieldException,
     EmailFormatException,
     PhoneFormatException,
     AlreadyExistException,
     PasswordFormatException,
-    AuthenticationException
+    WrongPasswordException
 )
 from common_util import authorization
 
 class SignUpView(View):
     
     def get(self, request):
-        return JsonResponse({"get": "user_signup"}, status=200)
+        return JsonResponse({"get": "SignUpView"}, status=200)
     
     def post(self, request):
         data = json.loads(request.body)
@@ -32,10 +32,13 @@ class SignUpView(View):
             password  = data["password"].strip()
             
             for key, value in dict(data).items():
-                if key == "email" or key == "phone":
+                if key == "email":
                     continue
                 
-                if Validation.is_blank(value.strip()):
+                if key == "phone":
+                    continue
+                
+                if Validation.is_blank(value):
                     raise BlankFieldException
             
             signup_key_email = False
@@ -48,7 +51,7 @@ class SignUpView(View):
                 signup_key_email = False
             
             if signup_key_email:
-                
+            
                 if not Validation.is_valid_email(email):
                     raise EmailFormatException
             else:
@@ -65,26 +68,26 @@ class SignUpView(View):
                 Q(user_name=user_name)
             )
             
-            if len(users) > 0:
+            if users:
                 raise AlreadyExistException
-        
+            
         except KeyError:
             return JsonResponse({'message': 'KEY_ERROR'}, status=400)
         
         except BlankFieldException as e:
-            return JsonResponse({'message': e.__str__()}, status=400)
+            return JsonResponse({'message': f'{e}'}, status=400)
         
         except EmailFormatException as e:
-            return JsonResponse({'message': e.__str__()}, status=400)
+            return JsonResponse({'message': f'{e}'}, status=400)
         
         except PhoneFormatException as e:
-            return JsonResponse({'message': e.__str__()}, status=400)
+            return JsonResponse({'message': f'{e}'}, status=400)
         
         except PasswordFormatException as e:
-            return JsonResponse({'message': e.__str__()}, status=400)
+            return JsonResponse({'message': f'{e}'}, status=400)
         
         except AlreadyExistException as e:
-            return JsonResponse({'message': e.__str__()}, status=400)
+            return JsonResponse({'message': f'{e}'}, status=400)
         
         User.objects.create(
             email     = email,
@@ -100,8 +103,6 @@ class SignInView(View):
     
     def post(self, request):
         data = json.loads(request.body)
-        
-        print(data)
         
         try:
             login_info = data['login_key'].strip()
@@ -141,22 +142,22 @@ class SignInView(View):
                     break
             
             if not Validation.is_valid_password(password, get_user.password):
-                raise AuthenticationException
+                raise WrongPasswordException
             
             access_token = authorization.get_access_token(get_user.id)
             
-        except KeyError:
-            return JsonResponse({"message": "KEY_ERROR"}, status=400)
+        except KeyError as e:
+            return JsonResponse({"message": f"{e}"}, status=400)
         
-        except User.DoesNotExist:
-            return JsonResponse({"message": "INVALID_USER"}, status=400)
+        except User.DoesNotExist as e:
+            return JsonResponse({"message": f"{e}"}, status=400)
         
         except BlankFieldException as e:
-            return JsonResponse({"message": e.__str__()}, status=400)
+            return JsonResponse({"message": f"{e}"}, status=400)
         
-        except AuthenticationException as e:
-            return JsonResponse({"message": e.__str__()}, status=400)
+        except WrongPasswordException as e:
+            return JsonResponse({"message": f"{e}"}, status=400)
         
         return JsonResponse({
-            "message"      : "SUCCESS",
-            "access_token" : access_token}, status=200)
+            "message"     : "SUCCESS",
+            "access_token": access_token}, status=200)

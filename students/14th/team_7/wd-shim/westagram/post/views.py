@@ -8,12 +8,13 @@ from django.db        import IntegrityError, transaction
 
 from user.models      import User
 from post.models      import Post, PostImage, Comment
+from post.validations import Validation
 from post.exceptions  import (
     BlankFieldException,
     ImageUploadFailException,
     PostUploadFailException
 )
-from post.validations import Validation
+
 from common_util.authorization import check_valid_user
 
 class PostListAll(View):
@@ -29,14 +30,14 @@ class PostListAll(View):
             post_list = {
                 "count": len(posts),
                 "posts": [{
-                    "post_key"      : post.post_key,
-                    "post_desc"     : post.post_desc,
-                    "tags"          : post.tags,
-                    "location_info" : post.location_info,
-                    "updated_at"    : post.updated_at,
-                    "user"          : post.user.name,
-                    "user_name"     : post.user.user_name,
-                    } for post in posts]
+                    "post_key"     : post.post_key,
+                    "post_desc"    : post.post_desc,
+                    "tags"         : post.tags,
+                    "location_info": post.location_info,
+                    "updated_at"   : post.updated_at,
+                    "user_name"    : post.user.user_name,
+                    "user"         : post.user.name,
+                } for post in posts]
             }
             
             return JsonResponse({"get": post_list}, status=200)

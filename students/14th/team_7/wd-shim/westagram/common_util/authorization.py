@@ -3,9 +3,9 @@ import bcrypt
 
 from django.http import JsonResponse
 
-from my_settings import SECRET, ALGO
-from user.const import UTF8
+from user.const  import UTF8
 from user.models import User
+from my_settings import SECRET, ALGO
 
 def check_valid_user(func):
     def wrapper(self, request, *args, **kwargs):
@@ -20,8 +20,8 @@ def check_valid_user(func):
             print("payload=========================================")
             
             login_user   = User.objects.get(id=payload['userID'], is_deleted=0)
-            print("login_user_valid================================")
             request.user = login_user
+            print("login_user_valid================================")
             
         except jwt.exceptions.DecodeError:
             return JsonResponse({"message": "401 UNAUTHORIZED"}, status=401)

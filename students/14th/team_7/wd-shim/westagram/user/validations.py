@@ -15,7 +15,7 @@ class Validation:
     
     @staticmethod
     def is_valid_phone_number(phone):
-        return phone.isdecimal() and len(phone) == PHONE_NUM_LEN
+        return phone.isdecimal() and len(phone) < PHONE_NUM_LEN
     
     @staticmethod
     def is_valid_password(password, hashed_password):
