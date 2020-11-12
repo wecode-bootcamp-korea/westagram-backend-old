@@ -72,9 +72,11 @@ class LoginView(View):
                 # 인가용 토큰 만들기
                 access_token = jwt.encode({'id' : user.pk}, settings.SECRET_KEY, algorithm='HS256')
 
-                response = {}
-                response['message'] = 'SUCCESS'
-                response['authorization'] = access_token.decode('utf-8')
+                response = {
+                    'message' : 'SUCCESS',
+                    'authorization' : access_token.decode('utf-8')
+                }
+
 
                 return JsonResponse(response, status=200)
             else:

@@ -12,7 +12,7 @@ from .utils      import login_decorator
 
 class SignUpTestCase(TestCase):
     def setUp(self):
-        self.URL = '/user/signup/'
+        self.URL = '/user/signup'
         self.client = Client()
         self.GOOD_NAME          = 'myname'
         self.GOOD_EMAIL         = 'abcdefg@gmail.com'
@@ -149,8 +149,8 @@ class SignUpTestCase(TestCase):
 
 class LoginTestCase(TestCase):
     def setUp(self):
-        self.URL = '/user/login/'
-        self.SING_UP_URL = '/user/signup/'
+        self.URL = '/user/login'
+        self.SING_UP_URL = '/user/signup'
         self.client = Client()
         self.GOOD_NAME         = 'myname'
         self.GOOD_EMAIL        = 'abcdefg@gmail.com'
@@ -250,7 +250,7 @@ class LoginDecoratorTestCase(TestCase):
         # login해서 token 받을 필요있나?
         # 
 
-        self.URL                = '/user/dummy/'
+        self.URL                = '/user/dummy'
         self.DUMMY_NAME         = 'mr.dummy'
         self.DUMMY_EMAIL        = 'dummy@email.com'
         self.DUMMY_PHONE_NUMBER = '1234567890'
@@ -265,25 +265,59 @@ class LoginDecoratorTestCase(TestCase):
         self.user.save()
 
         user = User.objects.get(name=self.DUMMY_NAME)
-        self.user_id = { 'id' : user.pk }
+        self.user_id    = { 'id' : user.pk }
+        self.unknown_id = { 'id' : 1234 }
+        self.invalid_id = { 'i'  : user.pk}
 
-        self.good_token = jwt.encode(self.user_id, settings.SECRET_KEY, algorithm='HS256').decode('utf-8')
+        self.good_token    = jwt.encode(self.user_id,
+                                        settings.SECRET_KEY,
+                                        algorithm=settings.ALGORITHM
+                                        ).decode('utf-8')
+
+        self.unknown_token  = jwt.encode(self.unknown_id,
+                                        settings.SECRET_KEY,
+                                        algorithm=settings.ALGORITHM
+                                        ).decode('utf-8')
+
+        self.invalid_token = jwt.encode(self.invalid_id,
+                                        settings.SECRET_KEY,
+                                        algorithm=settings.ALGORITHM
+                                       ).decode('utf-8')
+
+        self.body = {}
 
     def test_success(self):
-        request = {
-            'authorization' : self.good_token,
-            'id'            : self.user_id['id']
+        header = {
+            'HTTP_Authorization' : self.good_token,
         }
-
-        response = self.client.post(self.URL, request, content_type='application/json')
-
+        response = self.client.post(self.URL, self.body, content_type='application/json', **header)
         self.assertEqual(response.json()['message'],'SUCCESS')
 
     def test_invail_token(self):
-        request = {
-            'unknown_value' : 0,
-            'id'            : self.user_id['id']
+        header = {
+            'unknown_value' : self.good_token,
         }
-        response = self.client.post(self.URL, request, content_type='application/json')
-
+        response = self.client.post(self.URL, self.body, content_type='application/json', **header)
         self.assertEqual(response.json()['message'],'DO_NOT_EXIST_TOKEN')
+
+    def test_not_exist_user(self):
+        header = {
+            'HTTP_Authorization' : self.unknown_token,
+        }
+        response = self.client.post(self.URL, self.body, content_type='application/json', **header)
+        self.assertEqual(response.json()['message'],'DO_NOT_EXIST_USER')
+
+    def test_key_error_id(self):
+        header = {
+            'HTTP_Authorization' : self.invalid_token,
+        }
+        response = self.client.post(self.URL, self.body, content_type='application/json', **header)
+        self.assertEqual(response.json()['message'],f'INVALID_TOKEN:{self.invalid_id}')
+
+    def test_decode_error(self):
+        header = {
+            'HTTP_Authorization' : 1 ,
+        }
+        response = self.client.post(self.URL, self.body, content_type='application/json', **header)
+        self.assertEqual(response.json()['message'],f'INVALID_TOKEN: TYPE_ERROR')
+

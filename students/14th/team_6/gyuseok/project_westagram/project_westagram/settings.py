@@ -21,7 +21,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = my_settings.SECRET_KEY
-
+ALGORITHM  = 'HS256'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
@@ -142,4 +142,4 @@ CORS_ALLOW_HEADERS = (
     'x-requested-with',
 )
 
-
+APPEND_SLASH = False

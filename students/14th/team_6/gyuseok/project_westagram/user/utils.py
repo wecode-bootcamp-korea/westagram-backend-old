@@ -7,35 +7,29 @@ from django.http import JsonResponse
 from .models     import User
 
 def key_error_decorator(func):
-    '''
-        request가 있는 값에서는 계속해서 원하는 인자가 있는지 확인하는
-        로직이 반복적으로 쓰인다고 느낍니다.
-        이것을 내가 정의해놓은 키와 request 헤더를 인자로 받아 데코레이터로
-        만들어 쓰는게 좋은걸까요?
-    '''
     pass
 
 def login_decorator(func):
 
     def wrapper(self, request, *args, **kwargs):
-
-        data = json.loads(request.body)
-        if 'authorization' not in data.keys():
-            return JsonResponse({'message': 'DO_NOT_EXIST_TOKEN'}, status=400)
-
-        encode_token = data['authorization'].encode('utf-8')
+        print(request.headers)
+        if 'Authorization' not in request.headers:
+            return JsonResponse({'message': 'DO_NOT_EXIST_TOKEN'}, status=401)
 
         try:
+            encode_token = request.headers['Authorization'].encode('utf-8')
+        except AttributeError:
+            return JsonResponse({'message' : 'INVALID_TOKEN: TYPE_ERROR'}, status=401)
 
+
+        try:
             decode_data = jwt.decode(encode_token, settings.SECRET_KEY, algorithms='HS256')
             user = User.objects.get(id=decode_data['id'])
-
-            request.user = user
-
-        except jwt.DecodeError:
-            return JsonResponse({'message' : 'INVALID TOKEN'}, status=400)
+            request.user_id = user.id
+        except (jwt.DecodeError, KeyError, AttributeError):
+            return JsonResponse({'message' : f'INVALID_TOKEN:{decode_data}'}, status=401)
         except User.DoesNotExist:
-            return JsonResponse({'message' : 'DO_NOT_EXIST_USER'}, status=400)
+            return JsonResponse({'message' : 'DO_NOT_EXIST_USER'}, status=401)
 
         return func(self, request, *args, **kwargs)
     return wrapper
