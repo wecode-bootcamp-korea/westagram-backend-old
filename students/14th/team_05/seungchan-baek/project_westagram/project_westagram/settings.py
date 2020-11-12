@@ -19,8 +19,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.0/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'zxvobcb0r_ish86ib3%!j1b^sbstivcu58k#0!9*1vx8uwl73%'
+
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -40,7 +39,8 @@ INSTALLED_APPS = [
     'corsheaders',
     'user',
     'post',
-    'thumbs_up'
+    'thumbs_up',
+    'follow'
 ]
 
 MIDDLEWARE = [
@@ -81,16 +81,9 @@ WSGI_APPLICATION = 'project_westagram.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/2.0/ref/settings/#databases
 
-DATABASES = {
-    'default' : {
-        'ENGINE': 'django.db.backends.mysql',    
-        'NAME': 'userInfo',                  
-        'USER': 'root',                          
-        'PASSWORD': '123123',                  
-        'HOST': 'localhost',                     
-        'PORT': '3306',                          
-    }
-}
+import westa.my_settings
+DATABASES = westa.my_settings.DATABASES 
+SECRET_KEY = westa.my_settings.SECRET_KEY['secret']
 
 # Password validation
 # https://docs.djangoproject.com/en/2.0/ref/settings/#auth-password-validators

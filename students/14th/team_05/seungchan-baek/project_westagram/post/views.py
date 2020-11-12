@@ -5,12 +5,13 @@ from django.http  import JsonResponse, request
 
 from .models      import Posting, Comment
 from user.models  import User
+from user.utils   import login_decorator
 
 # 게시판 등록
 class PostingView(View):
     def post(self, request):
         data = json.loads(request.body)
-        user = User.objects.get(name = data['name'])
+        user = User.objects.get(id = data['user_id'])
 
         try:
             Posting.objects.create(description = data['description'] ,content = data['content'] ,author=user)
@@ -42,7 +43,7 @@ class CommentView(View):
         post = Posting.objects.get(id = data['post_id'])
 
         try:
-            Comment.objects.create(content = data['content'],user = user, post=post)
+            Comment.objects.create(content = data['content'], user = user, post=post)
             return JsonResponse({"message" : "SUCCESS"}, status = 201)
         
         except KeyError:
