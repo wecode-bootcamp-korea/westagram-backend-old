@@ -5,8 +5,8 @@ class User(models.Model):
     phone    = models.CharField(max_length=12)
     email    = models.EmailField() 
     password = models.TextField()
-    like     = models.ManyToManyField('posting.Post', related_name='like_user')
-    follow   = models.ManyToManyField('self', through='FollowList', symmetrical=False)
+    like     = models.ManyToManyField('posting.Post', related_name='like_user', null=True)
+    follow   = models.ManyToManyField('self', through='FollowList', symmetrical=False, null=True)
 
     class Meta:
         db_table = 'users'
