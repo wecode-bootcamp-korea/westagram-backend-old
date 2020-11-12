@@ -12,17 +12,17 @@ def check_valid_user(func):
         try:
             access_token = request.headers.get("Authorization", None)
             print("access_token====================================")
-            payload      = jwt.decode(
+            payload = jwt.decode(
                 access_token,
                 SECRET['secret'],
                 algorithms = ALGO
             )
             print("payload=========================================")
             
-            login_user   = User.objects.get(id=payload['userID'])
+            login_user   = User.objects.get(id=payload['userID'], is_deleted=0)
             print("login_user_valid================================")
             request.user = login_user
-        
+            
         except jwt.exceptions.DecodeError:
             return JsonResponse({"message": "401 UNAUTHORIZED"}, status=401)
         

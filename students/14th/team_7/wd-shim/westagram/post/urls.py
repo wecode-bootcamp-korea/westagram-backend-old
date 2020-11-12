@@ -4,13 +4,13 @@ from post.views import (
     PostList,
     PostListAll,
     AddComment,
-    GetAllComments,
+    GetComments,
 )
 
 urlpatterns = [
-    path('/postUp',         PostUp.as_view()),
-    path('/postList',       PostList.as_view()),
-    path('/postListAll',    PostListAll.as_view()),
-    path('/comment/add',    AddComment.as_view()),
-    path('/comment/getAll', GetAllComments.as_view()),
+    path('/postUp',           PostUp.as_view()),
+    path('/postList',         PostList.as_view()),
+    path('/postListAll',      PostListAll.as_view()),
+    path('/addComment',  AddComment.as_view()),
+    path('/getComments', GetComments.as_view()),
 ]

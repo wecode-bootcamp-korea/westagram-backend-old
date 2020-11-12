@@ -201,30 +201,35 @@ class PostLike(View):
 
 # ============================================================================
 # comment 기능
-class GetAllComments(View):
+class GetComments(View):
     
+    @check_valid_user
     def get(self, request):
         data = json.loads(request.body)
         try:
-            num          = data['get_comments_num']
-            all_comments = Comment.objects.all().filter(is_deleted=0)[:num]
+            post_key = data['post_key']
             
-            comment_to_100 = [{}]
-            result = {"comments_num": 0, "comments": []}
+            if Validation.is_blank(post_key):
+                raise BlankFieldException
             
-            if all_comments:
-                comment_to_100 = [{
-                    "post_key"     : comment.post.post_key,
-                    "user_id"      : comment.user.pk,
+            post = Post.objects.get(post_key=post_key, is_deleted=0)
+            comments = post.comment_set.all()
+            
+            post_comments = []
+            result = {"count": 0, "post_comments": post_comments}
+            
+            if comments:
+                post_comments = [{
+                    "user_id"      : comment.user.user_name,
                     "comment"      : comment.comment,
                     "created_date" : comment.created_at,
-                    "updated_at"   : comment.updated_at,
-                } for comment in all_comments]
+                    "updated_at"   : comment.updated_at
+                    } for comment in comments]
                 
-                result["comments_num"] = len(all_comments)
-                result["comments"]     = comment_to_100
+                result["count"] = len(comments)
+                result["post_comments"] = post_comments
             
-            return JsonResponse({"comments": result}, status=200)
+            return JsonResponse({"result": result}, status=200)
             
         except KeyError:
             return JsonResponse({"message": "KEY_ERROR"}, status=400)
@@ -234,19 +239,13 @@ class GetAllComments(View):
 
 class AddComment(View):
     
+    @check_valid_user
     def post(self, request):
         data = json.loads(request.body)
+        user = request.user
         try:
             post_key     = data["post_key"]
-            user_id      = data["user_id"]
-            user_name    = data["user_name"].strip()
             user_comment = data["comment"].strip()
-            
-            user = User.objects.get(
-                id         = user_id,
-                user_name  = user_name,
-                is_deleted = 0
-            )
             
             post = Post.objects.get(post_key=post_key, is_deleted=0)
             
@@ -256,7 +255,7 @@ class AddComment(View):
                 user    = user
             )
             
-            return JsonResponse({"post": "SUCCESS"}, status=200)
+            return JsonResponse({"message": "comment created!"}, status=201)
             
         except KeyError:
             return JsonResponse({"message": "KEY_ERROR"}, status=400)
