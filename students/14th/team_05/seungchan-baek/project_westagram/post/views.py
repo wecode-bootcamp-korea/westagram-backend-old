@@ -35,6 +35,8 @@ class PostingView(View):
             result.append(read_posting)
 
         return JsonResponse({'result': result})
+
+
 # 댓글 등록
 class CommentView(View):
     def post(self, request):
