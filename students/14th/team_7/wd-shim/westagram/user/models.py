@@ -5,7 +5,7 @@ class User(models.Model):
     phone      = models.CharField(max_length=45, null=True)
     name       = models.CharField(max_length=45)
     user_name  = models.CharField(max_length=45)
-    password   = models.BinaryField(max_length=255)
+    password   = models.CharField(max_length=255)
     created_at = models.DateTimeField(auto_now=True)
     updated_at = models.DateTimeField(auto_now_add=True)
     is_deleted = models.BooleanField(default=False)

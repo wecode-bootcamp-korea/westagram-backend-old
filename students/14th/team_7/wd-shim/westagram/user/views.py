@@ -21,7 +21,7 @@ class SignUpView(View):
     
     def get(self, request):
         return JsonResponse({"get": "user_signup"}, status=200)
-
+    
     def post(self, request):
         data = json.loads(request.body)
         try:
@@ -39,6 +39,7 @@ class SignUpView(View):
                     raise BlankFieldException
             
             signup_key_email = False
+            
             if Validation.is_blank(email, phone):
                 raise BlankFieldException
             elif email != "" and phone == "":
@@ -99,6 +100,9 @@ class SignInView(View):
     
     def post(self, request):
         data = json.loads(request.body)
+        
+        print(data)
+        
         try:
             login_info = data['login_key'].strip()
             password   = data['password'].strip()
@@ -140,7 +144,7 @@ class SignInView(View):
                 raise AuthenticationException
             
             access_token = authorization.get_access_token(get_user.id)
-        
+            
         except KeyError:
             return JsonResponse({"message": "KEY_ERROR"}, status=400)
         
@@ -152,9 +156,6 @@ class SignInView(View):
         
         except AuthenticationException as e:
             return JsonResponse({"message": e.__str__()}, status=400)
-        
-        except Exception:
-            return JsonResponse({"message": "UNKNOWN_EXCEPTION"}, status=400)
         
         return JsonResponse({
             "message"      : "SUCCESS",

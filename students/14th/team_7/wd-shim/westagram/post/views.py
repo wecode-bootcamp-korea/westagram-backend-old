@@ -8,9 +8,13 @@ from django.db        import IntegrityError, transaction
 
 from user.models      import User
 from post.models      import Post, PostImage, Comment
-from post.exceptions  import BlankFieldException
+from post.exceptions  import (
+    BlankFieldException,
+    ImageUploadFailException,
+    PostUploadFailException
+)
 from post.validations import Validation
-# from common_util.authorization import authorization_decorator
+from common_util.authorization import check_valid_user
 
 class PostListAll(View):
     
@@ -45,15 +49,14 @@ class PostListAll(View):
 
 class PostList(View):
     
-    def get(self, request):
-        data = json.loads(request.body)
+    @check_valid_user
+    def post(self, request):
+        user_id = request.user.id
         try:
-            user_name = data['user_name'].strip()
-            
-            if Validation.is_blank(user_name):
+            if Validation.is_blank(user_id):
                 raise BlankFieldException
             
-            user  = User.objects.get(user_name=user_name, is_deleted=0)
+            user  = User.objects.get(id=user_id, is_deleted=0)
             posts = user.post_set.all()
             post_list = []
             if posts:
@@ -74,12 +77,12 @@ class PostList(View):
                 ]
             
             result = {
-                user_name: {
+                user.user_name: {
                     "posts": post_list
                 }
             }
             
-            return JsonResponse({"get": result}, status=200)
+            return JsonResponse({"post": result}, status=200)
             
         except KeyError:
             return JsonResponse({"message": "KEY_ERROR"}, status=400)
@@ -99,23 +102,29 @@ class PostUp(View):
         return JsonResponse({"get": "post up"}, status=200)
     
     @transaction.atomic
+    @check_valid_user
     def post(self, request):
         try:
-            user_name   = request.POST['user']
+            print("end check::=======", request.POST['user_id'])
+            
+            user_id   = request.POST['user_id']
             post_desc   = request.POST['post_desc']
             post_images = request.FILES.getlist('post_images')
             
-            if Validation.is_blank(user_name):
+            if Validation.is_blank(user_id, post_images):
                 raise BlankFieldException
             
-            user = User.objects.get(user_name=user_name)
+            if not post_images:
+                raise ImageUploadFailException
+            
+            user = User.objects.get(id=user_id)
             post = Post(
                 post_desc = post_desc.strip(),
                 user      = user
             )
             
             if not post:
-                raise Exception("게시물이 정상저으로 생성되지 않았습니다.")
+                raise PostUploadFailException
             else:
                 post.save()
                 
@@ -142,17 +151,17 @@ class PostUp(View):
                         raise Exception("이미지 정보 추출 중 에러가 발생하였습니다.")
                     else:
                         post_imgs.append(post_img)
-                
+                    
                 try:
                     with transaction.atomic():
                         for p_img in post_imgs:
                             p_img.save()
-                
+
                 except IntegrityError:
                     return JsonResponse(
                         {"message": "Transaction Error"}, status=400)
             
-            return JsonResponse({"post": "SUCCESS"}, status=200)
+            return JsonResponse({"post": "post upload success"}, status=201)
             
         except KeyError:
             return JsonResponse({"message": "KEY_ERROR"}, status=400)
@@ -160,11 +169,35 @@ class PostUp(View):
         except AttributeError:
             return JsonResponse({"message": "ATTRIBUTE_ERROR"}, status=400)
         
+        except BlankFieldException as e:
+            return JsonResponse({"message": e.__str__()}, status=400)
+        
         except User.DoesNotExist:
             return JsonResponse({"message": "INVALID_USER"}, status=400)
         
-        except BlankFieldException as e:
+        except ImageUploadFailException as e:
             return JsonResponse({"message": e.__str__()}, status=400)
+        
+        except PostUploadFailException as e:
+            return JsonResponse({"message": e.__str__()}, status=400)
+
+class PostLike(View):
+    
+    def post(self, request):
+        data = json.loads(request.body)
+        try:
+            user_id = data['user_id']
+            post_id = data['post_id']
+
+            likes = Post.objects.select_related('like_posts').all()
+            
+            print(likes)
+            
+            
+        except User.DoesNotExist:
+            return JsonResponse({"message": "INVALID_USER"}, status=400)
+        
+        return JsonResponse({"message": "SUCCESS"}, status=200)
 
 # ============================================================================
 # comment 기능

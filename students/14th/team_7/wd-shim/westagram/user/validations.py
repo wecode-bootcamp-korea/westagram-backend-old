@@ -19,4 +19,11 @@ class Validation:
     
     @staticmethod
     def is_valid_password(password, hashed_password):
-        return bcrypt.checkpw(password.encode(UTF8), hashed_password)
+        print("===================================")
+        print(password.encode(UTF8))
+        print(hashed_password.encode(UTF8))
+        print("===================================")
+        
+        return bcrypt.checkpw(
+            password.encode(UTF8), hashed_password.encode(UTF8)
+        )

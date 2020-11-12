@@ -15,6 +15,11 @@ class Post(models.Model):
     updated_at    = models.DateTimeField(auto_now_add=True)
     is_deleted    = models.BooleanField(default=False)
     user          = models.ForeignKey('user.User', on_delete=models.CASCADE)
+    like          = models.ManyToManyField(
+                        'user.User',
+                        related_name='like_post',
+                        blank=True
+                    )
     
     def __str__(self):
         return f"uuid:{self.post_key}, user_id:{self.user}, " \
