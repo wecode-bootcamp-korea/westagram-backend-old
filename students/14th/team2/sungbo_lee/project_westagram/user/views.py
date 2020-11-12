@@ -1,72 +1,79 @@
 import json
-from django.views import View
-from django.http import JsonResponse
-from user.models import User
+import bcrypt
+import jwt
+
+from django.views     import View
+from django.http      import JsonResponse
+from django.db        import IntegrityError
+from django.db.models import Q
+
+from user.models                import User
+from project_westagram.settings import SECRET_KEY
 
 class SignUpView(View):
     def post(self, request):
         data = json.loads(request.body)
 
         try:
+            email        = data["email"]
+            password     = bcrypt.hashpw(data["password"].encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+            phone_number = data["phone_number"]
+            name         = data["name"]
+
+            if '@' not in email:
+                return JsonResponse({'message': 'INVALID_KEY'}, status=400)
+
+            if '.' not in email:
+                return JsonResponse({'message': 'INVALID_KEY'}, status=400)
+
+            if len(password) < 8:
+                return JsonResponse({'message': 'INVALID_KEY'}, status=400)
+
+            if User.objects.filter(email=email):
+                return JsonResponse({'message': 'INVALID_KEY'}, status=400)
+
+            if User.objects.filter(phone_number=phone_number):
+                return JsonResponse({'message': 'INVALID_KEY'}, status=400)
+
+            if User.objects.filter(name=name):
+                return JsonResponse({'message': 'INVALID_KEY'}, status=400)
+
             user = User(
-            email        = data["email"],
-            password     = data["password"],
-            phone_number = data["phone_number"],
-            name         = data["name"],
+            email        = email,
+            password     = password,
+            phone_number = phone_number,
+            name         = name,
             )
-
-            if '@' not in user.email:
-                raise KeyError("error")
-
-            if '.' not in user.email:
-                raise KeyError("error")
-
-            if len(user.password) < 8:
-                raise KeyError("error")
-
-            if User.objects.filter(email=user.email):
-                raise KeyError("error")
-
-            if User.objects.filter(phone_number=user.phone_number):
-                raise KeyError("error")
-
-            if User.objects.filter(name=user.name):
-                raise KeyError("error")
 
             user.save()
 
-            return JsonResponse({"message":"SUCCESS"}, status=200)
+            return JsonResponse({'message': 'SUCCESS'}, status=200)
 
         except KeyError:
             return JsonResponse({'message': 'INVALID_KEY'}, status=400)
 
-    def get(self, request):
-
-        return JsonResponse({"Hello":"World"}, status=200)
+        except IntegrityError:
+            return JsonResponse(status=400)
 
 class LogInView(View):
     def post(self, request):
         data = json.loads(request.body)
 
         try:
-            email        = data["email"]
-            password     = data["password"]
-            phone_number = data["phone_number"]
-            name         = data["name"]
+            email        = data['email']
+            password     = data['password']
 
-            if not User.objects.get(name=data["name"]):
-                raise Exception("error")
-            if not User.objects.get(name=data["name"], password=data["password"]):
-                raise Exception("error")
+            if not User.objects.get(email=email):
+                return JsonResponse({'message': 'INVALID_USER'}, status=401)
+            user = User.objects.get(email=email)
 
-            return JsonResponse({"message":"SUCCESS"}, status=200)
+            if bcrypt.checkpw(password.encode('utf-8'), user.password.encode('utf-8')):
+
+                payload = {"id": user.id}
+
+                token = jwt.encode(payload, SECRET_KEY, algorithm='HS256').decode('utf-8')
+                return JsonResponse({"token": token}, status=200)
+            return JsonResponse({'message': 'INVALID_PASSWORD'}, status=401)
 
         except KeyError:
             return JsonResponse({'message': 'INVALID_KEY'}, status=400)
-
-        except Exception:
-            return JsonResponse({'message': 'INVALID_USER'}, status=401)
-
-    def get(self, request):
-
-        return JsonResponse({"Hello":"World"}, status=200)
