@@ -25,5 +25,5 @@ def login_required(func) :
         except User.DoesNotExist :
             return JsonResponse({"message":"USER_NOT_EXIST"}, status = 400)
 
-        return(func)
+        return(self, request, *arg, **kwarg)
     return wrapper
