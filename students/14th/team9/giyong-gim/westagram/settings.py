@@ -26,6 +26,8 @@ SECRET_KEY = 'm%)u&)=bahxoz#ljn*dlmk4@5wc6jbdbuzldj5=&856*1o3#o!'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+
+#여러군대에서 서버외부 접속을허용할때 와일드 카드 사용 
 ALLOWED_HOSTS = ['*']
 
 
@@ -145,3 +147,34 @@ CORS_ALLOW_HEADERS = (
 )
 
 STATIC_URL = '/static/'
+
+LOGGING = {
+    'disable_existing_loggers': False,
+    'version': 1,
+    'formatters': {
+         'verbose': {
+            'format': '{asctime} {levelname} {message}',
+            'style': '{'
+        },
+    },
+    'handlers': {
+        'console': {
+            'class'     : 'logging.StreamHandler',
+            'formatter' : 'verbose',
+            'level'     : 'DEBUG',
+        },
+        'file': {
+            'level'     : 'DEBUG',
+            'class'     : 'logging.FileHandler',
+            'formatter' : 'verbose',
+            'filename'  : 'debug.log',
+        },
+    },
+    'loggers': {
+        'django.db.backends': {
+            'handlers' : ['console','file'],
+            'level'    : 'DEBUG',
+            'propagate': False,
+        },
+    },
+}

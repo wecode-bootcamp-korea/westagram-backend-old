@@ -1,8 +1,8 @@
 import jwt
+import re
 import json
 
 from django.http import JsonResponse
-from django.core.exceptions import ObjectDoesNotExist
 
 from my_settings import SECRET_KEY
 from user.models import User
@@ -24,4 +24,15 @@ def login_decorator(func):
         return func(self, request, *args, **kwargs)
 
     return wrapper
+
+
+def validate_email(email):
+    return re.match('^[a-zA-Z0-9+-_.]+@[a-zA-Z]+\.[a-z.]+$', email)
+
+def validate_password(password):
+    return len(password) > 5
+
+def validate_phone_number(phone_number):
+    return re.match('^[0-9]{3}-[0-9]{3,4}-[0-9]{4}$', phone_number)
+
 
