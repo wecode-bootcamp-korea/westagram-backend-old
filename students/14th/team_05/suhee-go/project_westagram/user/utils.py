@@ -9,21 +9,27 @@ from .models     import User
 
 def login_required(func) :
     @wraps(func)
-    def wrapper(self, request, *arg, **kwargs) :
+    def wrapper(self, request, *args, **kwargs) :
+
         try:
-            access_token = request.headers.get('Authorization', None)
+           if 'Authentication' not in request.headers:
+               return JsonResponse({"message" : "Unauthorized"}, status = 401)
 
-            key          = settings.SECRET_KEY
-            algorithm    = settings.ALGORITHM
-            payload      = jwt.decode(access_token, key, algorithm)
+           access_token = request.headers.get('Authorization')
 
-            user_id      = User.objects.get(id = payload["id"])
-            request.id   = user_id
+           key          = settings.SECRET_KEY
+           algorithm    = settings.ALGORITHM
+           data         = jwt.decode(access_token, key, algorithm)
 
-        except Jwt.DecodeError :
-            return JsonResponse({"message":"TOKEN_ERROR"}, status = 400)
+           user_id      = User.objects.get(id = data["user"])
+           request.user = user_id
+
+        except jwt.DecodeError:
+            return JsonResponse({"message" : "TOKEN_ERROR"}, status = 401)
+
         except User.DoesNotExist :
-            return JsonResponse({"message":"USER_NOT_EXIST"}, status = 400)
+            return JsonResponse({"message" : "USER_NOT_EXIST"}, status = 401)
 
-        return(self, request, *arg, **kwarg)
+        return func(self, request, *args, **kwargs)
+
     return wrapper

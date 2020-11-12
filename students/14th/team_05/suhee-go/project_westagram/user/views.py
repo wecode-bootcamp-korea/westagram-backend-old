@@ -81,10 +81,10 @@ class SignInView(View):
 
             if account.exists() :
                 user     = account.first()
-                code     = account.pk
-                password = account.password
+                code     = user.pk
+                password = user.password
 
-                if bcrypt.checkpw(signin_password.encode('utf-8'), password.encode('utf-8')) == True :
+                if bcrypt.checkpw(signin_password.encode('utf-8'), password.encode('utf-8')) :
                     #token 발행
                     key       = settings.SECRET_KEY
                     algorithm = settings.ALGORITHM
