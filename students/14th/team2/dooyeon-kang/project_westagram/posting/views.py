@@ -13,17 +13,13 @@ class PostingView(View):
     def post(self, request):
         data    = json.loads(request.body)
         user_id = request.user.id
+        user = User.objects.get(id=user_id)
 
         try:
             image_url   = data['image_url']
             description = data['description']
         except KeyError:
             return JsonResponse({'message': 'KEY_ERROR'}, status = 400)
-
-        try:
-            user = User.objects.get(id=user_id)
-        except Exception:
-            return JsonResponse({'message': 'INVALID USER'}, status = 400)
 
         try:
             Posting(
@@ -51,7 +47,8 @@ class PostingView(View):
                                 'posting_id': comment['posting_id'],
                                 'text': comment['text'],
                                 'created_at': comment['created_at'],
-                              } for comment in Comment.objects.filter(posting_id=post['id']).values()],
+                              } for comment in Comment.objects.filter(posting_id=post['id']).values()\
+                                if not comment['reply_on_id']],
                  'img_url': post['image_url'],
                  'description': post['description'],
                  'posting_id': post['id'],
@@ -122,10 +119,13 @@ class CommentView(View):
     def post(self, request):
         data    = json.loads(request.body)
         user_id = request.user.id
+        posting_id = request.GET.get('post')
+
+        if not posting_id:
+            return JsonResponse({'message': 'Check Querystring'}, status = 400)
 
         try:
             comment_text = data['text']
-            posting_id   = data['posting_id']
         except Exception as error_message:
             return JsonResponse({'message': error_message}, status = 400)
 
@@ -203,13 +203,11 @@ class CommentView(View):
 class LikeView(View):
     @login_check
     def post(self, request):
-        data    = json.loads(request.body)
         user_id = request.user.id
+        posting_id = request.GET.get('post')
 
-        try:
-            posting_id = data['posting_id']
-        except KeyError:
-            return JsonResponse({'message': 'KEY_ERROR'}, status = 400)
+        if not posting_id:
+            return JsonResponse({'message': 'Check Querystring'}, status = 400)
 
         try:
             user    = User.objects.get(id=user_id)

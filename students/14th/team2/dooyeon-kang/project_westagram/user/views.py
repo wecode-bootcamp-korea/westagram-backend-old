@@ -105,14 +105,11 @@ class LoginView(View):
 class FollowView(View):
     @login_check
     def post(self, request):
-        data    = json.loads(request.body)
         user_id = request.user.id
+        followee_id = request.GET.get('followee')
 
-        try:
-            followee_id = data['followee']
-        except KeyError:
-            return JsonResponse({'message': 'KEY_ERROR'}, status = 400)
-
+        if not followee_id:
+            return JsonResponse({'message': 'Check Querystring'}, status = 400)
         try:
             user     = User.objects.get(id=user_id)
             followee = User.objects.get(id=followee_id)
