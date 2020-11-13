@@ -182,7 +182,7 @@ class PostUp(View):
 
 class AddLikeToPost(View):
     
-    @check_valid_user
+    # @check_valid_user
     def post(self, request):
         data = json.loads(request.body)
         try:
@@ -199,7 +199,7 @@ class AddLikeToPost(View):
                 PostLike.objects.create(post=post, user=user)
             else:
                 PostLike.objects.filter(post=post, user=user).delete()
-        
+            
         except BlankFieldException as e:
             return JsonResponse({"message": f"{e}"}, status=400)
         

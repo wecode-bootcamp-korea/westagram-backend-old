@@ -4,7 +4,7 @@ from django.views     import View
 from django.http      import JsonResponse
 from django.db.models import Q
 
-from user.models      import User
+from user.models      import User, Follow
 from user.const       import NONE, PASSWORD_LEN
 from user.validations import Validation
 from user.exceptions  import (
@@ -39,7 +39,6 @@ class SignUpView(View):
                     raise BlankFieldException
             
             signup_key_email = False
-            print("===================")
             if Validation.is_any_blank(email, phone):
                 raise BlankFieldException
             elif email != "" and phone == "":
@@ -158,3 +157,57 @@ class SignInView(View):
         return JsonResponse({
             "message"     : "SUCCESS",
             "access_token": access_token}, status=200)
+
+# ========================================================================================
+# Follow
+class FollowView(View):
+    def post(self, request):
+        data = json.loads(request.body)
+        try:
+            user_id = data['user_id']
+            follow_id = data['follow_id']
+            
+            user = User.objects.get(id=user_id, is_deleted=0)
+            if not Follow.objects.filter(who=user, follower=follow_id).exists():
+                Follow.objects.create(who=user, follower=follow_id)
+            else:
+                Follow.objects.filter(who=user, follower=follow_id).delete()
+            
+            #TODO: 팔로우한 사람 정보 화면에 전달 (비동기로 화면에 추가함)
+            
+        except User.DoesNotExist as e:
+            return JsonResponse({"message": f"{e}"}, status=400)
+        
+        return JsonResponse({"message": "SUCCESS"}, status=200)
+
+class GetFollowList(View):
+    def post(self, request):
+        data = json.loads(request.body)
+        try:
+            user_id = data['user_id']
+            
+            user = User.objects.get(id=user_id, is_deleted=0)
+            
+            follow_users = []
+            if user:
+                follows_list = Follow.objects.only("follower").filter(who=user)
+                
+                for follow in follows_list:
+                    follow_users.append(User.objects.get(id=follow.pk))
+
+            result = {
+                "user_name": user.user_name,
+                "follow_number": len(follow_users),
+                "follow_user": [{
+                    "name" : f_user.user_name
+                } for f_user in follow_users]
+            }
+            
+        except User.DoesNotExist as e:
+            return JsonResponse({"message": f"{e}"}, status=400)
+            
+        return JsonResponse({"follow_list": result}, status=200)
+
+class GetFollowerList(View):
+    def post(self, request):
+        pass

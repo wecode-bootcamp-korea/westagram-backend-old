@@ -16,3 +16,14 @@ class User(models.Model):
     
     class Meta:
         db_table = 'users'
+
+class Follow(models.Model):
+    who      = models.ForeignKey('user.User',
+                                 on_delete=models.CASCADE,
+                                 blank    =True,
+                                 null     =True)
+    follower = models.IntegerField(null=True)
+    followee = models.IntegerField(null=True)
+    
+    class Meta:
+        db_table = 'follows'
