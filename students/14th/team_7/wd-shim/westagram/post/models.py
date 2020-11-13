@@ -15,11 +15,6 @@ class Post(models.Model):
     updated_at    = models.DateTimeField(auto_now_add=True)
     is_deleted    = models.BooleanField(default=False)
     user          = models.ForeignKey('user.User', on_delete=models.CASCADE)
-    like          = models.ManyToManyField(
-                        'user.User',
-                        related_name='like_post',
-                        blank=True
-                    )
     
     def __str__(self):
         return f"uuid:{self.post_key}, user_id:{self.user}, " \
@@ -28,6 +23,13 @@ class Post(models.Model):
     class Meta:
         db_table = 'posts'
         ordering = ['-updated_at']
+
+class PostLike(models.Model):
+    post = models.ForeignKey('post.Post', on_delete=models.CASCADE)
+    user = models.ForeignKey('user.User', on_delete=models.CASCADE)
+    
+    class Meta:
+        db_table = 'post_likes'
 
 class PostImage(models.Model):
     img_name   = models.CharField(max_length=100)

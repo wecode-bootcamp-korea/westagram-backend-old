@@ -166,21 +166,44 @@ return [1,2]
 # else:
 #     print("2")
 
-data = {
-    "email": "testtest10.com",
-    "phone": "",
-    "name": "user10",
-    "user_name": "user_10",
-    "password": "password123"
-}
+# data = {
+#     "email": "testtest10.com",
+#     "phone": "",
+#     "name": "user10",
+#     "user_name": "user_10",
+#     "password": "password123"
+# }
+#
+#
+# for key, value in data.items():
+#
+#     if key == "email" or key == "phone":
+#         print("email or phone")
+#         continue
+#     print(key, value)
+#     if value == "":
+#         print("비어있음")
 
-
-for key, value in data.items():
-    
-    if key == "email" or key == "phone":
-        print("email or phone")
-        continue
-    print(key, value)
-    if value == "":
-        print("비어있음")
+# def get_max_area(height):
+#     index_value_dict = {}
+#     for index, value in enumerate(height):
+#         index_value_dict[index] = value
+#
+#     iv_dic = sorted(index_value_dict.items(), key=lambda x: x[1], reverse=True)
+#     print(iv_dic)
+#
+#     h = 0
+#     w = 0
+#     result = 0
+#     for i in range(0, len(iv_dic)):
+#         for j in range(0, len(iv_dic)):
+#             if j < len(iv_dic)-1 and iv_dic[j][1] >= iv_dic[j+1][1]:
+#                 h = iv_dic[j][1]
+#                 w = abs(iv_dic[j][0] - iv_dic[j+1][0])
+#                 temp = h * w
+#                 if temp >= result:
+#                     print(h, w)
+#                     result = temp
+#
+#     return result
 

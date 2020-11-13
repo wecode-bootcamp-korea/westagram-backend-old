@@ -5,6 +5,7 @@ from post.views import (
     PostListAll,
     AddComment,
     GetComments,
+    AddLikeToPost
 )
 
 urlpatterns = [
@@ -13,4 +14,5 @@ urlpatterns = [
     path('/postListAll', PostListAll.as_view()),
     path('/addComment',  AddComment.as_view()),
     path('/getComments', GetComments.as_view()),
+    path('/addLikeToPost' , AddLikeToPost.as_view()),
 ]

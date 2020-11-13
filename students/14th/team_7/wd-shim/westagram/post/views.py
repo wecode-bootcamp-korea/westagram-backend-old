@@ -7,7 +7,7 @@ from django.http      import JsonResponse
 from django.db        import IntegrityError, transaction
 
 from user.models      import User
-from post.models      import Post, PostImage, Comment
+from post.models      import Post, PostImage, Comment, PostLike
 from post.validations import Validation
 from post.exceptions  import (
     BlankFieldException,
@@ -147,7 +147,7 @@ class PostUp(View):
                     )
                     
                     if not post_img:
-                        raise Exception("이미지 정보 추출 중 에러가 발생하였습니다.")
+                        raise Exception("이미지 정보 추출 중 에러 발생: 사용자 에러 수정")
                     else:
                         post_imgs.append(post_img)
                     
@@ -180,17 +180,32 @@ class PostUp(View):
         except PostUploadFailException as e:
             return JsonResponse({"message": f"{e}"}, status=400)
 
-class PostLike(View):
+class AddLikeToPost(View):
     
+    @check_valid_user
     def post(self, request):
         data = json.loads(request.body)
         try:
-            pass
-            # TODO: Like 기능 구현 중
-            # user_id = data['user_id']
-            # post_id = data['post_id']
-            # likes = Post.objects.select_related('like_posts').all()
+            user_id = request.user.id
+            post_id = data['post_id']
             
+            if Validation.is_blank(user_id, post_id):
+                raise BlankFieldException
+            
+            post = Post.objects.get(post_key=post_id)
+            user = User.objects.get(id=user_id)
+            
+            if not PostLike.objects.filter(post=post, user=user).exists():
+                PostLike.objects.create(post=post, user=user)
+            else:
+                PostLike.objects.filter(post=post, user=user).delete()
+        
+        except BlankFieldException as e:
+            return JsonResponse({"message": f"{e}"}, status=400)
+        
+        except Post.DoesNotExist as e:
+            return JsonResponse({"message": f"{e}"}, status=400)
+        
         except User.DoesNotExist as e:
             return JsonResponse({"message": f"{e}"}, status=400)
         
