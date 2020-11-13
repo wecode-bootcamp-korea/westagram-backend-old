@@ -4,13 +4,13 @@ import re
 import bcrypt
 import jwt
 
-from django.views     import View
-from django.http      import JsonResponse
-from django.db.models import Q
+from django.views                        import View
+from django.http                         import JsonResponse
+from django.db.models                    import Q
 
-from .models          import User, FollowList
+from .models                             import User, FollowList
 from project_westagram.settings.settings import JWT_SECRET_KEY, JWT_ALGORITHM
-from utils import login_decorator
+from utils                               import login_decorator
 
 class SignUpView(View):
     def post(self, request):

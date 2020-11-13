@@ -2,11 +2,11 @@ import json
 import re
 
 from django.views import View
-from django.http import JsonResponse
+from django.http  import JsonResponse
 
-from user.models import User
-from .models import Post, Comment
-from utils import login_decorator
+from user.models  import User
+from .models      import Post, Comment
+from utils        import login_decorator
 
 class PostsView(View):
     @login_decorator

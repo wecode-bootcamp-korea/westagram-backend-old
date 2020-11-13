@@ -2,7 +2,7 @@ import json
 
 from django.urls import reverse
 from django.test import TransactionTestCase
-from django.db import connection
+from django.db   import connection
 
 from user.models import User
 

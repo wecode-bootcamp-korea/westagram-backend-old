@@ -1,10 +1,10 @@
 import jwt
 import json
 
-from django.http import JsonResponse
+from django.http                         import JsonResponse
 
 from project_westagram.settings.settings import JWT_ALGORITHM, JWT_SECRET_KEY
-from user.models import User
+from user.models                         import User
 
 def login_decorator(func):
     def decorated_function(self, request, *args, **kwargs):

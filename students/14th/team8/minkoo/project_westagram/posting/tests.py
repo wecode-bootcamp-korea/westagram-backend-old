@@ -2,7 +2,7 @@ import json
 
 from django.test import TransactionTestCase
 from django.urls import reverse
-from django.db import connection
+from django.db   import connection
 from django.utils import timezone
 
 class TestPost(TransactionTestCase):
