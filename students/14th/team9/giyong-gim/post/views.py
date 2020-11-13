@@ -153,11 +153,11 @@ class CommentView(View):
             return JsonResponse({'message':'INVALID_USER'}, status = 200)
         except KeyError:
             return JsonResponse({'message':'KEY_ERROR'}, status = 200)
-class LikeView(View):
+#class LikeView(View):
 
-    def post(self, request):
-        try:
-            data=json.loads(request.body)
+#    def post(self, request):
+#        try:
+#            data=json.loads(request.body)
 #            Like.objects.create(user_id = data['user_id'], post_id = data['post_id'])
 #            return JsonResponse({'message':'SUCCESS'}, status = 200)
 #        except KeyError:
