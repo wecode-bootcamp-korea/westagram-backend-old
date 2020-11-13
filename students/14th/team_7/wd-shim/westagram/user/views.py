@@ -159,7 +159,6 @@ class SignInView(View):
             "access_token": access_token}, status=200)
 
 # ========================================================================================
-# Follow
 class FollowView(View):
     def post(self, request):
         data = json.loads(request.body)
@@ -180,7 +179,7 @@ class FollowView(View):
         
         return JsonResponse({"message": "SUCCESS"}, status=200)
 
-class GetFollowList(View):
+class GetFollowListView(View):
     def post(self, request):
         data = json.loads(request.body)
         try:
@@ -208,6 +207,6 @@ class GetFollowList(View):
             
         return JsonResponse({"follow_list": result}, status=200)
 
-class GetFollowerList(View):
+class GetFollowerListView(View):
     def post(self, request):
         pass
