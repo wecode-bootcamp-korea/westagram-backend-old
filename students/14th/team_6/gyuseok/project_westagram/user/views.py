@@ -24,18 +24,18 @@ class SignUpView(View):
 
         for k in NECESSERY_KEYS:
             if k not in data.keys():
-                return JsonResponse({'message': 'KEY_ERROR'}, status=400)
+                return JsonResponse({'message' : 'KEY_ERROR'}, status=400)
 
         if password_re.match(data['password']) == None:
-            return JsonResponse({'message': 'PASSWORD_VALIDATION'}, status=400)
+            return JsonResponse({'message' : 'PASSWORD_VALIDATION'}, status=400)
 
         if email_re.match(data['email']) == None:
-            return JsonResponse({'message': 'EMAIL_VALIDATION'}, status=400)
+            return JsonResponse({'message' : 'EMAIL_VALIDATION'}, status=400)
 
         if User.objects.filter(  Q(name        =data['name']) \
                                | Q(email       =data['email']) \
                                | Q(phone_number=data['phone_number'])).exists():
-            return JsonResponse({'message':'DATA_ALREADY_EXIST'}, status=400)
+            return JsonResponse({'message' : 'DATA_ALREADY_EXIST'}, status=400)
 
         #2. 인증 추가 패스워드 저장 확인
         hashed_password = bcrypt.hashpw(data['password'].encode('utf-8'), bcrypt.gensalt())
