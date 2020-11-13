@@ -189,11 +189,11 @@ class GetFollowListView(View):
             
             follow_users = []
             if user:
-                follows_list = Follow.objects.only("follower").filter(who=user)
+                follows_list = Follow.objects.filter(who=user)
                 
                 for follow in follows_list:
                     follow_users.append(User.objects.get(id=follow.pk))
-
+            
             result = {
                 "user_name": user.user_name,
                 "follow_number": len(follow_users),
