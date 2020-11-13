@@ -6,8 +6,11 @@ from user.models       import User
 def login_decorator(func):
     def wrapper(self, request, *args, **kwargs):
         try:
- 
-            access_token = request.headers.get('Authorization', None)
+            access_token = request.headers.get('Authorization',None)
+
+            if access_token == None:
+                return JsonResponse({'message' : 'TOKEN_IS_NOT_EXIST'}, status=400)
+                
             payload = jwt.decode(access_token,SECRET_KEY['secret'], algorithm=JWT_algorithm)
             user = User.objects.get(id = payload['id'])
             request.user = user.id

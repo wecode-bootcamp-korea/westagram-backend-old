@@ -29,18 +29,22 @@ class ThumbsUpView(View):
 
     def get(self, request):
         data = json.loads(request.body)
-        likes = ThumbsUp.objects.filter(post= data['post_id'])
-        like_nums=len(likes)
+        try:
+            likes = ThumbsUp.objects.filter(post= data['post_id'])
+            like_nums=len(likes)
         
-        likes ={
-            'content'     : likes[0].post.content,
-            'description' : likes[0].post.description,
-            'created_at'  : str(likes[0].post.created_at),
-            'author'      : likes[0].post.author,
-            'thumbs_up'   : like_nums
-        }
+            likes ={
+                'content'     : likes[0].post.content,
+                'description' : likes[0].post.description,
+                'created_at'  : str(likes[0].post.created_at),
+                'author'      : likes[0].post.author,
+                'thumbs_up'   : like_nums
+            }
 
-        return JsonResponse({'result' : likes})
+            return JsonResponse({'result' : likes})
+        
+        except KeyError:
+            return JsonResponse({'message' : 'KEY_ERROR'}, status=400)
 
 class DeleteLikeView(View):
     @login_decorator
