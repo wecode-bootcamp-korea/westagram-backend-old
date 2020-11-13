@@ -8,7 +8,9 @@ from user.models import User
 from core.utils  import login_decorator
 
 class PostView(View):
+    @login_decorator
     def get(self, request):
+            user_id = request.user.id
             posts    = Post.objects.select_related('author').prefetch_related('comment_set', 'like_set')
             context  = [
                 {
@@ -18,6 +20,7 @@ class PostView(View):
                     'image'    : post.image_url,
                     'created'  : post.created_at,
                     'likes'    : post.like_set.count(),
+                    'is_liked' : post.like_set.filter(user_id = user_id).exists(),
                     'comments' : [
                         {
                             'parent'  : cmt.parent_id,
@@ -153,25 +156,47 @@ class CommentView(View):
             return JsonResponse({'message':'INVALID_USER'}, status = 200)
         except KeyError:
             return JsonResponse({'message':'KEY_ERROR'}, status = 200)
-#class LikeView(View):
 
-#    def post(self, request):
-#        try:
-#            data=json.loads(request.body)
-#            Like.objects.create(user_id = data['user_id'], post_id = data['post_id'])
-#            return JsonResponse({'message':'SUCCESS'}, status = 200)
-#        except KeyError:
-#            return JsonResponse({'message':'KEY_ERROR'}, status = 400)
-#    def delete(self, request):
-#        try:
-#            data = json.loads(request.body)
-#            Like.objects.filter(user_id = data['user_id'], post_id = data['post_id']).delete()
-#            return JsonResponse({'message':'SUCCESS'}, status = 200)
-#        except KeyError:
-#            return JsonResponse({'meesage':'KEY_ERROR'}, status = 400)
+class LikeView(View):
+
+    @login_decorator
+    def get(self, request):
+        try:
+            user_id = request.user.id
+            data=json.loads(request.body)
+            if Like.objects.filter(user_id = user_id, post_id = data['post_id']).exists():
+                return JsonResponse({'is_liked': 1}, status = 200)
+            return JsonResponse({'is_liked': 0}, status = 200)
+        except KeyError:
+            return JsonResponse({'message':'KEY_ERROR'}, status = 400)
+
+    @login_decorator
+    def post(self, request):
+        try:
+            user_id = request.user.id
+            data = json.loads(request.body)
+            if Like.objects.filter(user_id = user_id, post_id = data['post_id']).exists():
+                return JsonResponse({'message':'USER_ALREADY_LIKED_THIS_POST'}, status = 400)
+            Like.objects.create(user_id = user_id, post_id = data['post_id'])
+            return JsonResponse({'message':'SUCCESS'}, status = 200)
+        except KeyError:
+            return JsonResponse({'message':'KEY_ERROR'}, status = 400)
+
+    @login_decorator
+    def delete(self, request):
+        try:
+            user_id = request.user.id
+            data = json.loads(request.body)
+            Like.objects.filter(user_id = user_id, post_id = data['post_id']).delete()
+            return JsonResponse({'message':'SUCCESS'}, status = 200)
+        except KeyError:
+            return JsonResponse({'meesage':'KEY_ERROR'}, status = 400)
+
+
 #class FollowView(View):
 #    def post(self, request):
 #        try:
+#
 #            data=json.loads(request.body)
 #            Like.objects.create(user_id = data['user_id'], post_id = data['post_id'], stats = True)
 #            return JsonResponse({'message':'SUCCESS'}, status = 200)
