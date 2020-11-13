@@ -60,6 +60,7 @@ class PostView(View):
     @login_decorator
     def put(self, request):
         try:
+            user_id = user.request.id
             data = json.loads(request.body)
             obj  = Post.objects.get(id=data['id'])
             if 'title' in data:
@@ -76,11 +77,14 @@ class PostView(View):
     @login_decorator
     def delete(self, request):
         try:
+            user_id = request.user.id
             data = json.loads(request.body)
-            if Post.objects.filter(id = data['id']).exists():
-               q = Post.objects.get(id = data['id'])
-               q.delete()
-               return JsonResponse({'message': 'SUCCESS'}, status = 200)
+            if Post.objects.filter(id = data['post_id']).exists():
+               q = Post.objects.get(id = data['post_id'])
+               if request.user.id == q.author.id:
+                   q.delete()
+                   return JsonResponse({'message': 'SUCCESS'}, status = 200)
+               return JsonResponse({'message':'INVALID_USER'}, status = 200)
         except KeyError:
             return JsonResponse({'message': 'KEY_ERROR'}, status = 400)
 
@@ -93,10 +97,10 @@ class CommentView(View):
             comments = Comment.objects.filter(post_id = data['post_id']).prefetch_related('author')
             context = [
                 {
-                    'feed_id'      : cmt.post_id.id,
+                    'feed_id'      : data['post_id'],
                     'author'       : cmt.author.username,
                     'content'      : cmt.content,
-                    'created_time' : cmt.comment_created,
+                    'created_time' : cmt.created_at,
                     'parent'       : cmt.parent_id
                 }
                 for cmt in comments
@@ -110,11 +114,12 @@ class CommentView(View):
     def post(self, request):
         try:
             data = json.loads(request.body)
+            user_id = request.user.id
             Comment.objects.create(
-                author  = User.objects.get(id = data['user_id']),
-                post_id = Post.objects.get(id = data['post_id']),
+                author  = User.objects.get(id =user_id),
+                post_id = data['post_id'],
                 content = data['content'],
-                parent  = data.get('parent_id', None)
+                parent_id  = data.get('parent_id', None)
             )
             return JsonResponse({'meesage':'SUCCESS'}, status = 200)
         except KeyError:
@@ -123,32 +128,37 @@ class CommentView(View):
     @login_decorator
     def put(self, request):
         try:
+            user_id =  request.user.id
             data = json.loads(request.body)
-            if Comment.objects.filter(id=data['id']).exists():
-                q = Comment.objects.get(id=data['id'])
-                q.content = data['content']
-                q.save()
-                return JsonResponse({'message':'SUCCESS'}, status = 200)
+            if Comment.objects.filter(id=data['comment_id']).exists():
+                q = Comment.objects.get(id=data['comment_id'])
+                if q.author_id == user_id:
+                    q.content = data['content']
+                    q.save()
+                    return JsonResponse({'message':'SUCCESS'}, status = 200)
+                return JsonResponse({'message':'INVALID_USER'}, status = 400)
         except KeyError:
             return JsonResponse({'meesage':'KEY_ERROR'}, status = 400)
 
     @login_decorator
     def delete(self, request):
         try:
+            user_id = request.user.id
             data = json.loads(request.body)
-            if Comment.objects.filter(id=data['id']).exists():
-                q = Comment.objects.get(id=data['id'])
-                q.delete()
-                return JsonResponse({'message':'cmt, success'}, status = 200)
+            if Comment.objects.filter(id=data['comment_id']).exists():
+                q = Comment.objects.get(id=data['comment_id'])
+                if q.author.id == user_id:
+                    q.delete()
+                    return JsonResponse({'message':'cmt, success'}, status = 200)
+            return JsonResponse({'message':'INVALID_USER'}, status = 200)
         except KeyError:
             return JsonResponse({'message':'KEY_ERROR'}, status = 200)
+class LikeView(View):
 
-#class LikeView(View):
-#
-#    def post(self, request):
-#        try:
-#            data=json.loads(request.body)
-#            Like.objects.create(user_id = data['user_id'], post_id = data['post_id'], status = True)
+    def post(self, request):
+        try:
+            data=json.loads(request.body)
+#            Like.objects.create(user_id = data['user_id'], post_id = data['post_id'])
 #            return JsonResponse({'message':'SUCCESS'}, status = 200)
 #        except KeyError:
 #            return JsonResponse({'message':'KEY_ERROR'}, status = 400)

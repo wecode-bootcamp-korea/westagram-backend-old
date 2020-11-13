@@ -8,7 +8,7 @@ class User(models.Model):
     user_created = models.DateTimeField(auto_now_add = True)
 
     class Meta:
-        db_table = 'user'
+        db_table = 'users'
 
     def __str__(self):
         return self.username
