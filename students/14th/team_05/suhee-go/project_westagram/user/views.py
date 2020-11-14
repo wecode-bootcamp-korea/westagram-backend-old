@@ -10,6 +10,7 @@ from django.conf      import settings
 
 from .models          import User
 
+
 class SignUpView(View):
     def post(self,request):
         data                = json.loads(request.body)
@@ -31,16 +32,16 @@ class SignUpView(View):
 
         try:
             # validation check
-            if not validation_name :
-                return JsonResponse({"messgage" : "INVAILD_NAME"}, status = 400)
+            if not validation_name:
+                return JsonResponse({"messgage":"INVAILD_NAME"}, status = 400)
 
-            if not validation_email :
+            if not validation_email:
                 return JsonResponse({"message":"INVAILD_EMAIL"}, status = 400)
 
-            if not validation_phone :
+            if not validation_phone:
                 return JsonResponse({"message":"INVAILD_PHONE_NUMBER"}, status = 400)
 
-            if not validation_password :
+            if not validation_password:
                 return JsonResponse({"message":"INVAILD_PASSWORD"}, status = 400)
 
             #기존 유저와의 중복 체크 
@@ -61,10 +62,11 @@ class SignUpView(View):
             password             = hashed_password
             )
 
-            return JsonResponse({"message" :"SUCCESS"}, status = 201)
+            return JsonResponse({"message":"SUCCESS"}, status = 201)
 
         except KeyError :
-            return JsonResponse({"message" : "KEY_ERROR"}, status = 400)
+            return JsonResponse({"message":"KEY_ERROR"}, status = 400)
+
 
 class SignInView(View):
     def post(self,request):
@@ -79,19 +81,19 @@ class SignInView(View):
                 Q(phone_number = signin_name)
             )
 
-            if account.exists() :
+            if account.exists():
                 user     = account.first()
                 code     = user.pk
                 password = user.password
 
-                if bcrypt.checkpw(signin_password.encode('utf-8'), password.encode('utf-8')) :
+                if bcrypt.checkpw(signin_password.encode('utf-8'), password.encode('utf-8')):
                     #token 발행
                     key       = settings.SECRET_KEY
                     algorithm = settings.ALGORITHM
-                    token     = jwt.encode({"user" : code}, key, algorithm).decode('utf-8')
-                    return JsonResponse({"token" : token}, status = 200)
-                    return JsonResponse({"message" : "INVAILD_USER"}, status = 401)
-            return JsonResponse({"message" : "INVAILD_USER"}, status = 401)
+                    token     = jwt.encode({"user":code}, key, algorithm).decode('utf-8')
+                    return JsonResponse({"token":token}, status = 200)
+                    return JsonResponse({"message":"INVAILD_USER"}, status = 401)
+            return JsonResponse({"message":"INVAILD_USER"}, status = 401)
 
         except KeyError:
-                return JsonResponse({"message" : "KEY_ERROR"}, status = 400)
+                return JsonResponse({"message":"KEY_ERROR"}, status = 400)

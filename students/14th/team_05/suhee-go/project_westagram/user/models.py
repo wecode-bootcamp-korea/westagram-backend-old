@@ -1,6 +1,7 @@
 from django.db                     import models
 from phonenumber_field.modelfields import PhoneNumberField
 
+
 class User(models.Model):
     name          = models.CharField(max_length=30, null=True)
     email         = models.EmailField(null=True)
@@ -10,4 +11,4 @@ class User(models.Model):
     updated_at    = models.DateTimeField(auto_now=True)
 
     class Meta:
-        db_table='users'
+        db_table ='users'
