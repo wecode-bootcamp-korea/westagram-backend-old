@@ -5,29 +5,27 @@ from django.http  import JsonResponse
 
 from .models      import Post
 from user.models  import User
+from user.utils   import login_required
 
 class CreatePostView(View):
     @login_required
-    def post(self,request):
+    def post(self, request):
         data = json.loads(request.body)
 
-        post_author  = data["user_id"]
-        post_image   = data["image_url"]
-        post_content = data["content"]
-
         try:
-            if not User.objects.filter(pk = post_author).exists():
-                return JsonResponse({"message" : "USER_NOT_EXIST"}, status = 400)
+            post_author  = request.user
+            post_image   = data["image_url"]
+            post_content = data["content"]
 
             Post.objects.create(
-                author_id = post_author,
-                image     = post_image,
+                author    = post_author,
+                image_url = post_image,
                 content   = post_content
             )
             return JsonResponse({"message" : "SUCCESS"}, status = 201)
 
         except KeyError:
-            JsonResponse({"message" : "KEY_ERROR"}, status = 400)
+            return JsonResponse({"message" : "KEY_ERROR"}, status = 400)
 
 class ReadPostView(View):
     @login_required
@@ -40,18 +38,20 @@ class ReadPostView(View):
             result  = []
 
             if post_query.exists():
-                for post in post_query:
-                    post_dict = {
-                        "post_id"        : post.pk,
-                        "post_author"    : post.author_id,
-                        "post_image_url" : post.image_url,
-                        "post_content"   : post.content,
-                        "post_time"      : post.created_at
-                    }
-                    result.append(post_dict)
-                    return JsonResponse({"result" : result}, status = 200)
-                return JsonResponse({"message" : "NO_POST"}, status = 400)
+                post = post_query.first()
+
+                post_dict = {
+                    "post_id"        : post.pk,
+                    "post_author"    : post.author_id,
+                    "post_image_url" : post.image_url,
+                    "post_content"   : post.content,
+                    "posted_time"    : post.created_at
+                }
+                result.append(post_dict)
+                return JsonResponse({"result" : result}, status = 200)
+            return JsonResponse({"message" : "NO_POST"}, status = 400)
 
         except KeyError:
             JsonResponse({"message" : "KEY_ERROR"}, status = 400)
-
+#        except JSONDecodeError:
+#            JsonResponse({"message" : "VALUE_ERROR"}, status = 400)
