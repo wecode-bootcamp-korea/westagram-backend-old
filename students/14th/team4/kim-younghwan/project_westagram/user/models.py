@@ -13,9 +13,5 @@ class Accounts(models.Model):
 class Broadlikes(models.Model):
         account         = models.ForeignKey('Accounts', on_delete=models.CASCADE, null=True)
         broad           = models.ForeignKey('posting.Broads', on_delete=models.CASCADE,null=True)
-        
         class Meta:
                 db_table = 'accounts_borads'
-
-
-

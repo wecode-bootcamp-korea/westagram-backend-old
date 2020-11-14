@@ -21,7 +21,7 @@ class SignUp(View):
             if len(data['password']) < 8:
                 return JsonResponse({'message':'비밀번호가 너무 짧습니다(최소 8자이상)'},status=400)  
            
-            if Accounts.objects.filter(name=data['name'],email=data['email']).exists():
+            if Accounts.objects.filter(email=data['email']).exists():
                 return JsonResponse({'message' : '이미 존재하는 아이디입니다.'},status=401)  
             else:
                 #---비밀번호 암호화---#

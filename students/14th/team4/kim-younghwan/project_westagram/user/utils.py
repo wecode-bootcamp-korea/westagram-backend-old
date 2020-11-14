@@ -6,7 +6,7 @@ from django.http                    import JsonResponse
 from django.core.exceptions         import ObjectDoesNotExist
 
 from project_westagram.settings     import SECRET_KEY, ABC
-from user.models                    import Accounts
+from user.models                    import Accounts, Broadlikes
 
 def login_decorator(func):
     def wrapper(self, request, *args, **kwargs):
