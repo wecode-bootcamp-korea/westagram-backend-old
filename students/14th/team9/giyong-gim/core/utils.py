@@ -4,7 +4,7 @@ import json
 
 from django.http import JsonResponse
 
-from my_settings import SECRET_KEY_JWT
+from my_settings import SECRET_KEY_JWT, ALGORITHM
 from user.models import User
 
 def login_decorator(func):
@@ -12,7 +12,7 @@ def login_decorator(func):
         try:
             access_token = request.headers.get('Authorization', None)
             print(access_token)
-            payload = jwt.decode(access_token, SECRET_KEY_JWT, algorithm='HS256')
+            payload = jwt.decode(access_token, SECRET_KEY_JWT, algorithm=ALGORITHM)
             user = User.objects.get(id=payload['id'])
             request.user=user
         except jwt.exceptions.DecodeError:
