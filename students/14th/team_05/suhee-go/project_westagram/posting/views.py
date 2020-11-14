@@ -53,5 +53,3 @@ class ReadPostView(View):
 
         except KeyError:
             JsonResponse({"message" : "KEY_ERROR"}, status = 400)
-#        except JSONDecodeError:
-#            JsonResponse({"message" : "VALUE_ERROR"}, status = 400)
