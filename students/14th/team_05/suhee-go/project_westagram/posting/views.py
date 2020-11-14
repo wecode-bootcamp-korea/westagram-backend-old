@@ -35,20 +35,18 @@ class ReadPostView(View):
 
         try:
             post_query = Post.objects.filter(pk = post_id)
-            result  = []
 
             if post_query.exists():
                 post = post_query.first()
 
-                post_dict = {
+                post_data = {
                     "post_id"        : post.pk,
                     "post_author"    : post.author_id,
                     "post_image_url" : post.image_url,
                     "post_content"   : post.content,
                     "posted_time"    : post.created_at
                 }
-                result.append(post_dict)
-                return JsonResponse({"result" : result}, status = 200)
+                return JsonResponse({"result" : post_data}, status = 200)
             return JsonResponse({"message" : "NO_POST"}, status = 400)
 
         except KeyError:
