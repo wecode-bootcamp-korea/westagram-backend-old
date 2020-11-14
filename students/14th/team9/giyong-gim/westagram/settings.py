@@ -21,13 +21,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'm%)u&)=bahxoz#ljn*dlmk4@5wc6jbdbuzldj5=&856*1o3#o!'
+SECRET_KEY = my_settings.SECRET_KEY
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
 
-#여러군대에서 서버외부 접속을허용할때 와일드 카드 사용 
+# 서버외부 접속을허용할때 와일드 카드 사용 
 ALLOWED_HOSTS = ['*']
 
 
