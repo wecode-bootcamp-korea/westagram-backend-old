@@ -77,8 +77,8 @@ class ProfileView(View):
                 'email'      : user.email,
                 'created_at' : str(user.created_at),
                 'username'   : user.username,
-                'following'  : user.follow_set.filter(follower_id=user_id).exists(),
-                'follower'   : user.follow_set.filter(followee_id=user_id).exists(),
+                'following'  : user.follow_set.filter(follower_id=user_id).count(),
+                'follower'   : user.follow_set.filter(followee_id=user_id).count(),
                 'posts':[
                     {
                         'title'      : post.title,
