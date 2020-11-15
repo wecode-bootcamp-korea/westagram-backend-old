@@ -10,39 +10,24 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 
-
-import json
-from django.core.exceptions import ImproperlyConfigured
-with open("project_westagram/secret.json") as s:
-    secrets = json.loads(s.read())
-def get_secret(setting, secrets = secrets):
-    try:
-        return secrets[setting]
-    except KeyError:
-        error_message = f"Set the {setting} environment variable"
-        raise ImproperlyConfigured(error_message)
-
-SECRET_KEY = get_secret("SECRET_KEY")
-
-
-
-
 from pathlib import Path
-
+import my_settings
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
 
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '8n%m2r^9^rlsnka#6wqm4v06y36(25hctist8#znv%eya(t$2u'
+SECRET_KEY = my_settings.SECRET_KEY
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
 ALLOWED_HOSTS = ['*']
+
+ALGORITHM = my_settings.ALGORITHM
 
 
 # Application definition
@@ -56,6 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'corsheaders',
     'user',
+    'posting'
 ]
 
 MIDDLEWARE = [
@@ -93,17 +79,7 @@ WSGI_APPLICATION = 'project_westagram.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 
-DATABASES = {
-    'default' : {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'westagram',
-        'USER': 'root',
-        'PASSWORD': '11',
-        'HOST': 'localhost',
-        'PORT': '8000',
-    }
-}
-
+DATABASES = my_settings.DATABASES
 
 # Password validation
 # https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators
@@ -127,9 +103,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/3.1/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'ko-kr'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Seoul'
 
 USE_I18N = True
 
