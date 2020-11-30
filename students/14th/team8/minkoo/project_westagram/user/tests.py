@@ -2,7 +2,7 @@ import json
 
 from django.urls import reverse
 from django.test import TransactionTestCase
-from django.db import connection
+from django.db   import connection
 
 from user.models import User
 
@@ -154,6 +154,7 @@ class TestView(TransactionTestCase):
         }
         response = self.client.post(url, data=json.dumps(data), content_type='application/json')
         assert response.status_code == 200
+        assert 'access_token' in json.loads(response.content) 
     
     def test_email_login(self):
         url  = reverse('login')
@@ -163,6 +164,7 @@ class TestView(TransactionTestCase):
         }
         response = self.client.post(url, data=json.dumps(data), content_type='application/json')
         assert  response.status_code == 200
+        assert 'access_token' in json.loads(response.content) 
 
     def test_phone_login(self):
         url  = reverse('login')
@@ -172,7 +174,8 @@ class TestView(TransactionTestCase):
         }
         response = self.client.post(url, data=json.dumps(data), content_type='application/json')
         assert response.status_code == 200
-    
+        assert 'access_token' in json.loads(response.content) 
+
     def test_fail_login_wrong_user(self):
         url  = reverse('login')
         data = {
@@ -211,17 +214,6 @@ class TestView(TransactionTestCase):
         assert response.status_code == 400
         assert json.loads(response.content)['message'] == 'KEY_ERROR'
 
-    def test_fail_login_too_many_key(self):
-        url  = reverse('login')
-        data = {
-            'name'     : 'kim',
-            'email'    : 'kim@naver.com',
-            'password' : '123456W*weW'
-        }
-        response = self.client.post(url, data=json.dumps(data), content_type='application/json')
-        assert response.status_code == 400
-        assert json.loads(response.content)['message'] == 'KEY_ERROR'
-
 class TestFollow(TransactionTestCase):
     def setUp(self):
         data = {
@@ -230,8 +222,8 @@ class TestFollow(TransactionTestCase):
             'phone'    : '01012341234',
             'email'    : 'dooly@naver.com'
         }
-        url = reverse('sign_up')
-        reponse = self.client.post(url, data=json.dumps(data), content_type='application/json')
+        url      = reverse('sign_up')
+        response = self.client.post(url, data=json.dumps(data), content_type='application/json')
         
         data_2 = {
             'name'     : 'douner',
@@ -239,73 +231,73 @@ class TestFollow(TransactionTestCase):
             'phone'    : '01043214321',
             'email'    : 'douner@naver.com'
         }
-        url = reverse('sign_up')
+        url      = reverse('sign_up')
         response = self.client.post(url, data=json.dumps(data_2), content_type='application/json')
-    
+        
+        login_data = {
+            'name'     : 'dooly',
+            'password' : '123456qwerT*'
+        }
+        url                 = reverse('login')
+        response            = self.client.post(url, data=json.dumps(login_data), content_type='application/json')
+        self.access_token_1 = json.loads(response.content)['access_token']
+
+        login_data_2 = {
+            'name'     : 'douner',
+            'password' : '123456asdf*E'
+        }
+        response            = self.client.post(url, data=json.dumps(login_data_2), content_type='application/json')
+        self.access_token_2 = json.loads(response.content)['access_token']
+
         create_data = {
             'user_id'   : 2,
             'content'   : '어이 둘리',
             'image_url' : 'http://image.dongascience.com/Photo/2020/03/5bddba7b6574b95d37b6079c199d7101.jpg'
+            
         }
-        url = reverse('post')
-        response = self.client.post(url, data=json.dumps(create_data), content_type='application/json')
-        assert response.status_code == 200
-        
+        url            = reverse('post')
+        self.headers_1 = {
+            'HTTP_Authorization' : self.access_token_1
+        }
+        response = self.client.post(url, data=json.dumps(create_data), content_type='application/json',  **self.headers_1 )
+
         create_data_2 = {
             'user_id'   : 1,
             'content'   : '도우너 어서 오고',
             'image_url' : 'https://topclass.chosun.com/news_img/1807/1807_008_1.jpg'
         }
-        response = self.client.post(url, data=json.dumps(create_data_2), content_type='application/json')
-        assert response.status_code == 200
+        self.headers_2 = {
+            'HTTP_Authorization' : self.access_token_2
+        }
+        response = self.client.post(url, data=json.dumps(create_data_2), content_type='application/json', **self.headers_2)
 
     def tearDown(self):
         with connection.cursor() as cursor:
             cursor.execute('set foreign_key_checks=0')
             cursor.execute('truncate users')
             cursor.execute('truncate posts')
+            cursor.execute('truncate follow_lists')
             cursor.execute('set foreign_key_checks=1')
 
     def test_add_follow(self):
         url  = reverse('follow')
         data = {
-            'user_id' : 1,
-            'follow_id' : 2
+            'follow_id' : 2,
         }
-        response = self.client.post(url, data=json.dumps(data), content_type='application/json')
+        response = self.client.post(url, data=json.dumps(data), content_type='application/json', **self.headers_1)
         assert response.status_code == 200
 
         url  = reverse('follow')
         data = {
-            'user_id' : 2,
-            'follow_id' : 1
+            'follow_id' : 1,
         }
-        response = self.client.post(url, data=json.dumps(data), content_type='application/json')
+        response = self.client.post(url, data=json.dumps(data), content_type='application/json', **self.headers_2)
         assert response.status_code == 200
 
-    def test_fail_add_follow_no_id(self):
+    def test_fail_add_follow_no_token(self):
         url  = reverse('follow')
         data = {
             'follow_id' : 2
-        }
-        response = self.client.post(url, data=json.dumps(data), content_type='application/json')
-        assert response.status_code == 400
-        assert json.loads(response.content)['message'] == 'KEY_ERROR'
-    
-    def test_fail_add_follow_no_follow_id(self):
-        url  = reverse('follow')
-        data = {
-            'user_id' : 1
-        }
-        response = self.client.post(url, data=json.dumps(data), content_type='application/json')
-        assert response.status_code == 400
-        assert json.loads(response.content)['message'] == 'KEY_ERROR'
-
-    def test_fail_add_follow_wrong_id(self):
-        url  = reverse('follow')
-        data = {
-            'user_id' : 5,
-            'follow_id' : 1
         }
         response = self.client.post(url, data=json.dumps(data), content_type='application/json')
         assert response.status_code == 401
@@ -314,51 +306,38 @@ class TestFollow(TransactionTestCase):
     def test_fail_add_follow_wrong_follow_id(self):
         url  = reverse('follow')
         data = {
-            'user_id' : 1,
             'follow_id' : 5
         }
-        response = self.client.post(url, data=json.dumps(data), content_type='application/json')
+        response = self.client.post(url, data=json.dumps(data), content_type='application/json', **self.headers_1)
         assert response.status_code == 401
         assert json.loads(response.content)['message'] == 'INVALID_USER'
 
     def test_fail_add_follow_already_following(self):
-        url = reverse('follow')
+        url         = reverse('follow')
         create_data = {
-            'user_id' : 1,
             'follow_id' : 2
         }
-        response = self.client.post(url, data=json.dumps(create_data), content_type='application/json')
+        response = self.client.post(url, data=json.dumps(create_data), content_type='application/json', **self.headers_1)
         assert response.status_code == 200
 
-        url = reverse('follow')
+        url       = reverse('follow')
         fail_data = {
-            'user_id' : 1,
             'follow_id' : 2
         }
-        response = self.client.post(url, data=json.dumps(fail_data), content_type='application/json')
+        response = self.client.post(url, data=json.dumps(fail_data), content_type='application/json', **self.headers_1)
         assert response.status_code == 400
         assert json.loads(response.content)['message'] == 'THIS_USER_ALREADY_FOLLOING'
 
     def test_delete_follow(self):
-        url = reverse('follow')
-        data = {
-            'user_id' : 1,
-            'follow_id' : 2
-        }
-        response = self.client.post(url, data=json.dumps(data), content_type='application/json')
-        assert response.status_code == 200
-        
-        response = self.client.delete(url, data=json.dumps(data), content_type='application/json')
-        assert response.status_code == 204
-
-    def test_fail_delete_follow_no_follow_id(self):
         url  = reverse('follow')
         data = {
-            'user_id' : 1
+            'follow_id' : 2
         }
-        response = self.client.delete(url, data=json.dumps(data), content_type='application/json')
-        assert response.status_code == 400
-        assert json.loads(response.content)['message'] == 'KEY_ERROR'
+        response = self.client.post(url, data=json.dumps(data), content_type='application/json', **self.headers_1)
+        assert response.status_code == 200
+        
+        response = self.client.delete(url, data=json.dumps(data), content_type='application/json', **self.headers_1)
+        assert response.status_code == 200
 
     def test_fail_delete_follow_no_id(self):
         url  = reverse('follow')
@@ -366,35 +345,24 @@ class TestFollow(TransactionTestCase):
             'follow_id' : 2
         }
         response = self.client.delete(url, data=json.dumps(data), content_type='application/json')
-        assert response.status_code == 400
-        assert json.loads(response.content)['message'] == 'KEY_ERROR'
-
-    def test_fail_delete_follow_wrong_id(self):
-        url  = reverse('follow')
-        data = {
-            'user_id' : 5,
-            'follow_id' :2
-        }
-        response = self.client.delete(url, data=json.dumps(data), content_type='application/json')
         assert response.status_code == 401
         assert json.loads(response.content)['message'] == 'INVALID_USER'
+
     def test_fail_delete_follow_wrong_follow_id(self):
         url  = reverse('follow')
         data = {
-            'user_id' : 1,
             'follow_id' : 100
         }
-        response = self.client.delete(url, data=json.dumps(data), content_type='application/json')
+        response = self.client.delete(url, data=json.dumps(data), content_type='application/json', **self.headers_1)
         assert response.status_code == 401
         assert json.loads(response.content)['message'] == 'INVALID_USER'
 
     def test_fail_delete_follow_not_follow(self):
         url  = reverse('follow')
         data = {
-            'user_id' : 1,
             'follow_id' : 2
         }
-        response = self.client.delete(url, json.dumps(data), content_type='application/json')
+        response = self.client.delete(url, json.dumps(data), content_type='application/json', **self.headers_1)
         assert response.status_code == 404
         assert json.loads(response.content)['message'] == 'USER_NOT_FOLLOWED'
 
