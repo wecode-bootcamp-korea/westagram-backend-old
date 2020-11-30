@@ -4,6 +4,8 @@
 
 my_settings.py
 my_db_settings.py
+.idea
+.vscode
 ### Django ###
 *.log
 *.pot
