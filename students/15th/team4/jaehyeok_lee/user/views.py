@@ -15,10 +15,10 @@ class SignUp(View):
     def post(self, request):
         data = json.loads(request.body)
         print(data) 
-        data_email = data['email']
-        data_name = data['name']
+        data_email       = data['email']
+        data_name        = data['name']
         data_phonenumber = data['phonenumber']
-        data_password = data['password']
+        data_password    = data['password']
         
         account_type_list = [data_email, data_name, data_phonenumber]
 
@@ -43,10 +43,10 @@ class SignUp(View):
 
 class SignIn(View):
     def get(self, request):
-        users = User.objects.all()
-        data = json.loads(request.body)
+        users         = User.objects.all()
+        data          = json.loads(request.body)
 
-        data_account = data['account']
+        data_account  = data['account']
         data_password = data['password']
         
         if not (data_account and data_password):
