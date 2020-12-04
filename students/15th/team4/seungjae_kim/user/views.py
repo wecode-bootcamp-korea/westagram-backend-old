@@ -18,6 +18,8 @@ class UserView(View):
      
         data = json.loads(request.body)
         
+        # 나중에 프론트엔드 분이랑 협의해서 각 에러별로 상수값 지정하기 !
+        # Error_code 3 이런식으로만 Message 보내기로 하
         try:
             
             assert is_valid(data['email'],email_regex), "INVALID_EMAIL_FORMAT"
@@ -30,13 +32,29 @@ class UserView(View):
                 Users.objects.create(email = data["email"],password = data["password"])   
              
                 # restapi 시점에서 201은 생성을 의미 !
-                return HttpResponse(status =201)
+                return JsonResponse({"MESSAGE" : "SUCCESS"},status =201)
 
         except KeyError:
-            return JsonResponse({'message': "INVALID_KEY"},status=400)
+            return JsonResponse({'MESSAGE': "INVALID_KEY"},status=400)
         
         except AssertionError as e:
-            return JsonResponse({"MESSAGE": f"{e} " + data['email'] + data['password']}, status = 400)
+            return JsonResponse({"MESSAGE": f"{e}"}, status = 400)
 
 
+class SigninView(View):
 
+    def post(self, request):
+
+        data = json.loads(request.body)
+        
+        try:
+
+            Users.objects.get(email = data['email'],password =data['password'])
+            # 세션시작
+            return JsonResponse({'MESSAGE': "SUCCESS"},status=200)
+
+        except KeyError:
+            return JsonResponse({'MESSAGE': "INVALID_KEY"},status=400)
+
+        except Users.DoesNotExist:
+            return JsonResponse({'MESSAGE': "INVALID_USER"},status=401)
