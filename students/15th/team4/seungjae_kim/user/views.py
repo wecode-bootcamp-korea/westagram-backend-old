@@ -35,7 +35,7 @@ class UserView(View):
                 return JsonResponse({"MESSAGE" : "SUCCESS"},status =201)
 
         except KeyError:
-            return JsonResponse({'MESSAGE': "INVALID_KEY"},status=400)
+            return JsonResponse({'MESSAGE': "KEY_ERROR"},status=400)
         
         except AssertionError as e:
             return JsonResponse({"MESSAGE": f"{e}"}, status = 400)
@@ -54,7 +54,7 @@ class SigninView(View):
             return JsonResponse({'MESSAGE': "SUCCESS"},status=200)
 
         except KeyError:
-            return JsonResponse({'MESSAGE': "INVALID_KEY"},status=400)
+            return JsonResponse({'MESSAGE': "KEY_ERROR"},status=400)
 
         except Users.DoesNotExist:
             return JsonResponse({'MESSAGE': "INVALID_USER"},status=401)

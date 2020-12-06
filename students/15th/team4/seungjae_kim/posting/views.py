@@ -1,9 +1,9 @@
 import json
 
-from django.http    import JsonResponse
+from django.http    import JsonResponse,HttpResponse
 from django.views   import View
 from django.core    import serializers
-from posting.models import Posts
+from posting.models import Posts,Comments
 from user.models    import Users
 
 class PostsView(View):
@@ -21,7 +21,7 @@ class PostsView(View):
             return JsonResponse({"MESSAGE" : "SUCCESS"}, status = 201)
         except KeyError:
 
-            return JsonResponse({"MESSAGE" : "INVALID_KEY_INPUT"}, status = 400)
+            return JsonResponse({"MESSAGE" : "KEY_ERROR"}, status = 400)
         
         except Users.DoesNotExist:
             return JsonResponse({"MESSAGE" : "INVALID_USER"}, status = 400)
@@ -40,3 +40,31 @@ class Posts_ListView(View):
 
             return JsonResponse({'MESSAGE': "POST_NOT_FOUND"}, status = 404)
 
+
+class CommentsView(View):
+
+    def post(self, request):
+
+        try: 
+
+            data = json.loads(request.body)
+            Comments.objects.create(
+                author = Users.objects.get(email = data['author']),
+                content = data['content'],
+                post = Posts.objects.get(id = data['post'])
+            )
+
+            return HttpResponse(status=200)
+    
+        except KeyError:
+            return JsonResponse({"MESSAGE" : "KEY_ERROR"}, status = 400)
+        
+        except Users.DoesNotExist:
+            return JsonResponse({"MESSAGE" : "INVALID_USER"}, status = 400)
+        
+        except Posts.DoesNotExist:           
+            return JsonResponse({"MESSAGE" : "POST_NOT_FOUND"}, status = 404)
+    
+    def get(self, request):
+        comments_data = Comments.objects.values()
+        return JsonResponse({"comments":list(comments_data)}, status=200)

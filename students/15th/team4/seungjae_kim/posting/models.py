@@ -11,4 +11,15 @@ class Posts(models.Model):
     class Meta:
         db_table = "Posts"
 
-    
+class Comments(models.Model):
+
+    author = models.ForeignKey(Users, on_delete = models.CASCADE)
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add = True)
+    post = models.ForeignKey(Posts, on_delete = models.CASCADE)
+
+    class Meta:
+
+        db_table = "Comments"
+
+
