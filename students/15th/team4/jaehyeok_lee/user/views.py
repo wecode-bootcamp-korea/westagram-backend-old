@@ -10,11 +10,12 @@ validation = {'email':'([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+(\.[a-zA-Z]{2,4}))',
               'phonenumber':'/01[01789]\d{3,4}\d{4}/'
              }
 
+
 class SignUp(View):
 
     def post(self, request):
         data = json.loads(request.body)
-        print(data) 
+        
         data_email       = data['email']
         data_name        = data['name']
         data_phonenumber = data['phonenumber']
@@ -40,9 +41,8 @@ class SignUp(View):
                     break
         return JsonResponse({"message": "SUCCESS"}, status = 201)
 
-
 class SignIn(View):
-    def get(self, request):
+    def post(self, request):
         users         = User.objects.all()
         data          = json.loads(request.body)
 
