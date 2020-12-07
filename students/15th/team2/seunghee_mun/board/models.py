@@ -13,5 +13,13 @@ class Board(models.Model):
     class Meta:
         db_table = 'boards'
 
+class Comment(models.Model):
+    board_title = models.ForeignKey(Board, on_delete=models.CASCADE)
+    comment_user = models.ForeignKey(User, on_delete=models.CASCADE)
+    comment_tiem = models.DateTimeField(default=timezone.now)
+    comment_body = models.CharField(max_length=100)
+
+    class Meta:
+        db_table = 'comments'
 
 # Create your models here.
