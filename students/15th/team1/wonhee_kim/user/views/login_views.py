@@ -69,7 +69,7 @@ class LogInView(View):
             'user_id': user_id,
             'exp'    : datetime.utcnow() + timedelta(seconds  =60 * 60 * 24)
         }
-        token = jwt.encode(payload, my_settings.SECRET_KEY, "HS256")
+        token = jwt.encode(payload, my_settings.SECRET_KEY, algorithm=my_settings.encryption_algorithm)
         print("================= 로그인 정상 종료 =================")
         return JsonResponse({'MESSAGE'     : 'SUCCESS',
                              'ACCESS_TOKEN': token.decode('UTF-8')
