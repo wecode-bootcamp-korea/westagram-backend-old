@@ -1,5 +1,7 @@
 import json
 import re
+import bcrypt
+import jwt
 
 from django.http import JsonResponse
 from django.views import View
@@ -46,7 +48,7 @@ class UserView(View):
             else:
                 user = User.objects.create(
                     username     = username,
-                    password     = password,
+                    password     = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode()
                 )
 
                 return JsonResponse({'MESSAGE' : 'SUCCESS'}, status=201)

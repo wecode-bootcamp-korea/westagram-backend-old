@@ -19,5 +19,6 @@ urlpatterns = [
     path('user', include('user.urls')),
     path('user_login', include('user_login.urls')),
     path('posting', include('posting.urls')),
+    path('comment', include('posting.urls')),
 ]
 
