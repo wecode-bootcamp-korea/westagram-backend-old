@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 
 from pathlib import Path
-from my_settings import DATABASES, SECRET_KEY
+from my_settings import DATABASES, SECRET_KEY, ALGORITHM
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -22,7 +22,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = SECRET_KEY
-
+ALGORITNM = ALGORITHM
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
@@ -81,6 +81,7 @@ WSGI_APPLICATION = 'westagram.wsgi.application' # 장고가 wsgi 규격에 맞�
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 
 DATABASES = DATABASES
+
 
 # Password validation
 # https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators
