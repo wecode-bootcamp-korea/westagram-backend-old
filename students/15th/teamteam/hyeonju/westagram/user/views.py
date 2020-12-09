@@ -4,7 +4,7 @@ import json
 import re
 from django.views import View
 from django.http import JsonResponse
-from .models import Signup
+from .models import Users
 
 # Create your views here.
 class SignupView(View):
@@ -27,13 +27,13 @@ class SignupView(View):
                     )
 
 
-            if Signup.objects.filter(email=data['email']).exists():
+            if Users.objects.filter(email=data['email']).exists():
                 return JsonResponse(
                     {"message":"USER_EXIST"}, status = 400
                     )
 
             else:
-                Signup.objects.create(
+                Users.objects.create(
                     email = data['email'],
                     password = data['password']
                     )
@@ -42,3 +42,19 @@ class SignupView(View):
         except KeyError:
             return JsonResponse({"message":"KEY_ERROR"}, status = 400)
 
+class SigninView(View):
+    def post(self, request):
+        data = json.loads(request.body)
+
+        try:
+            Users.objects.get(
+                email = data['email'], 
+                password = data['password']
+            )
+            return JsonResponse({"message":"SUCCESS"}, status = 200)
+            
+        except KeyError:
+            return JsonResponse({"message":"KEY_ERROR"}, status = 400)
+
+        except Users.DoesNotExist:
+            return JsonResponse({"message":"INVALID_USER"}, status = 401)
