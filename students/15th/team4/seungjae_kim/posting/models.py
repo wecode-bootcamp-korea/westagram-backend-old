@@ -4,9 +4,10 @@ from user.models import Users
 class Posts(models.Model):
 
     title      = models.CharField(max_length=100)
-    author     = models.ForeignKey(Users,on_delete =models.CASCADE)
+    author     = models.ForeignKey(Users,on_delete =models.CASCADE, related_name = "author")
     created_at = models.DateTimeField(auto_now_add =True)
     image_url  = models.URLField(max_length=2000)
+    likes      = models.ManyToManyField(Users, related_name = "likers")
 
     class Meta:
         db_table = "Posts"
@@ -21,5 +22,13 @@ class Comments(models.Model):
     class Meta:
 
         db_table = "Comments"
+'''
+class Likes(models.Model):
+    
+    user = models.ForeignKey(Users, on_delete=models.CASCADE)
+    post = models.ForeignKey(Posts, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
 
-
+    class Meata:
+        db_table = "Likes"
+'''

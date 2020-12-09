@@ -6,14 +6,16 @@ from django.core    import serializers
 from posting.models import Posts,Comments
 from user.models    import Users
 
-class PostsView(View):
+from user.utils     import LoginConfirm
 
+class PostsView(View):
+    @LoginConfirm
     def post(self, request):
         
         data = json.loads(request.body)
         
         try :
-            user = Users.objects.get(email = data['user'])
+            user = request.user
             post_item = Posts.objects.create(author = user, 
                                              title = data["title"],
                                              image_url = data["image_url"]
@@ -40,16 +42,16 @@ class PostsView(View):
 
 
 class CommentsView(View):
-
-    def post(self, request):
+    @LoginConfirm
+    def post(self, request,posting_pk):
 
         try: 
 
             data = json.loads(request.body)
             Comments.objects.create(
-                author  = Users.objects.get(email = data['author']),
+                author  = request.user,
                 content = data['content'],
-                post    = Posts.objects.get(id = data['post'])
+                post    = Posts.objects.get(id = posting_pk)
             )
 
             return JsonResponse({"MESSAGE": "SUCCESS"},status=201)
@@ -68,7 +70,22 @@ class CommentsView(View):
         if posting_pk == "":
             comments_data = Comments.objects.values()
         else:
-            comments_data = Comments.objects.filter(post=int(slug)).values()
+            comments_data = Comments.objects.filter(post=int(posting_pk)).values()
 
         
         return JsonResponse({"Comments":list(comments_data)}, status=200)
+
+class LikesView(View):
+    @LoginConfirm
+    def post(self, request, posting_pk):
+        try:
+
+            Posts.objects.get(id = posting_pk).likes.add(request.user)
+
+            return JsonResponse({"MESSAGE":"SUCCESS"},status = 201)
+        except Posts.DoesNotExist:
+            
+            return JsonResponse({"MESSAGE":"POSTS_NOT_FOUND"},status=400)
+
+
+
