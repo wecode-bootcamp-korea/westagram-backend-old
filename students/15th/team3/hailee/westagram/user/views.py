@@ -1,4 +1,5 @@
 import json
+import re
 
 from django.http        import JsonResponse
 from django.views       import View
@@ -11,10 +12,15 @@ class Signup(View):
             data        = json.loads(request.body)
             if data.get('user_name') is not None:
                 if data.get('password') is not None:
-                    if User.objects.filter(user_name=data['user_name']) > 0:
-                        return JsonResponse({'message':'KEY_ERROR'}, status=400)
-                    if len(data.get('password')) < 5:
-                        return JsonResponse({'message':'KEY_ERROR'}, status=400)
+                    if User.objects.filter(user_name=data['user_name']).count() > 0:
+                        return JsonResponse({'message':'DUPLICATED_USERNAME'}, status=400)
+                    print(data.get('password'))
+                    print(data['password'])
+                    if re.search('[0-9]+', data['password']) is None:
+                        print('비밀번호 re test')
+                        return JsonResponse({'message':'TOO_SHORT_PW'}, status=400)
+                    # if len(data.get('password')) < 8:
+                    #     return JsonResponse({'message':'KEY_ERROR'}, status=400)
                     User.objects.create(
                         user_name   = data['user_name'],
                         password    = data['password']
@@ -34,11 +40,6 @@ class Signin(View):
         try:
             user_count = User.objects.filter(user_name=data['user_name']).count()
             signin_check = User.objects.get(user_name=data['user_name'])
-            print(user_count)
-            print(signin_check)
-            print(signin_check.user_name)
-            print(data['user_name'])
-            print(signin_check)
             if user_count == 1:
                 if signin_check.user_name == data['user_name'] and signin_check.password == data['password']:
                     return JsonResponse({'message':'SUCCESS'}, status=200)
