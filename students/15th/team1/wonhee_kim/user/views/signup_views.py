@@ -47,7 +47,7 @@ class SignUpView(View):
         elif nick_name_check:
             account_type = "nick_name"
         else:
-            return JsonResponse({"MESSAGE": "NO_ACCOUNT"}, status=400)
+            return JsonResponse({"MESSAGE": "INVALID_INPUT"}, status=400)
 
         # 3. Unique 이어야 하는 값들에 대한 중복 검사
         if account_type == "nick_name":

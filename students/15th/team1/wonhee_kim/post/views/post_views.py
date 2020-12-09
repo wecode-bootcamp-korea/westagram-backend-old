@@ -3,6 +3,7 @@ import json
 from django.http      import JsonResponse
 from django.views     import View
 from django.utils     import timezone
+from django.shortcuts import get_object_or_404
 
 from post.models  import Post
 from user.utils   import login_required
@@ -44,6 +45,7 @@ class ReadPostView(View):
     @login_required
     def get(self, request):
         print("================= 포스트 출력 절차 기동 =================")
+
         post_list_dict = {}
         post_list      = Post.objects.all()
         for post in post_list:
@@ -57,3 +59,28 @@ class ReadPostView(View):
         return JsonResponse({'MESSAGE'  : 'SUCCESS',
                              'POST_LIST': post_list_dict},
                             status=200)
+
+
+class ReadPostDetailView(View):
+    @login_required
+    def get(self, request, post_id):
+        print("================= 포스트 출력 절차 기동 =================")
+
+        post = get_object_or_404(Post, id=post_id)
+        post_dict = {f'{post.id}': {'user_nick_name': f'{post.user.nick_name}',
+                                    'content'       : f'{post.content}',
+                                    'image_url'     : f'{post.image_url}',
+                                    'likes'         : f'{post.liker.count()}',
+                                    'created_at'    : f'{post.created_at}',
+                                    }}
+
+        print("================= 포스트 출력 정상 종료 =================")
+        return JsonResponse({'MESSAGE': 'SUCCESS',
+                             'POST_LIST': post_dict},
+                            status=200)
+
+
+
+
+
+

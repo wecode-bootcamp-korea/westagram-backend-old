@@ -1,12 +1,26 @@
 from django.urls import path
 
-from .views import post_views, comment_views, like_views
+from .views.post_views        import CreatePostView, ReadPostView, ReadPostDetailView
+from .views.comment_views     import CreateCommentView, ReadCommentView
+from .views.like_views        import LikeView
 
 
 urlpatterns = [
-    path('/create/post', post_views.CreatePostView.as_view()),
-    path('/read/post', post_views.ReadPostView.as_view()),
-    path('/create/comment', comment_views.CreateCommentView.as_view()),
-    path('/read/comment', comment_views.ReadCommentView.as_view()),
-    path('/like', like_views.LikeView.as_view()),
+    # base
+    path('', ReadPostView.as_view()),
+    path('/<int:post_id>', ReadPostDetailView.as_view()),
+    path('/post/create', CreatePostView.as_view()),
+
+    # comment
+    path('/comment/create/<int:post_id>', CreateCommentView.as_view()),
+    path('/comment/read/<int:post_id>', ReadCommentView.as_view()),
+
+    # like
+    path('/like/<int:post_id>', LikeView.as_view()),
 ]
+
+
+
+
+
+

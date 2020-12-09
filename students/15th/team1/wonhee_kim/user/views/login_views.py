@@ -44,7 +44,7 @@ class LogInView(View):
         elif nick_name_check:
             account_type = "nick_name"
         else:
-            return JsonResponse({"MESSAGE": "INVALID_ACCOUNT"}, status=400)
+            return JsonResponse({"MESSAGE": "INVALID_INPUT"}, status=400)
 
         # 3. 계정이 존재하는지 검사
         try:
@@ -56,12 +56,12 @@ class LogInView(View):
                 account = User.objects.get(phone_number=account)
         except Exception as e:
             print(f'e: {e}')
-            return JsonResponse({'MESSAGE': 'INVALID_ACCOUNT'}, status=401)
+            return JsonResponse({'MESSAGE': 'INVALID_INPUT'}, status=401)
 
         # 4. 계정에 대한 패스워드가 일치하는지 검사
         password_check = bcrypt.checkpw(password.encode('UTF-8'), account.hashed_password.encode('UTF-8'))
         if not password_check:
-            return JsonResponse({'MESSAGE': 'INVALID_PASSWORD'}, status=401)
+            return JsonResponse({'MESSAGE': 'INVALID_INPUT'}, status=401)
 
         # 5. 모든 조건 통과하면 토큰(24시간 동안 유효) 발급하여 로그인 처리
         user_id = account.id
