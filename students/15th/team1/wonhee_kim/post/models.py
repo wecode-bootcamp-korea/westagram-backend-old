@@ -12,6 +12,7 @@ class Post(models.Model):
 	created_at = models.DateTimeField(auto_now_add=True)
 	image_url  = models.CharField(null=True, max_length=2000)
 	update_at  = models.DateTimeField(null=True)
+	liker      = models.ManyToManyField(User, related_name='liker_post')
 
 	class Meta:
 		db_table = 'posts'

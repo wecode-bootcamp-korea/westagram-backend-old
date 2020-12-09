@@ -50,6 +50,7 @@ class ReadPostView(View):
             post_list_dict[f'{post.id}'] = {'user_nick_name': f'{post.user.nick_name}',
                                             'content'       : f'{post.content}',
                                             'image_url'     : f'{post.image_url}',
+                                            'likes'         : f'{post.liker.count()}',
                                             'created_at'    : f'{post.created_at}',
                                             }
         print("================= 포스트 출력 정상 종료 =================")
