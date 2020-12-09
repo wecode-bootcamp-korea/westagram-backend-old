@@ -1,6 +1,6 @@
 import json
 
-from django.http    import JsonResponse,HttpResponse
+from django.http    import JsonResponse
 from django.views   import View
 from django.core    import serializers
 from posting.models import Posts,Comments
@@ -52,7 +52,7 @@ class CommentsView(View):
                 post    = Posts.objects.get(id = data['post'])
             )
 
-            return HttpResponse(status=200)
+            return JsonResponse({"MESSAGE": "SUCCESS"},status=201)
     
         except KeyError:
             return JsonResponse({"MESSAGE" : "KEY_ERROR"}, status = 400)
@@ -63,12 +63,12 @@ class CommentsView(View):
         except Posts.DoesNotExist:           
             return JsonResponse({"MESSAGE" : "POST_NOT_FOUND"}, status = 404)
     
-    def get(self, request,slug):
+    def get(self, request,posting_pk):
         
-        if slug == "all":
+        if posting_pk == "":
             comments_data = Comments.objects.values()
-        elif slug.isdigit():
+        else:
             comments_data = Comments.objects.filter(post=int(slug)).values()
 
         
-        return JsonResponse({"comments":list(comments_data)}, status=200)
+        return JsonResponse({"Comments":list(comments_data)}, status=200)

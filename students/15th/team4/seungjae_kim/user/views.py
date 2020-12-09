@@ -1,9 +1,12 @@
 import json
 import re
+import bcrypt
+import jwt
 
 from django.http  import JsonResponse, HttpResponse
 from django.views import View
 from user.models  import Users
+from my_settings  import SECRET_KEY
 
 def is_valid(text, regex):
 
@@ -25,11 +28,14 @@ class UserView(View):
             assert is_valid(data['email'],email_regex), "INVALID_EMAIL_FORMAT"
             assert is_valid(data['password'],pw_regex), "INVALID_PW_FORMAT"
 
+            hased_password = bcrypt.hashpw(data['password'].encode('utf-8'), bcrypt.gensalt())
+            
+
             if Users.objects.filter(email = data['email']): 
                 return JsonResponse({"MESSAGE" : "USER_ALREADY_EXISTS"},status = 400)
                 
             else:
-                Users.objects.create(email = data["email"],password = data["password"])   
+                Users.objects.create(email = data["email"],password=hased_password.decode())   
              
                 # restapi 시점에서 201은 생성을 의미 !
                 return JsonResponse({"MESSAGE" : "SUCCESS"},status =201)
@@ -46,15 +52,18 @@ class SigninView(View):
     def post(self, request):
 
         data = json.loads(request.body)
-        
-        try:
 
-            Users.objects.get(email = data['email'],password =data['password'])
-            # 세션시작
-            return JsonResponse({'MESSAGE': "SUCCESS"},status=200)
+        try:
+            user = Users.objects.get(email = data['email'])
+            
+            assert bcrypt.checkpw(data['password'].encode(), user.password.encode())
+            
+            access_token = jwt.encode({"id":user.id}, SECRET_KEY, algorithm='HS256')
+            
+            return JsonResponse({'MESSAGE': "SUCCESS","TOKEN": access_token.decode()},status=200)
 
         except KeyError:
             return JsonResponse({'MESSAGE': "KEY_ERROR"},status=400)
 
-        except Users.DoesNotExist:
+        except Users.DoesNotExist and AssertionError:
             return JsonResponse({'MESSAGE': "INVALID_USER"},status=401)
