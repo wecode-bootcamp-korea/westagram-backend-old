@@ -45,7 +45,7 @@ class ReadPostView(View):
     def get(self, request):
         print("================= 포스트 출력 절차 기동 =================")
         post_list_dict = {}
-        post_list      = Post.objects.order_by('created_at')
+        post_list      = Post.objects.all()
         for post in post_list:
             post_list_dict[f'{post.id}'] = {'user_nick_name': f'{post.user.nick_name}',
                                             'content'       : f'{post.content}',
