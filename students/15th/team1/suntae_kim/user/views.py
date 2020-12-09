@@ -7,22 +7,18 @@ from django.http import JsonResponse
 from django.views import View
 
 from user.models import User
+from user.utils import LoginAuthorization
 
 
 # Create your views here.
 
-class UserView(View):
-
+class SignUpView(View):
 # 회원가입 로직 작성필요
     def post(self, request):
         try:
-            data = json.loads(request.body)
-
-            # 기본 변수 선언
-#            mobile_email = data['mobile_email']
-#            fullname     = data['fullname']
-            username     = data['username']
-            password     = data['password']
+            data     = json.loads(request.body)
+            username = data['username']
+            password = data['password']
 
             # 정규 표현식
             username_expression = "^[A-Za-z0-9_]*$"
@@ -32,7 +28,6 @@ class UserView(View):
 
             #  username check and validation
             if (not re.match(email_expression,username) and not re.match(mobile_expression, username)) and not re.match(username_expression, username):
-
                 return JsonResponse({'MESSAGE' : 'USERNAME_ERROR'})
 
             # password validation
@@ -44,22 +39,26 @@ class UserView(View):
             elif User.objects.filter(username = username).count() >= 1:
                 return JsonResponse({'MESSAGE' : 'ACCOUNT_ERROR'})
 
-            # 위의 모든 경우가 괜찮은 경우 데이터 베이스 생성
+                    # 위의 모든 경우가 괜찮은 경우 데이터 베이스 생성
             else:
                 user = User.objects.create(
                     username     = username,
                     password     = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode()
                 )
-
                 return JsonResponse({'MESSAGE' : 'SUCCESS'}, status=201)
 
         except KeyError:
             return JsonResponse({'MESSAGE' : 'KEY_ERROR'}, status=400)
-"""
-class UserLogin(View):
-    def login(self, request):
+
+
+class SignInView(View):
+
+    @LoginAuthorization
+    def post(self, request):
         try:
-            return JsonResponse({'MESSAGE' : 'SUCCESS'})
+            data     = json.loads(request.body)
+            username = data['username']
+            password = data['password']
+
         except KeyError:
             return JsonResponse({'MESSAGE' : 'KEY_ERROR'})
-"""

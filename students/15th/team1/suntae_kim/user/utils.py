@@ -7,7 +7,6 @@ import bcrypt
 from user.models import User
 from django.http import JsonResponse
 
-import user_login
 from my_settings import SECRET_KEY
 
 def LoginAuthorization(func):
@@ -26,7 +25,7 @@ def LoginAuthorization(func):
 
             if bcrypt.checkpw(password, hashed_password):
                 access_token = jwt.encode({'id' : user_id}, SECRET_KEY, algorithm = 'HS256').decode('utf-8')
-                return JsonResponse({'Error' : hashed_password.decode('utf-8')})
+                return JsonResponse({'MESSAGE' : hashed_password.decode('utf-8')})
             else:
                 return JsonResponse({'MESSAGE' : 'ERROR'})
         except:
