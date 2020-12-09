@@ -1,7 +1,15 @@
 asgiref==3.3.1
 certifi==2020.11.8
+chardet==3.0.4
 Django==3.1.4
 django-cors-headers==3.5.0
+httpie==2.3.0
+idna==2.10
 mysqlclient==2.0.1
+Pygments==2.7.2
+PySocks==1.7.1
 pytz==2020.4
+requests==2.25.0
+requests-toolbelt==0.9.1
 sqlparse==0.4.1
+urllib3==1.26.2
