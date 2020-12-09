@@ -5,14 +5,16 @@ from django.views import View
 
 from post.models import Post, Comment
 from user.models import User
+from user.utils  import id_auth
 
 
-class Upload(View):
+class PostingView(View):
+    @id_auth
     def post(self, request):
         data = json.loads(request.body)
         
         try:
-            data_writer  = User.objects.get(account = data['writer'])
+            data_writer  = request.user 
             data_img_url = data['img']
             data_content = data['content']
 
@@ -22,9 +24,6 @@ class Upload(View):
         except KeyError:
             return JsonResponse({"message": "KEY_ERROR"}, status = 400)
         
-
-
-class Load(View):
     def get(self, request):
         posts    = Post.objects.all()
         user_get = User.objects.get
@@ -33,31 +32,33 @@ class Load(View):
             results.append(
                 {
                     "id"      : post.id,
-                    "writer"  : user_view(id=post.writer_id).account,
+                    "writer"  : user_get(id=post.writer_id).account,
                     "content" : post.content,
-                    "datetime": post.date,
+                    "datetime": post.datetime,
                     "img"     : post.img_url,
                 }
             )
         return JsonResponse({"result": results}, status = 200)
 
 
-class WriteComment(View):
+class CommentView(View):
+    @id_auth
     def post(self, request):
         data = json.loads(request.body)
-
+        
+        data_writer  = request.user
         data_post    = Post.objects.get(id = data['post_id'])
-        data_writer  = User.objects.get(account = data['writer'])
         data_content = data['content']
 
         Comment.objects.create(post = data_post, writer = data_writer, content = data_content)
         return JsonResponse({"message": "SUCCESS"}, status = 200)
 
-
-class ReadComment(View):
     def get(self, request):
         data     = json.loads(request.body)
-        comments = Comment.objects.filter(post_id = data['post_id'])
+        if data['post_id']:
+            comments = Comment.objects.filter(post_id = data['post_id'])
+        else:
+            comments = Comment.objects.all()
         
         results= []
         for comment in comments:

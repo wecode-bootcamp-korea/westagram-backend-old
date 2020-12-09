@@ -20,25 +20,25 @@ class SignUp(View):
     def post(self, request):
         data = json.loads(request.body)
         
-        data_email       = data['email']
-        data_name        = data['name']
-        data_phonenumber = data['phonenumber']
-        data_password    = data['password']
-        
-        account_type_list = [data_email, data_name, data_phonenumber]
+        try:
+            data_email       = data['account']
+            data_name        = ''
+            data_phonenumber = ''
+            data_password    = data['password']
+            
+            assert re.match(validation['email'], data_email), "INVALID_EMAIL_FORMAT"
+            assert re.match(validation['password'], data_password), "INVALID_PASSWORD_FORMAT"
 
-        if not ((data_email or data_name or data_phonenumber) and data_password):
-            return JsonResponse({"message": "KEY_ERROR"}, status = 400)
-       
-        if data_email and not re.match(validation['email'], data_email):
-            return JsonResponse({"message": "EMAIL_INVALIDATION"}, status = 400)
-
-        if not re.match(validation['password'], data_password):
-            return JsonResponse({"message": "PASSWORD_INVALIDATION"}, status = 400)
-        else:
             hashed_password = bcrypt.hashpw(data_password.encode('utf-8'), bcrypt.gensalt()).decode()
 
+        except KeyError:
+            return JsonResponse({"message": "KEY_ERROR"}, status = 400)
 
+        except AssertionError as e:
+            return JsonResponse({"message": f"{e}"}, status = 400)
+
+        account_type_list = [data_email, data_name, data_phonenumber]
+ 
         for account_type_checker in account_type_list:
             if account_type_checker:
                 if User.objects.filter(account = account_type_checker).exists():
@@ -52,13 +52,14 @@ class SignIn(View):
     def post(self, request):
         users         = User.objects.all()
         data          = json.loads(request.body)
+        
+        try:
+            data_account  = data['account']
+            data_password = data['password']
 
-        data_account  = data['account']
-        data_password = data['password']
-        
-        if not (data_account and data_password):
+        except KeyError:
             return JsonResponse({"message": "KEY_ERROR"}, status = 400)
-        
+ 
         try:
             signin_user = User.objects.get(account = data_account)
         except:
@@ -66,8 +67,7 @@ class SignIn(View):
         
         if bcrypt.checkpw(data_password.encode('utf-8'), signin_user.password.encode('utf-8')):
             access_token = jwt.encode({'user_id': signin_user.id}, SECRET_KEY, algorithm = 'HS256')
-            #return JsonResponse({"message": "SUCCESS"}, status = 200)
-            return JsonResponse({"access_token": access_token.decode('utf-8')}, status = 200)
+            return JsonResponse({"message": "SUCCESS", "Authorization": access_token.decode('utf-8')}, status = 200)
         else:
             return JsonResponse({"message": "INVALID_USER"}, status = 401)
 
