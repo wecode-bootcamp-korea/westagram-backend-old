@@ -14,13 +14,8 @@ class Signup(View):
                 if data.get('password') is not None:
                     if User.objects.filter(user_name=data['user_name']).count() > 0:
                         return JsonResponse({'message':'DUPLICATED_USERNAME'}, status=400)
-                    print(data.get('password'))
-                    print(data['password'])
                     if re.search('[0-9]+', data['password']) is None:
-                        print('비밀번호 re test')
                         return JsonResponse({'message':'TOO_SHORT_PW'}, status=400)
-                    # if len(data.get('password')) < 8:
-                    #     return JsonResponse({'message':'KEY_ERROR'}, status=400)
                     User.objects.create(
                         user_name   = data['user_name'],
                         password    = data['password']
