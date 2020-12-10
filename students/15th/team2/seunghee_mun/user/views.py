@@ -8,48 +8,26 @@ from my_settings import SECRET_KEY, ALGORITHM
 
 class UserView(View):
     def post(self, request):
-        data = json.loads(request.body)
+        data       = json.loads(request.body)
         user_email = '^([a-z0-9_\.-]+)@([\da-z\.-]+)\.([a-z\.]{3})$'
-        user_HP = '^[0-9]{3}-[0-9]{4}-[0-9]{4}$'
-        user_id = '^[a-z0-9_-]{2,10}$'
-        password = '^\w{8, 15}$'
+        user_HP    = '^[0-9]{3}-[0-9]{4}-[0-9]{4}$'
+        user_id    = '^[a-z0-9_-]{2,10}$'
+        password   = '^\w{8, 15}$'
 
         try:
             input_name = data['name']
-            input_pw = data['password']
+            input_pw   = data['password']
         except:
             return JsonResponse({"message": "KEY_ERROR"}, status=400)
 
-        print('==================== Key Check ======================')
         # Key val
-        print(re.match(user_email, data['name']))
-        print(re.match(user_HP, data['name']))
-        print(re.match(user_id, data['name']))
-        print(re.match(password, data['password']))
-
         if not re.match(user_email, data['name']) and not re.match(user_HP, data['name']) and not re.match(user_id, data['name']):
             return JsonResponse({"message": "KEY_ERROR"}, status=400)
-        print('==================== Key OK ======================')
-
-
         
-        #print('==================== Email Check ======================')
-        # Email val
-        # 
-        #if not re.match(user_email, data['name']) and not re.match(user_HP, data['name']):
-        #        return JsonResponse({"message": "EMAIL_ERROR"}, status=400)
-        
-        #print('==================== Email OK ======================')
-
-        
-        print('==================== PW Check ======================')
         # Password val
         if len(data['password']) < 8:
                 return JsonResponse({"message": "PW_ERROR"}, status=400)
-        print('====================   PW OK    ======================')
 
-
-        print('====================   OVERLAP Check  ======================')
         # hashed_pw
         hashed_pw = bcrypt.hashpw ( data['password'].encode('utf-8'), bcrypt.gensalt())
 
@@ -61,17 +39,20 @@ class UserView(View):
        
 class SigninView(View):
     def post(self, request):
-        get_data = json.loads(request.body)
+        get_data         = json.loads(request.body)
 
         # Key_error
-        try:
-            get_user_name = get_data['name']
-            get_password  = get_data['password']	
-        except:
+        get_user_name    = get_data['name']
+        get_password     = get_data['password']
+        if get_password == '' or '@' not in get_data['name'] or '.' not in get_data['name']:
             return JsonResponse ({'message': 'KEY_ERROR'}, status=400)
 
-        User_get = User.objects.get(user_name=get_data['name'])
- 
+
+        try:
+            User_get = User.objects.get(user_name=get_data['name'])
+        except:
+            return JsonResponse({"message": "INVALID_USER"}, status=401)
+
 
         # check_pw validation
         User_pw     = User_get.password
@@ -81,13 +62,5 @@ class SigninView(View):
             token     = jwt.encode({'user-id' : User_get.id}, SECRET_KEY, ALGORITHM)
             token_str = token.decode('utf-8')
             return JsonResponse({'TOKEN' : token_str}, status=201)
-        return JsonResponse({'MESSAGE' : 'PW_ERROR'}, status=400)
+        return JsonResponse({'MESSAGE' : 'PW_ERROR'}, status=400)        
 
-        # Invalid_user
-
-        if not User.objects.filter(user_name=get_data['name']) or not User.objects.filter(password=get_data['password']):
-            return JsonResponse({"message": "INVALID_USER"}, status=401)
-        return JsonResponse({'MESSAGE' : 'SUCCESS'}, status=201)	 
-
-		
-			
