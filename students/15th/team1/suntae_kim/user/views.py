@@ -7,7 +7,8 @@ from django.http import JsonResponse
 from django.views import View
 
 from user.models import User
-from user.utils import LoginAuthorization
+from my_settings import SECRET_KEY
+from user.utils  import LoginAuthorization
 
 
 class SignUpView(View):
@@ -29,7 +30,7 @@ class SignUpView(View):
             if not re.search(password_expression, password):
                 return JsonResponse({'MESSAGE' : 'USERNAME_OR_PASSWORD_ERROR'}, status=400)
 
-            if User.objects.get(username = username).count() >= 1:
+            if User.objects.filter(username = username).count() >= 1:
                 return JsonResponse({'MESSAGE' : 'ACCOUNT_ALREADY_EXIST'}, status=400)
 
             else:
@@ -39,18 +40,29 @@ class SignUpView(View):
                 )
                 return JsonResponse({'MESSAGE' : 'SUCCESS'}, status=201)
 
-        except KeyError:
-            return JsonResponse({'MESSAGE' : 'KEY_ERROR'}, status=400)
+        except Exception as e:
+            return JsonResponse({'MESSAGE' : e}, status=400)
 
 
 class SignInView(View):
-
-    @LoginAuthorization
     def post(self, request):
         try:
             data     = json.loads(request.body)
             username = data['username']
-            password = data['password']
+            password = data['password'].encode('utf-8')
+
+            user_info = User.objects.get( username = username )
+            user_id = user_info.id
+            user_password = user_info.password
+            hashed_password = user_password.encode( 'utf-8' )
+
+            if bcrypt.checkpw( password, hashed_password ):
+                access_token = jwt.encode(
+                    {
+                     'id'      : user_id,
+                     'username': username
+                    }, SECRET_KEY, algorithm = 'HS256').decode('utf-8')
+                return JsonResponse({'TOKEN' : access_token})
 
         except KeyError:
-            return JsonResponse({'MESSAGE' : 'KEY_ERROR'})
+            return JsonResponse({'ERROR' : 'ERROR'})
