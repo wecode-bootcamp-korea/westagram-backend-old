@@ -69,3 +69,30 @@ class ReadCommentView(View):
         return JsonResponse({'MESSAGE'     : 'SUCCESS',
                              'COMMENT_LIST': comment_list_dict
                              }, status=200)
+
+
+class DeleteCommentView(View):
+    # 1. 인증
+    @login_required
+    def get(self, request, comment_id):
+        print()
+        print("================= 댓글 삭제 절차 기동 =================")
+
+        # 2. 사용자가 작성한 comment 가 맞는지 확인
+        user_id = request.user_id
+        comment = Comment.objects.filter(id=comment_id, user_id=user_id)
+        if not comment.exists():
+            print("Error: COMMENT_NOT_FOUND_WITH_THIS_CONDITION")
+            return JsonResponse({'MESSAGE': 'COMMENT_NOT_FOUND_WITH_THIS_CONDITION'}, status=404)
+
+        # 3. DB 에서 게시물 데이터 삭제
+        try:
+            comment.delete()
+        except Exception as e:
+            print(f'Exception: {e}')
+            return JsonResponse({"MESSAGE": "COMMENT_CAN_NOT_BE_DELETED"}, status=500)
+
+        # 4. 모든 과정 통과 -> 201 리턴
+        print("================= 댓글 삭제 정상 종료 =================")
+        return JsonResponse({'MESSAGE': 'SUCCESS'}, status=200)
+
