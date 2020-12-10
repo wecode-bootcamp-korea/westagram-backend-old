@@ -5,71 +5,69 @@ from django.core.serializers import serialize
 from board.models            import Board, Comment
 from user.models             import User
 
-
 class BoardView(View):
     def post(self, request):
-        data = json.loads(request.body)
-        print(data)
-
-        # login_user validation
         try:
-            user_post = User.objects.get(user_name=data['user']).id
-        except:
-            return JsonResponse({'MESSAGE' : 'NOT_MEMBER'}, status=400)
-        
-        # info validation
-        try:
+            data = json.loads(request.body)
+            # info validation
             title     = data['board_name']
             body_text = data['contents']
             image_url = data['image']
-        except:
-            return JsonResponse({'MESSAGE' : 'NOT_ENOUGH_INFO'}, status=400)
+            
+            # login_user validation
+            user_post = User.objects.get(user_name=data['user']).id
 
-        # title validation
-        if not Board.objects.filter(name=data['board_name']).exists():
-                Board.objects.create(name=title, user_id=user_post, image=image_url, contents=body_text)
-                return JsonResponse ({'MESSAGE': 'SUCCESS'}, status=201)
-        return JsonResponse({'MESSAGE' : 'TITLE_OVERLAP'}, status=400)
+            # title validation
+            if Board.objects.filter(name=data['board_name']).exists():
+                raise ValueError
+            Board.objects.create(name=title, user_id=user_post, image_url=image_url, contents=body_text)
+            return JsonResponse ({'MESSAGE': 'SUCCESS'}, status=201)
+
+        except KeyError:
+            return JsonResponse({'MESSAGE' : 'NOT_ENOUGH_INFO'}, status=401)
         
+        except User.DoesNotExist:
+            return JsonResponse({'MESSAGE' : 'NOT_MEMBER'}, status=403)
+
+        except ValueError:
+            return JsonResponse({'MESSAGE' : 'TITLE_OVERLAP'}, status=403)
+
     def get(self, request):
         # empty_board validation
         try:
-            board_values = Board.objects.values().order_by('-id') # 최신데이터 먼저
-            get_data = json.loads(serialize('json', board_values))
+            board_values = Board.objects.all().order_by('-id')
+            get_data     = json.loads(serialize('json', board_values))
             return JsonResponse({'board' : get_data})
-        except:
+        except ValueError:
             return JsonResponse({'MESSAGE' : 'EMPTY_BOARD'}, status=400)
 
 class CommentView(View):
     def post(self, request):
-        data = json.loads(request.body)
-        
-        #login_user validation
         try:
+            data = json.loads(request.body)
+        #login_user validation
             user_comment = User.objects.get(user_name=data['user']).id
-        except:
-            return JsonResponse({'MESSAGE' : 'NOT_MEMBER'}, status=400)
 
         # board validation
-        try:
-            board_comment = Board.objects.get(name=data['board_title']).id
-        except:
-            return JsonResponse({'MESSAGE' : 'THERE ARE NO BOARD'}, status=400)
-
-        #comment validation
-        try:
-            body_comment = data['comment_body']
-            Comment.objects.create(board_title_id=board_comment, comment_user_id=user_comment, comment_body=body_comment)
+            board_comment                   = Board.objects.get(name=data['board_title']).id
+            body_comment                    = data['comment_body']
+            Comment.objects.create(board_id = board_comment, user_id=user_comment, body=body_comment)
             return JsonResponse({'MESSAGE': 'SUCCESS'}, status=201)
-        except:
-            return JsonResponse({'MESSAGE' : 'NOT_COMMNET'}, status=400)
+
+        except NameError:
+            return JsonResponse({'MESSAGE' : 'NO COMMENTS'}, status=400)
+        
+        except Board.DoesNotExist:
+            return JsonResponse({'MESSAGE' : 'THERE ARE NO BOARD'}, status=403)
+        
+        except User.DoesNotExist:
+            return JsonResponse({'MESSAGE' : 'NOT_MEMBER'}, status=401)
+
+        except KeyError:
+            return JsonResponse({'MESSAGE' : 'NO_INPUT_DATA'}, status=400)
 
     def get(self, request):
-        try:
-            first_board = Board.objects.first()
-            comment_values_first = Comment.objects.filter(board_title_id=first_board)
-            get_comment_first_data = json.loads(serialize('json', comment_values_first))
-            return JsonResponse({'COMMENT' : get_comment_first_data })
-        except:
-            return JsonResponse({'MESSAGE' : 'EMPTY_DATA'}, status=400)
-# Create your views here.
+        first_board            = Board.objects.first()
+        comment_values_first   = Comment.objects.filter(board_id=first_board)
+        get_comment_first_data = json.loads(serialize('json', comment_values_first))
+        return JsonResponse({'COMMENT' : get_comment_first_data })
