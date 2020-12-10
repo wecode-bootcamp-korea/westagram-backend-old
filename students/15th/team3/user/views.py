@@ -1,11 +1,14 @@
 from django.shortcuts import render
-import re
+
 import json
 import bcrypt
 import jwt
+
 from django.http     import JsonResponse
-from .models   import SignUp
 from django.views    import View
+
+from .models   import SignUp
+
 
 class SignUpView(View):
         def post(self, request):
@@ -17,8 +20,9 @@ class SignUpView(View):
             password = data['password']
 
             try:
-                 if (name is not None) or (tel is not None) or (email is not None):
-                    if password is not None:
+                 #if (name is not None) or (tel is not None) or (email is not None): 아래 if 문으로 수정
+                 if name or tel or email:
+                    if password:
 
                         if len(password) < 8:
                             return JsonResponse({"message": "your password is dangerous."}, status= 401)
@@ -41,8 +45,6 @@ class SignUpView(View):
 
             except KeyError:
                 return JsonResponse({'message': 'KEY_ERROR'}, status=400)
-
-
 
 class SignIn(View):
     def post(self,request):
