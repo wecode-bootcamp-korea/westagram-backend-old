@@ -28,6 +28,11 @@ class SignUp(View):
                 raise KeyError
             if email:
                 assert re.match(REGEX_EMAIL, email), "INVALID_EMAIL_FORMAT"
+                account = email
+            elif name:
+                account = name
+            elif phonenumber:
+                account = phonenumber
             assert re.match(REGEX_PASSWORD, password), "INVALID_PASSWORD_FORMAT"
 
             hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode()
@@ -40,16 +45,12 @@ class SignUp(View):
 
         except AssertionError as e:
             return JsonResponse({"message": f"{e}"}, status = 400)
-
-        account_type_list = [email, name, phonenumber]
  
-        for account_type_checker in account_type_list:
-            if account_type_checker:
-                if User.objects.filter(account = account_type_checker):
-                    return JsonResponse({"message": "ALREADY_EXISTS_ACCOUNT"}, status = 400)
-                else:
-                    User.objects.create(account = account_type_checker, password = hashed_password)
-                    break
+        if User.objects.filter(account = account_type_checker):
+            return JsonResponse({"message": "ALREADY_EXISTS_ACCOUNT"}, status = 400)
+        else:
+            User.objects.create(account = account_type_checker, password = hashed_password)
+        
         return JsonResponse({"message": "SUCCESS"}, status = 201)
 
 class SignIn(View):
