@@ -19,20 +19,18 @@ class Posting(View):
     def post(self, request):
         data = json.loads(request.body)
         try:
-            posting_username_id = User.objects.get(username=request.user.username)
-            posting_text        = data['posting_text']
-            posting_image       = data['posting_image']
+            username_id = User.objects.get(id=request.user_id)
+            text        = data['text']
+            image       = data['image']
 
-
-            print('posting_request.user:', request.user.username)
             BoardPosting.objects.create(
-                posting_image = posting_image,
-                posting_text  = posting_text,
-                posting_username = posting_username_id
+                image    = image,
+                text     = text,
+                username = username_id
             )
-            return JsonResponse({ 'MESSAGE': 'SUCCESS'})
+            return JsonResponse({ 'MESSAGE': 'SUCCESS'}, status=201)
         except KeyError:
-            return JsonResponse({'ERROR' : 'KEY_ERROR'})
+            return JsonResponse({'ERROR' : 'KEY_ERROR'}, status=400)
 
     def get(self, request):
         postings = BoardPosting.objects.all()
@@ -40,10 +38,10 @@ class Posting(View):
         for posting in postings:
             results.append(
                 {
-                    "posting_username_id": posting.posting_image,
-                    "posting_text"       : posting.posting_text,
-                    "posting_image"      : posting.posting_image,
-                    "posting_time"       : posting.posting_time
+                    "username_id": posting.image,
+                    "text"       : posting.text,
+                    "image"      : posting.image,
+                    "time"       : posting.time
                 }
             )
 
@@ -54,19 +52,19 @@ class Comment(View):
     def post(self, request):
         data = json.loads(request.body)
         try:
-            comment_username = data['comment_username']
-            comment_text     = data['comment_text']
-            posting_id       = data['posting_id']
+            username   = data['username']
+            text       = data['text']
+            posting_id = data['posting_id']
 
             BoardComment.objects.create(
-                comment_username = comment_username,
-                comment_text     = comment_text,
-                posting       = BoardPosting.objects.get(id=posting_id)
+                username = username,
+                text     = text,
+                posting  = BoardPosting.objects.get(id=posting_id)
             )
 
-            return JsonResponse({'MESSAGE' : 'SUCCESS'})
+            return JsonResponse({'MESSAGE' : 'SUCCESS'}, status=201)
         except:
-            return JsonResponse({'MESSAGE' : 'KER_ERROR'})
+            return JsonResponse({'MESSAGE' : 'KER_ERROR'}, status=400)
 
     def get(self, request):
         comments = BoardComment.objects.all()
@@ -74,9 +72,9 @@ class Comment(View):
         for comment in comments:
             results.append(
                 {
-                    "comment_username" : comment.comment_username,
-                    "comment_text" : comment.comment_text,
-                    "comment_time" : comment.comment_itme,
+                    "username"   : comment.username,
+                    "text"       : comment.text,
+                    "time"       : comment.itme,
                     "posting_id" : comment.posting_id
                 }
             )
