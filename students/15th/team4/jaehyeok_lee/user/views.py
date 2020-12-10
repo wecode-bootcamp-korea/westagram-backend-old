@@ -6,8 +6,8 @@ import jwt
 from django.http  import JsonResponse
 from django.views import View
 
-from user.models        import User
-from westagram.settings import SECRET_KEY
+from user.models import User
+from my_settings import SECRET_KEY, ALGORITHM
 
 REGEX_EMAIL        = '([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+(\.[a-zA-Z]{2,4}))'
 REGEX_PASSWORD     = '^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$'
@@ -72,7 +72,7 @@ class SignIn(View):
             return JsonResponse({"message": "INVALID_USER_NAME_OR_PASSWORD"}, status = 400)
 
         if bcrypt.checkpw(password.encode('utf-8'), signin_user.password.encode('utf-8')):
-            access_token = jwt.encode({'user_id': signin_user.id}, SECRET_KEY, algorithm = 'HS256')
+            access_token = jwt.encode({'user_id': signin_user.id}, SECRET_KEY, algorithm = ALGORITHM)
             return JsonResponse({"message": "SUCCESS", "Authorization": access_token.decode('utf-8')}, status = 200)
         else:
             return JsonResponse({"message": "INVALID_USER_NAME_OR_PASSWORD"}, status = 401)
