@@ -1,10 +1,12 @@
 import json 
 import bcrypt
+import jwt
 
 from django.views import View
 from django.http import JsonResponse
 
 from .models import User
+from westagram.settings import SECRET_KEY
 
 # 회원가입
 class UserView(View):
@@ -22,7 +24,7 @@ class UserView(View):
             
             hash_password =  bcrypt.hashpw(data['password'].encode('utf-8'), bcrypt.gensalt())
             hash_password = hash_password.decode('utf-8')
-            
+        
             User.objects.create(
                 email = data['email'],
                 password = hash_password,
@@ -44,8 +46,10 @@ class LoginView(View):
             if User.objects.filter(email=data['email']): # 이메일 존재
                     
                 if bcrypt.checkpw(data['password'].encode('utf-8'), user.password.encode('utf-8')): # 비밀번호 확인
-
-                    return JsonResponse({'MESSAGE':'SUCCESS!'}, status=200)
+                    secret       = SECRET_KEY
+                    token        = jwt.encode({'id' : user.id}, secret, algorithm = 'HS256')
+                    access_token = token.decode('utf-8')   
+                    return JsonResponse({"access-token" : access_token}, status=200)
                 
                 else: #비밀번호가 틀린 경우
                     
@@ -57,6 +61,7 @@ class LoginView(View):
            
         except KeyError:
             return JsonResponse({'MESSAGE':'INVALID_USER!'}, status=401)
+
 
 
 
