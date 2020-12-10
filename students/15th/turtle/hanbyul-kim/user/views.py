@@ -4,6 +4,7 @@ import json, re
 from django.http        import JsonResponse
 from django.views       import View
 from django.db import IntegrityError
+from django.db.models import Q
 
 from user.models        import User
 
@@ -14,25 +15,24 @@ class UserView(View):
         data = json.loads(request.body)
 
         try:
-            data['name']    = data.get('name')
-            data['mobile_number'] = data.get('mobile_number')
-            password = data.get('password')
-            data['email'] = data.get('email')
+            data['name']    =   data.get('name')
+            data['email']   =   data.get('email')
+            data['mobile_number']   =   data.get('mobile_number')
+
             if len(data['password']) < 8:
                 return JsonResponse({"message":"password must be at least 8 characters"},status=400)
             email_reg='[a-zA-Z0-9_-]+@[a-z]+.[a-z]'
             email_validation = re.compile(email_reg)
 
-            if re.match(email_validation, str(data.get('email'))):
-                return JsonResponse({"message":"it is not a vaild address"},status = 400)
+            if 'email' in data:
+                if re.match(email_validation, str(data.get('email'))):
+                    return JsonResponse({"message":"it is not a vaild address"},status = 400)
 
             #중복 검사
-            if User.objects.filter(name = data['name']).exists():
-                return JsonResponse({'message':'존재하는 이름입니다.'}, status=400)
-            if User.objects.filter(phone_number = data['phone_number']).exists():
-                return JsonResponse({'Number is existed'}, status=400)
-            if User.objects.filter(email = data['email']).exists():
-                return JsonResponse({'message':'this is not valid address.'}, status=400)
+
+            if User.objects.filter(Q(name=data['name']) & Q(email=data['email']) & Q(mobile_number=data['mobile_number'])).exists():
+                return JsonResponse({'message': 'It is already_exist'}, status = 400)
+
 
             User.objects.create(
                 name         = data['name'] ,
