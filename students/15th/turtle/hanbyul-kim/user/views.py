@@ -21,14 +21,13 @@ class UserView(View):
 
             if len(data['password']) < 8:
                 return JsonResponse({"message":"password must be at least 8 characters"},status=400)
+
             email_reg='[a-zA-Z0-9_-]+@[a-z]+.[a-z]'
             email_validation = re.compile(email_reg)
 
             if 'email' in data:
                 if re.match(email_validation, str(data.get('email'))):
                     return JsonResponse({"message":"it is not a vaild address"},status = 400)
-
-            #중복 검사
 
             if User.objects.filter(Q(name=data['name']) & Q(email=data['email']) & Q(mobile_number=data['mobile_number'])).exists():
                 return JsonResponse({'message': 'It is already_exist'}, status = 400)
@@ -73,15 +72,15 @@ class SigninView(View):
                     user = User.objects.get(mobile_number= str(data['mobile_number']))
                     if user.password == data['password']:
                         return JsonResponse({"message":"SUCCESS"}, status=200)
-                    return JsonResponse({"message":"number is not valid"},status = 400)
+                    return JsonResponse({"message":"password is not valid"},status = 400)
 
-            # 이름만 잇는 경우
-            if data['email'] is None and data['mobile_number'] is None:
-                if User.objects.filter(name=data['name']).exists():
+            # 이름만 잇는 경
+            if data['mobile_number'] is None and data['email'] is None:
+                if User.objects.filter(name= data['name']).exists():
                     user = User.objects.get(name=data['name'])
                     if user.password == data['password']:
                         return JsonResponse({"message":"SUCCESS"}, status=200)
-                    return JsonResponse({"message":"name is not valid"},status =400)
+                    return JsonResponse({"message":"password is not valid"},status =400)
 
         except KeyError as e:
                     return JsonResponse({"message":e.message},status=400)
