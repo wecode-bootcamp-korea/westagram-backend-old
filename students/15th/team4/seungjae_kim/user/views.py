@@ -8,6 +8,8 @@ from django.views import View
 from user.models  import Users
 from my_settings  import SECRET_KEY
 
+from user.utils   import LoginConfirm
+
 def is_valid(text, regex):
 
     return re.compile(regex).match(text) != None
@@ -67,3 +69,39 @@ class SigninView(View):
 
         except (Users.DoesNotExist, AssertionError):
             return JsonResponse({'MESSAGE': "INVALID_USER"},status=401)
+
+class FollowsView(View):
+    
+    @LoginConfirm
+    def post(self, request, user_pk):
+
+        try:
+            
+            followed = Users.objects.get(id=user_pk)
+            
+            if not request.user in followed.following.all():
+                followed.following.add(request.user)
+
+                return JsonResponse({"MESSAGE":"SUCCESS"},status=201)
+            else:
+                return JsonResponse({"MESSAGE":"ALREADY_FOLLOWING"},status=400)
+            
+        except Users.DoesNotExist:
+
+            return JsonResponse({"MESSAGE":"USER_NOT_FOUND"}, status=400)
+
+    @LoginConfirm
+    def delete(self, request, user_pk):
+
+        try:
+            followed = User.objects.get(id=user_pk)
+
+            if not request.user in followed.following.all():
+                followed.following.add(request.user)
+
+                return JsonResponse({"MESSAGE":"SUCCESS"},status=201)
+            else:
+                return JsonResponse({"MESSAGE":"DID U REALLY FOLLOWED HIM/HER?"},status=400)
+
+        except Users.DoesNotExist:
+            return JsonResponse({"MESSAGE":"USER_NOT_FOUND"},status=400)

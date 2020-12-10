@@ -79,13 +79,33 @@ class LikesView(View):
     @LoginConfirm
     def post(self, request, posting_pk):
         try:
+            post = Posts.objects.get(id = posting_pk)
 
-            Posts.objects.get(id = posting_pk).likes.add(request.user)
+            if not request.user in post.likes.all():
 
-            return JsonResponse({"MESSAGE":"SUCCESS"},status = 201)
+                post.likes.add(request.user)            
+                return JsonResponse({"MESSAGE":"SUCCESS"},status = 201)
+
+            else:                
+                return JsonResponse({"MESSAGE":"ALREADY_CHECKED"},status=400)
+
         except Posts.DoesNotExist:
             
-            return JsonResponse({"MESSAGE":"POSTS_NOT_FOUND"},status=400)
+            return JsonResponse({"MESSAGE":"POST_NOT_FOUND"},status = 400)
 
+    @LoginConfirm
+    def delete(self, request, posting_pk):
 
+        try:
 
+            post = Posts.objects.get(id = posting_pk)
+        
+            if request.user in post.likes.all():
+                post.likes.remove(request.user)
+                return JsonResponse({"MESSAGE":"SUCCESSFULLY DISLIKED"}, status=200)
+            else:
+                return JsonResponse({"MESSAGE":"DID U REALLY Like THIS POST?"}, status =400)
+
+        except Posts.DoesNotExist:
+
+            return JsonResponse({"MESSAGE":"POST_NOT_FOUND"},status = 400)
