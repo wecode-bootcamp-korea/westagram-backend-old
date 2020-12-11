@@ -8,45 +8,38 @@ from django.views import View
 from user.models  import Users
 from my_settings  import SECRET_KEY
 
-from user.utils   import LoginConfirm
+from user.utils   import LoginConfirm, is_valid
 
-def is_valid(text, regex):
-
-    return re.compile(regex).match(text) != None
-
-class UserView(View):    
+class SignupView(View):    
 
     def post(self,request):
         
-        pw_regex    = '^[A-Za-z0-9@#$%^&+=]{8,}$'
-        email_regex = '^[a-zA-Z0-9+-_.]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
+        PW_REGEX    = '^[A-Za-z0-9@#$%^&+=]{8,}$'
+        EMAIL_REGEX = '^[a-zA-Z0-9+-_.]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
      
         data = json.loads(request.body)
         
-        # 나중에 프론트엔드 분이랑 협의해서 각 에러별로 상수값 지정하기 !
-        # Error_code 3 이런식으로만 Message 보내기로 하
         try:
-            
-            assert is_valid(data['email'],email_regex), "INVALID_EMAIL_FORMAT"
-            assert is_valid(data['password'],pw_regex), "INVALID_PW_FORMAT"
+            assert is_valid(data['email'],EMAIL_REGEX), "INVALID_EMAIL_FORMAT"
+            assert is_valid(data['password'],PW_REGEX), "INVALID_PW_FORMAT"
 
             hased_password = bcrypt.hashpw(data['password'].encode('utf-8'), bcrypt.gensalt())
             
 
-            if Users.objects.filter(email = data['email']): 
-                return JsonResponse({"MESSAGE" : "USER_ALREADY_EXISTS"},status = 400)
+            if Users.objects.filter(email = data['email']).exists(): 
+                return JsonResponse({"MESSAGE" : "USER_ALREADY_EXISTS"},status=400)
                 
-            else:
-                Users.objects.create(email = data["email"],password=hased_password.decode())   
-             
-                # restapi 시점에서 201은 생성을 의미 !
-                return JsonResponse({"MESSAGE" : "SUCCESS"},status =201)
+            Users.objects.create(email = data["email"],password=hased_password.decode())   
+            return JsonResponse({"MESSAGE" : "SUCCESS"},status=201)
 
         except KeyError:
             return JsonResponse({'MESSAGE': "KEY_ERROR"},status=400)
         
         except AssertionError as e:
-            return JsonResponse({"MESSAGE": f"{e}"}, status = 400)
+            return JsonResponse({"MESSAGE": f"{e}"}, status=400)
+
+        except json.JSONDecodeError:
+            return JsonResponse({"MESSAGE": "PLZ FOLLOW THE INPUT FORMAT"}, status=400)
 
 
 class SigninView(View):
@@ -70,13 +63,15 @@ class SigninView(View):
         except (Users.DoesNotExist, AssertionError):
             return JsonResponse({'MESSAGE': "INVALID_USER"},status=401)
 
+        except json.JSONDecodeError:
+            return JsonResponse({"MESSAGE": "PLZ FOLLOW THE INPUT FORMAT"}, status=400)
+
 class FollowsView(View):
     
     @LoginConfirm
     def post(self, request, user_pk):
 
         try:
-            
             followed = Users.objects.get(id=user_pk)
             
             if not request.user in followed.following.all():
@@ -87,9 +82,11 @@ class FollowsView(View):
                 return JsonResponse({"MESSAGE":"ALREADY_FOLLOWING"},status=400)
             
         except Users.DoesNotExist:
-
             return JsonResponse({"MESSAGE":"USER_NOT_FOUND"}, status=400)
-
+        
+        except json.JSONDecodeError:
+            return JsonResponse({"MESSAGE": "PLZ FOLLOW THE INPUT FORMAT"}, status=400)
+    
     @LoginConfirm
     def delete(self, request, user_pk):
 
@@ -101,7 +98,10 @@ class FollowsView(View):
 
                 return JsonResponse({"MESSAGE":"SUCCESS"},status=201)
             else:
-                return JsonResponse({"MESSAGE":"DID U REALLY FOLLOWED HIM/HER?"},status=400)
+                return JsonResponse({"MESSAGE":"DID U REALLY FOLLOWED HIM/HER?"},status=404)
 
         except Users.DoesNotExist:
             return JsonResponse({"MESSAGE":"USER_NOT_FOUND"},status=400)
+
+        except json.JSONDecodeError:
+            return JsonResponse({"MESSAGE": "PLZ FOLLOW THE INPUT FORMAT"}, status=400)

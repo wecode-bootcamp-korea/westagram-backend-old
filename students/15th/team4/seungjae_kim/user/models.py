@@ -1,7 +1,5 @@
 from django.db import models
 
-# Create your models here.
-
 class Users(models.Model):
     
     email = models.EmailField(max_length = 128,
@@ -12,6 +10,7 @@ class Users(models.Model):
                                 )
     
     followers = models.ManyToManyField("self", related_name = "following",symmetrical=False)
+    
     class Meta:
 
         db_table = "Users"

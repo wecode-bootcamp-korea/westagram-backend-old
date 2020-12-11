@@ -1,5 +1,6 @@
 import jwt
 import json
+import re
 
 from user.models import Users
 from my_settings import SECRET_KEY
@@ -29,3 +30,6 @@ class LoginConfirm:
 
         except Users.DoesNotExist:
             return JsonResponse({'message':'INVALID_USER'}, status=401)
+
+def is_valid(text, regex):
+    return re.compile(regex).match(text) != None
