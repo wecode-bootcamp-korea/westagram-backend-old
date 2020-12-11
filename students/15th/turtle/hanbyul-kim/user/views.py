@@ -28,7 +28,7 @@ class UserView(View):
             email_validation = re.compile(email_reg)
 
             if 'email' in data:
-                if re.match(email_validation, str(data.get('email'))):
+                if not re.match(email_validation, str(data.get('email'))):
                     return JsonResponse({"message":"it is not a vaild address"},status = 400)
 
             if User.objects.filter(Q(name=data['name']) & Q(email=data['email']) & Q(mobile_number=data['mobile_number'])).exists():
@@ -47,6 +47,8 @@ class UserView(View):
             return JsonResponse({'message' : 'SUCCESS'}, status=200)
         except IntegrityError:
             return JsonResponse(stats=400)
+        except KeyError:
+            return JsonResponse({"message":"Key is not valid"},status=400)
 
     def get(self,request):
         user_data = list(User.objects.values())
@@ -83,13 +85,13 @@ class SigninView(View):
                         return JsonResponse({'token':token.decode('utf-8')}, status = 200)
                     return JsonResponse({"message":"password is not valid"},status =400)
 
-            # 이름만 잇는 경
+            # 이름만 잇는 경우
             if data['mobile_number'] is None and data['email'] is None:
                 if User.objects.filter(name= data['name']).exists():
                     user = User.objects.get(name=data['name'])
                     if bcrypt.checkpw(user_password.encode('utf-8'), user.password.encode('utf-8')):
                         token = jwt.encode({"name":data['name']},SECRET,algorithm = "HS256")
-                        return JsonResponse({'token':token.decode('utf-8')}, status = 200)
+                        return JsonResponse({'Success':token.decode('utf-8')}, status = 200)
                     return JsonResponse({"message":"password is not valid"},status =400)
 
         except KeyError as e:
