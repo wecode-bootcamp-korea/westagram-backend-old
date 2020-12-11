@@ -10,8 +10,6 @@ class Users(models.Model):
     class Meta:
         db_table = 'Users'
 
-    def __str__(self):
-        return self.name
 
 
 
