@@ -1,6 +1,7 @@
 import json 
 import bcrypt
 import jwt
+import re
 
 from django.views import View
 from django.http import JsonResponse
@@ -13,7 +14,9 @@ class UserView(View):
     def post(self, request):
         data = json.loads(request.body)
         try:
-            if "@" not in data['email'] or "." not in data['email']:
+            p = re.compile('^[a-zA-Z0-9+-_.]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$') #이메일 정규식 사용.
+
+            if not p.match(data['email']): 
                 return JsonResponse({'MESSAGE':'EMAIL_ERROR!'}, status=400)
 
             if len(data['password']) < 8:
