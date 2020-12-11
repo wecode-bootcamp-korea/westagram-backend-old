@@ -1,14 +1,11 @@
-from django.db import models
+from django.db              import models
+from django.core.exceptions import MultipleObjectsReturned
 
-# Create your models here.
 class User(models.Model):
-     user_name   = models.CharField(max_length=30)
-     #email       = models.CharField(max_length=40)
-     #phone_number= models.CharField(max_length=30)
-     password    = models.CharField(max_length=30)
+     name       = models.CharField(max_length=30, unique=True, default='')
+     password   = models.CharField(max_length=100)
 
      class Meta:
          db_table = 'users'
 
 
-# class
