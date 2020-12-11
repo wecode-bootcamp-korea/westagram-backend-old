@@ -4,8 +4,10 @@ from django.views            import View
 from django.core.serializers import serialize
 from board.models            import Board, Comment
 from user.models             import User
+from user.utils              import LoginConfirm
 
 class BoardView(View):
+    @LoginConfirm
     def post(self, request):
         try:
             data = json.loads(request.body)
@@ -13,9 +15,9 @@ class BoardView(View):
             title     = data['board_name']
             body_text = data['contents']
             image_url = data['image']
-            
+
             # login_user validation
-            user_post = User.objects.get(user_name=data['user']).id
+            user_post = request.user.id
 
             # title validation
             if Board.objects.filter(name=data['board_name']).exists():
@@ -32,6 +34,7 @@ class BoardView(View):
         except ValueError:
             return JsonResponse({'MESSAGE' : 'TITLE_OVERLAP'}, status=403)
 
+    
     def get(self, request):
         # empty_board validation
         try:
@@ -42,6 +45,7 @@ class BoardView(View):
             return JsonResponse({'MESSAGE' : 'EMPTY_BOARD'}, status=400)
 
 class CommentView(View):
+    @LoginConfirm
     def post(self, request):
         try:
             data = json.loads(request.body)
