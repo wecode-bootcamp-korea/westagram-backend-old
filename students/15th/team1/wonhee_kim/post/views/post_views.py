@@ -9,42 +9,9 @@ from post.models  import Post
 from user.utils   import login_required
 
 
-class CreatePostView(View):
-    # 1. 인증
-    @login_required
-    def post(self, request):
-        print("================= 포스트 작성 절차 기동 =================")
-
-        # 2. 필수값 검사
-        try:
-            image_url    = json.loads(request.body)['image_url']
-            content      = json.loads(request.body)['content']
-        except Exception as e:
-            print(f'Exception: {e}')
-            return JsonResponse({"MESSAGE": "KEY_ERROR"}, status=400)
-
-        # 3. DB에 데이터 작성
-        try:
-            post           = Post.objects.create(
-                # user_id  = request.user_id  id 로 넣거나 객체로 넣거나 둘 다 가능
-                user       = request.user,
-                image_url  = image_url,
-                content    = content,
-                created_at = timezone.now()
-            )
-        except Exception as e:
-            print(f'Exception: {e}')
-            return JsonResponse({"MESSAGE": "INVALID_PAYLOAD"}, status=400)
-
-        # 4. 모든 과정 통과 -> 201 리턴
-        print("================= 포스트 작성 정상 종료 =================")
-        return JsonResponse({'MESSAGE': 'SUCCESS'}, status=201)
-
-
-class ReadPostView(View):
+class LoadAllPostView(View):
     @login_required
     def get(self, request):
-        print("================= 포스트 출력 절차 기동 =================")
 
         post_list_dict = {}
         post_list      = Post.objects.all()
@@ -55,18 +22,42 @@ class ReadPostView(View):
                                             'likes'         : f'{post.liker.count()}',
                                             'created_at'    : f'{post.created_at}',
                                             }
-        print("================= 포스트 출력 정상 종료 =================")
+
         return JsonResponse({'MESSAGE'  : 'SUCCESS',
                              'POST_LIST': post_list_dict},
                             status=200)
 
 
-class ReadPostDetailView(View):
+class PostView(View):
     @login_required
-    def get(self, request, post_id):
-        print("================= 포스트 출력 절차 기동 =================")
+    def post(self, request):
+        try:
+            image_url    = json.loads(request.body)['image_url']
+            content      = json.loads(request.body)['content']
+            Post.objects.create(
+                user       = request.user,
+                image_url  = image_url,
+                content    = content,
+                created_at = timezone.now()
+            )
+        except KeyError:
+            return JsonResponse({"message": "KEY_ERROR"}, status=400)
+        except Post.IntegrityError:
+            return JsonResponse({"message": "KEY_ERROR"}, status=400)
 
-        post = get_object_or_404(Post, id=post_id)
+        return JsonResponse({'MESSAGE': 'SUCCESS'}, status=201)
+
+
+    @login_required
+    def get(self, request):
+        try:
+            post_id = json.loads(request.body)['post_id']
+            post = Post.objects.get(id=post_id)
+        except KeyError:
+            return JsonResponse({"message": "KEY_ERROR"}, status=400)
+        except Post.DoesNotExist:
+            return JsonResponse({'MESSAGE': 'POST_NOT_EXIST'}, status=404)
+
         post_dict = {f'{post.id}': {'user_nick_name': f'{post.user.nick_name}',
                                     'content'       : f'{post.content}',
                                     'image_url'     : f'{post.image_url}',
@@ -74,36 +65,57 @@ class ReadPostDetailView(View):
                                     'created_at'    : f'{post.created_at}',
                                     }}
 
-        print("================= 포스트 출력 정상 종료 =================")
-        return JsonResponse({'MESSAGE': 'SUCCESS',
-                             'POST_LIST': post_dict},
-                            status=200)
+        return JsonResponse({'MESSAGE': 'SUCCESS', 'POST': post_dict}, status=200)
 
 
-class DeletePostView(View):
-    # 1. 인증
     @login_required
-    def get(self, request, post_id):
-        print()
-        print("================= 게시물 삭제 절차 기동 =================")
-
-        # 2. 사용자가 작성한 post 가 맞는지 확인
-        user_id = request.user_id
-        post = Post.objects.filter(id=post_id, user_id=user_id)
-        if not post.exists():
-            print("Error: COMMENT_NOT_FOUND_WITH_THIS_CONDITION")
-            return JsonResponse({'MESSAGE': 'COMMENT_NOT_FOUND_WITH_THIS_CONDITION'}, status=404)
-
-        # 3. DB 에서 게시물 데이터 삭제
+    def put(self, request):
         try:
-            post.delete()
-        except Exception as e:
-            print(f'Exception: {e}')
-            return JsonResponse({"MESSAGE": "POST_CAN_NOT_BE_DELETED"}, status=500)
+            post_id        = json.loads(request.body)['post_id']
+            post           = Post.objects.get(id=post_id, user=request.user)
+            post.content   = json.loads(request.body)['content']
+            post.image_url = json.loads(request.body)['image_url']
+            post.save()
+        except KeyError:
+            return JsonResponse({"message": "KEY_ERROR"}, status=400)
+        except Post.DoesNotExist:
+            return JsonResponse({'MESSAGE': 'POST_NOT_EXIST'}, status=404)
+        except Post.IntegrityError:
+            return JsonResponse({"message": "KEY_ERROR"}, status=400)
 
-        # 4. 모든 과정 통과 -> 201 리턴
-        print("================= 게시물 삭제 정상 종료 =================")
-        return JsonResponse({'MESSAGE': 'SUCCESS'}, status=201)
+        return JsonResponse({'MESSAGE': 'SUCCESS'}, status=200)
+
+    # delete
+    @login_required
+    def delete(self, request):
+        try:
+            post_id = json.loads(request.body)['post_id']
+
+            # 삭제 요청한 post 에 대해 사용자가 작성한 것인지 확인
+            post = Post.objects.get(id=post_id, user=request.user)
+
+            post.delete()
+        except KeyError:
+            return JsonResponse({"message": "KEY_ERROR"}, status=400)
+        except Post.DoesNotExist:
+            return JsonResponse({'MESSAGE': 'POST_NOT_EXIST'}, status=404)
+        except Post.IntegrityError:
+            return JsonResponse({"message": "KEY_ERROR"}, status=400)
+
+        return JsonResponse({'MESSAGE': 'SUCCESS'}, status=200)
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

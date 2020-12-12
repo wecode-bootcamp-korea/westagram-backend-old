@@ -11,14 +11,14 @@ class Post(models.Model):
 	content    = models.TextField(null=True)
 	created_at = models.DateTimeField(auto_now_add=True)
 	image_url  = models.CharField(null=True, max_length=2000)
-	update_at  = models.DateTimeField(null=True)
+	updated_at = models.DateTimeField(auto_now=True)
 	liker      = models.ManyToManyField(User, related_name='liker_post')
 
 	class Meta:
 		db_table = 'posts'
 
 	def __str__(self):
-		return str(self.user.name) + "의 " + "post" + " / id" + "(" + self.id + ")"
+		return str(self.user.name) + "의 " + "post" + " / id" + "(" + str(self.id) + ")"
 
 
 class Comment(models.Model):
@@ -29,7 +29,7 @@ class Comment(models.Model):
 	user       = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_comment')
 	content    = models.TextField()
 	created_at = models.DateTimeField(auto_now_add=True)
-	updated_at = models.DateTimeField(null=True)
+	updated_at = models.DateTimeField(auto_now=True)
 
 	class Meta:
 		db_table = 'comments'
