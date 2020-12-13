@@ -9,12 +9,14 @@ class Users(models.Model) :
 #    phone     = models.CharField(
 #            max_length=30, verbose_name = '전화번호'
 #            )
-    email     = models.CharField(
+    email       = models.EmailField(
             max_length=50, verbose_name = '이메일 주소'
             )
-    password  = models.CharField(
-            max_length=60, verbose_name = '비밀번호'
+    password    = models.CharField(
+            max_length=1000, verbose_name = '비밀번호'
             )
+    created_at  = models.DateTimeField(null = True, auto_now_add = True)
+    updated_at  = models.DateTimeField(null = True, auto_now=True)
 
     class Meta : 
         db_table = 'Users'
