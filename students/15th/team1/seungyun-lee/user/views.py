@@ -9,7 +9,6 @@ from django.shortcuts import render
 from .models     import User
 from my_settings import SECRET
 
-
 class SignupView(View):
     def post(self, request):
         data = json.loads(request.body)
@@ -23,9 +22,7 @@ class SignupView(View):
             if login_name == 'username':
                 if User.objects.filter(username=data['username']).exists():
                     raise ValueError 
-                print('help')
                 if data.get('username') == '' or data.get('password') == '':
-                    print(username, password)
                     raise KeyError
             elif login_name == 'email':                
                 if data['email'] != '': #email validation
@@ -42,7 +39,6 @@ class SignupView(View):
                     raise ValueError 
                 if data['phonenumber'] == '' or data['password'] == '':
                     raise KeyError
-
 
             password         = data['password']
             hashed_passwords = User.objects.values_list('password', flat=True).distinct()
@@ -62,9 +58,8 @@ class SignupView(View):
                 phonenumber = data.get('phonenumber'), 
                 password    = password.decode('utf-8')
                 )
-            return JsonResponse({'message': 'SUCCESS'}, status = 200)
+            return JsonResponse({'message': 'SUCCESS'}, status = 201)
     
-
         except KeyError:
             return JsonResponse({'message' : 'KEY_ERROR'}, status = 400)
         except ValueError:
@@ -105,6 +100,3 @@ class SigninView(View):
             return JsonResponse({'message' : 'KEY_ERROR'}, status = 400)
         except ValueError:
             return JsonResponse({'message' : 'INVALID_USER'}, status = 401)
-
-
-
