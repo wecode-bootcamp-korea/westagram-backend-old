@@ -10,16 +10,39 @@ from .models     import User
 from my_settings import SECRET
 
 
-class UserView(View):
+class SignupView(View):
     def post(self, request):
         data = json.loads(request.body)
+        login_info = list(data.keys())
 
-        try:
-            if (data['username'] == '' and data['email'] == '' and data['phonenumber'] == '') or data['password'] == '':
-                raise KeyError
+        for i in login_info:
+            if i != 'password':
+                login_name = i
 
-            if User.objects.filter(username=data['username'], email=data['email'], phonenumber=data['phonenumber']).exists():
-                raise ValueError
+        try:        
+            if login_name == 'username':
+                if User.objects.filter(username=data['username']).exists():
+                    raise ValueError 
+                print('help')
+                if data.get('username') == '' or data.get('password') == '':
+                    print(username, password)
+                    raise KeyError
+            elif login_name == 'email':                
+                if data['email'] != '': #email validation
+                    symbols_set = '@.'
+                    for i in symbols_set:
+                        if i not in data['email'] :
+                            raise ValueError
+                if User.objects.filter(username=data['email']).exists():
+                    raise ValueError 
+                if data['email'] == '' or data['password'] == '':
+                    raise KeyError
+            elif login_name == 'phonenumber':
+                if User.objects.filter(username=data['phonenumber']).exists():
+                    raise ValueError 
+                if data['phonenumber'] == '' or data['password'] == '':
+                    raise KeyError
+
 
             password         = data['password']
             hashed_passwords = User.objects.values_list('password', flat=True).distinct()
@@ -30,33 +53,25 @@ class UserView(View):
 
             if len(data['password']) < 8: #password validation
                 raise ValueError 
-
-            if 'email' in data:
-                if data['email'] != '': #email validation
-                    symbols_set = '@.'
-                    for i in symbols_set:
-                        if i not in data['email'] :
-                            raise ValueError
             
             password = bcrypt.hashpw(data['password'].encode('utf-8'), bcrypt.gensalt())
 
             User.objects.create(
-                username    = data['username'], 
-                email       = data['email'], 
-                phonenumber = data['phonenumber'], 
+                username    = data.get('username'),
+                email       = data.get('email'), 
+                phonenumber = data.get('phonenumber'), 
                 password    = password.decode('utf-8')
                 )
             return JsonResponse({'message': 'SUCCESS'}, status = 200)
     
-        
+
         except KeyError:
             return JsonResponse({'message' : 'KEY_ERROR'}, status = 400)
         except ValueError:
             return JsonResponse({'message' : 'Invalid user/password'}, status = 400)
 
-
-    
-    def get(self, request):
+class SigninView(View):
+    def post(self, request):
         data       = json.loads(request.body)
         login_info = list(data.keys())
 
