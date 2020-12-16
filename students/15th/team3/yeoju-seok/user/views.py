@@ -1,19 +1,16 @@
-import json
-import bcrypt
-import jwt
-import re
+import json, bcrypt, jwt, re
 
 from django.http import JsonResponse
 from django.views import View
 
 from user.models import Account
-from my_settings import SECRET
+from my_settings import SECRET,ALGORITHM
 
 class AccountView(View):
     def post(self, request):
         data = json.loads(request.body)
-        email_validation = '^[a-zA-Z0-9+-_.]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
-        pw_validation = '^[A-Za-z0-9@#$%^&+=]{8,}$'
+        REGAX_EMAIL = '^[a-zA-Z0-9+-_.]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
+        REGEX_PASSWORD = '^[A-Za-z0-9@#$%^&+=]{8,}$'
 
         try:
             if not re.match(email_validation, data['email']):
@@ -49,8 +46,8 @@ class LoginView(View):
 
         try:
             if Account.objects.all().filter(email=data['email']).exists():
-                if password_check == True:
-                    access_token = jwt.encode({'id' : user_id},SECRET,algorithm = 'HS256').decode('utf-8')
+                if bcrypt.checkpw(data['password'].encode('utf-8').user_pw.encode('utf-8')):
+                    access_token = jwt.encode({'id' : user_id},SECRET,ALGORITHM).decode('utf-8')
 
                     return JsonResponse({"message":"SUCCESS", "TOKEN" : access_token},status=200)
 
@@ -59,6 +56,6 @@ class LoginView(View):
         except KeyError:
             return JsonResponse({"message":"KEY_ERROR"},status=401)
 
-        except:
+        except ValueError:
             return JsonResponse({"message":"INVALID_USER"},status=401)
 
