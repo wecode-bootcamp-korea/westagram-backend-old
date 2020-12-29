@@ -34,7 +34,7 @@ class SignUpView(View):
             
             if len(password) < MIN_LENGTH_PASSWORD:
                 return JsonResponse({
-                    "message": "AT_LEAST_8_PASSOWRD"
+                    "message": "AT_LEAST_{}_PASSOWRD".format(MIN_LENGTH_PASSWORD)
                 })
             
             
