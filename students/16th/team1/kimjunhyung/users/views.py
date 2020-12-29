@@ -1,5 +1,6 @@
 import json
 import re
+import bcrypt
 
 from django.views   import View
 from django.http    import JsonResponse
@@ -19,11 +20,14 @@ class UserSignUpView(View):
         except AttributeError:
             return JsonResponse({"message":"NOT_EMAIL_FORMAT"}, status = 400)
         user = User.objects.filter(email = clean_email)
+        
         if user.exists():
             return JsonResponse({"message":"USER_ALREADY_EXIST"}, status = 400)
         if len(password) < 8:
             return JsonResponse({"message":"PASSWORD_IS_AT_LEAST_8"}, status = 400)
-        User.objects.create(email = email, password = password)         
+
+        hash_password = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt())
+        User.objects.create(email = clean_email, password = hash_password.decode())
         return JsonResponse({"message":"SUCCESS"}, status = 200)
 
 class UserSignInView(View):
@@ -35,7 +39,8 @@ class UserSignInView(View):
 
         try:
             user = User.objects.get(email = email)
-            if user.password == password:
+            password_check = bcrypt.checkpw(password.encode("utf-8"), user.password.encode("utf-8"))
+            if password_check:
                 return JsonResponse({"message":"SUCCESS"}, status = 200)    
             return JsonResponse({"message":"PASSWORD_IS_WRONG"}, status = 401)
         except User.DoesNotExist:
