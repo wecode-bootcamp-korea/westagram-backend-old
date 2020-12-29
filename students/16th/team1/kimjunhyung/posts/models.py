@@ -7,6 +7,12 @@ class Post(models.Model):
     created_at  = models.DateTimeField(auto_now_add = True)
     updated_at  = models.DateTimeField(auto_now = True)
 
+    def get_first_comment(post):
+        first_comment = Comment.objects.select_related("post").filter(post = post)
+        if first_comment.exists():
+            return first_comment[0].content
+        return "댓글을 입력해주세요"
+
     class Meta:
         db_table = "posts"
 
