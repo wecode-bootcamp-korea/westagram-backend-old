@@ -42,7 +42,7 @@ class CommentCreateView(View):
     @login_required
     def post(self, request, post_id):
         try:
-            data = json.loads(request.body)
+            data                = json.loads(request.body)
             comment_user_email  = data["email"]
             content             = data["content"]
             post                = Post.objects.get(id = post_id)
