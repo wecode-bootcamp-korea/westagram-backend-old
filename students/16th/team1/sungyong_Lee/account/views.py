@@ -7,10 +7,10 @@ from .models          import User
 
 class SignUpView(View):
     def post(self, request):
-        
-        data = json.loads(request.body)
+        data                = json.loads(request.body)
         # 이메일은 숫자나 특수문자로 시작하면 안된다. 
-        pattern = re.compile(r"[^0-9\W]\w+@[a-zA-Z]+\.[a-zA-Z]+", re.I)
+        pattern             = re.compile(r"[^0-9\W]\w+@[a-zA-Z]+\.[a-zA-Z]+", re.I)
+        MIN_LENGTH_PASSWORD = 8
 
         try:        
             name         = data['name']
@@ -32,7 +32,7 @@ class SignUpView(View):
                     "message": "NOT_PROPER_EMAIL"
                 }, status=400)
             
-            if len(password) < 8:
+            if len(password) < MIN_LENGTH_PASSWORD:
                 return JsonResponse({
                     "message": "AT_LEAST_8_PASSOWRD"
                 })
