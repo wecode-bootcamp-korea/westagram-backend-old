@@ -10,8 +10,8 @@ from decorators.utils   import check_blank
 class UserSignUpView(View):
     @check_blank
     def post(self, request):
-        data = json.loads(request.body)
-        email = data["email"]
+        data     = json.loads(request.body)
+        email    = data["email"]
         password = data["password"]
         try:
             regex = re.compile("[a-zA-Z0-9-_.]+@[a-z]+\.[a-z]+")
@@ -37,8 +37,8 @@ class UserSignInView(View):
             user = User.objects.get(email = email)
             if user.password == password:
                 return JsonResponse({"message":"SUCCESS"}, status = 200)    
-            return JsonResponse({"message":"PASSWORD_IS_WRONG"}, status = 400)
+            return JsonResponse({"message":"PASSWORD_IS_WRONG"}, status = 401)
         except User.DoesNotExist:
-            return JsonResponse({"message":"USER_DOES_NOT_EXIST"}, status = 400)
+            return JsonResponse({"message":"USER_DOES_NOT_EXIST"}, status = 401)
         
             
