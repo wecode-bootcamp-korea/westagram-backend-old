@@ -53,3 +53,26 @@ class RegisterView(View):
             return JsonResponse({'MESSAGE :':"INVAILD_USER"},status = 400)
 
 
+class LoginView(View):
+    def post(self,request):
+
+        try:
+            data             = json.loads(request.body)
+            email            = data['email']
+            password         = data['password']
+            user_info        = User.objects.get(email=email)
+
+            if user_info.password == password:
+                return JsonResponse({'MESSAGE :':"SUCCESS"}, status = 200)
+            else:
+                return JsonResponse({'MESSAGE :':"INVAILD_USER"},status = 401)
+        
+        except KeyError:
+            return JsonResponse({'MESSAGE :':"KEY_ERROR"},status = 400)
+
+        except IndexError:
+            return JsonResponse({'MESSAGE :':"INDEX_ERROR"},status = 400)
+        
+        except User.DoesNotExist:
+            return JsonResponse({'MESSAGE :':"INVAILD_USER"},status = 401)
+
