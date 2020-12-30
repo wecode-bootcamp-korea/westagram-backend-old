@@ -4,7 +4,7 @@ from ast           import literal_eval
 from django.views  import View
 from django.http   import JsonResponse
 
-from .models       import Post, PostImage
+from .models       import Post, PostImage, Comment
 from user.models   import User
 
 class PostCreateView(View):
@@ -61,5 +61,80 @@ class PostReadView(View):
                 req_list.append(req_dict)
 
             return JsonResponse({'menus':req_list},status = 200)
+        except KeyError:
+            return JsonResponse({'MESSAGE :':"KEY_ERROR"},status = 400)
+
+class CommentCreateView(View):
+    def post(self,request):
+        try:
+            data = json.loads(request.body)
+            user = User.objects.get(nickname=data['writer'])
+            post = Post.objects.get(id=data['post'])
+
+            try:
+                image_url = data['image_url']
+            except:
+                image_url = None
+            
+            comment = Comment.objects.create(
+                writer    = user,
+                post      = post,
+                image_url = image_url,
+                content   = data['content']
+            )
+            
+            return JsonResponse({'MESSAGE :':"SUCCESS"},status = 200)
+
+        except KeyError:
+            return JsonResponse({'MESSAGE :':"KEY_ERROR"},status = 400)
+
+        except User.DoesNotExist:
+            return JsonResponse({'MESSAGE :':"INVAILD_USER"},status = 400)
+        
+        except Post.DoesNotExist:
+            return JsonResponse({'MESSAGE :':"INVAILD_POST"},status = 400)
+
+        except ValueError:
+            return JsonResponse({'MESSAGE :':"VALUE_ERROR"},status = 400)
+
+class CommentReadAllView(View):
+    def get(self, request):
+        try:
+            comments = Comment.objects.all()
+            req_list = []
+
+            for comment in comments:
+                req_dict   = {
+                    'id'        : comment.id,
+                    'content'   : comment.content,
+                    'writer'    : comment.writer.nickname,
+                    'image_url' : comment.image_url,
+                    'created_at': comment.created_at,
+                    'updated_at': comment.updated_at,
+                }
+                req_list.append(req_dict)
+            return JsonResponse({'comment':req_list},status = 200)
+        except KeyError:
+            return JsonResponse({'MESSAGE :':"KEY_ERROR"},status = 400)
+
+#[추가 구현 사항]: 5번 게시물의 댓글만 표출
+class CommentReadView(View):
+    def get(self, request):
+        try:
+            post     = Post.objects.get(id=5)
+            comments = Comment.objects.filter(post=post) 
+            req_list = []
+
+            for comment in comments:
+                req_dict   = {
+                    'id'        : comment.id,
+                    'content'   : comment.content,
+                    'writer'    : comment.writer.nickname,
+                    'image_url' : comment.image_url,
+                    'created_at': comment.created_at,
+                    'updated_at': comment.updated_at,
+                }
+                req_list.append(req_dict)
+            return JsonResponse({'comment':req_list},status = 200)
         except KeyError:
             return JsonResponse({'MESSAGE :':"KEY_ERROR"},status = 400)

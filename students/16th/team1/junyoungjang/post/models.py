@@ -19,5 +19,13 @@ class PostImage(models.Model):
     class Meta:
         db_table = 'post_images'
 
-
+class Comment(models.Model):
+    post       = models.ForeignKey('Post', on_delete = models.CASCADE)
+    writer     = models.ForeignKey(User, on_delete = models.CASCADE)
+    image_url  = models.CharField(max_length = 2000, null=True)
+    content    = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)  
     
+    class Meta:
+        db_table= 'comments'
