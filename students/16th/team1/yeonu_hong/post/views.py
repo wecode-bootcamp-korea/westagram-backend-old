@@ -1,4 +1,5 @@
 import json
+from decorator        import login_check
 from django.shortcuts import render
 from django.http      import JsonResponse
 from django.views     import View
@@ -8,12 +9,10 @@ from datetime         import datetime
 
 # Create your views here.
 class PostView(View):
+    @login_check
     def post(self, request):
         try:
             data = json.loads(request.body)
-            if not User.objects.filter(name=data['user']):
-                return JsonResponse({'message':'INVALID_USER'}, status=400)
-            
             user     = User.objects.get(name=data['user'])
             image    = data['image']
             pub_date = datetime.now() # 2020-12-30 11:47:45.781887
