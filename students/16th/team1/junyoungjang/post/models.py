@@ -13,8 +13,11 @@ class Post(models.Model):
         db_table = 'posts'
 
 class PostImage(models.Model):
-    image_url = models.CharField(max_length = 2000, null=True)
+    image_url = models.CharField(max_length = 2000)
     post      = models.ForeignKey('Post', on_delete = models.CASCADE)
 
     class Meta:
         db_table = 'post_images'
+
+
+    
