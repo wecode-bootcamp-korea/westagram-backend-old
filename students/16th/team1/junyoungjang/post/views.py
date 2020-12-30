@@ -22,7 +22,7 @@ class PostCreateView(View):
             try:
                 image_urls = literal_eval(data['image_url'])       #String 형태의 image_url을 list로 변환
 
-                for image_url in image_urls:
+                for image_url in image_urls :
                     PostImage.objects.create(image_url = image_url, post = post)
             except:
                     pass

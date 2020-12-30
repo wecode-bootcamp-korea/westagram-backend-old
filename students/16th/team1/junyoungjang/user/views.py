@@ -1,4 +1,5 @@
 import json
+import re
 
 from django.http  import JsonResponse
 from django.views import View
@@ -10,7 +11,7 @@ class RegisterView(View):
     def post(self,request):
 
         try:
-            MIN_EMAIL_LENGTH = 8
+            MIN_PASSWORD_LENGTH = 7
             data             = json.loads(request.body)
             name             = data['name']
             phonenumber      = data['phonenumber'].replace("-",'')
@@ -18,17 +19,22 @@ class RegisterView(View):
             password         = data['password']
             nickname         = data['nickname']
             
-            if email.find("@") == -1 or email.find(".") == -1:
+            p = re.compile('^[a-zA-Z0-9+-_.]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$')
+
+            if p.match(email) == None:
                 return JsonResponse({'MESSAGE :':"INVAILD EMAIL ADDRESS!"},status = 400)
             
-            if len(password)<MIN_EMAIL_LENGTH:
-                return JsonResponse({'MESSAGE :':"PASSWORD TOO SHORT!"},status = 400)
+            if not len(password)>MIN_PASSWORD_LENGTH:
+                return JsonResponse({'MESSAGE :':f"PASSWORD NEEDS TO BE OVER {MIN_PASSWORD_LENGTH} DIGITS"},status = 400)
 
             if User.objects.filter(email=email).exists():
                 return JsonResponse({'MESSAGE :':"EMAIL ALREADY EXISTS!"},status = 400)
 
             if User.objects.filter(phonenumber=phonenumber).exists():
                 return JsonResponse({'MESSAGE :':"PHONENUMBER ALREADY EXISTS!"},status = 400)
+
+            if not phonenumber.isdigit():
+                return JsonResponse({'MESSAGE :':"PHONENUMBER SHOULD CONTAIN ONLY DIGITS"},status = 400)
 
             if User.objects.filter(nickname=nickname).exists():
                 return JsonResponse({'MESSAGE :':"NICKNAME ALREADY EXISTS!"},status = 400)
