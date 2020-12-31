@@ -10,9 +10,9 @@ class SignUpView(View):
 
     def post(self, request):
         try:
-            data = json.loads(request.body)
-            email = data['email']
-            password = data['password']
+            data        = json.loads(request.body)
+            email       = data['email']
+            password    = data['password']
             MIN_LEN_PWD = 8
 
                     
@@ -29,30 +29,37 @@ class SignUpView(View):
             
             if not User.objects.filter(email=email).exists(): 
                 User.objects.create(
-                                    password=data['password'],
-                                    email   =data['email']                               
+                                    password=password,
+                                    email   =email                               
                                     )
                 return JsonResponse({'MESSAGE':'SUCCESS'}, status=201)
             
             return JsonResponse({'MESSAGE':'EMAIL ALREADY EXISTS.'}, status=400)
             
         except User.DoesNotExist:
-            return JsonResponse({'MESSAGE':'DOES NOT EXISTS'}, status=400)
+            return JsonResponse({'MESSAGE':'USER DOES NOT EXISTS'}, status=400)
 
         except KeyError:
             return JsonResponse({'MESSAGE':"KEY ERROR OCCUR"}, status=400)
 
 
     def get(self, request):
-        result = [user.email for user in User.objects.all()]
-        return JsonResponse({'RESULT':result}, status=200)
+        try:
+            result = [{'user.email':user.email,
+                       'user.password':user.password}
+                        for user in User.objects.all()
+                     ]
+            return JsonResponse({'RESULT':result}, status=200)
+        except KeyError:
+            return JsonResponse({'MESSAGE':"KEY ERROR OCCUR"}, status=400)
+        
 
 
 class LoginView(View):
     def post(self, request):
         try:
-            data = json.loads(request.body)
-            email = data['email']
+            data     = json.loads(request.body)
+            email    = data['email']
             password = data['password']
         
             if User.objects.filter(email=email,password=password).exists():
