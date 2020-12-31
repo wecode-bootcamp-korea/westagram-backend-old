@@ -10,39 +10,86 @@ from user.models  import User
 class SignUpView(View):
 
     def post(self, request):
-        data = json.loads(request.body)
-        print(data)
+        data          = json.loads(request.body)
+        email, mobile = check_email_or_mobile(data['email_or_mobile'])
+        username      = data['username']
 
-        email, mobile_number = check_email_or_mobile(data['email_or_mobile'])
-        print("check:", end='')
-        print(email, bool(email), mobile_number, bool(mobile_number))
-        if not (bool(email) or bool(mobile_number)):
-
+        if not (email or mobile): # unexpected value input
             return JsonResponse({'MESSAGE': 'KEY_ERROR'}, status=400)
         
         if not(validate_password(data['password'])):
             return JsonResponse({'MESSAGE': 'KEY_ERROR'}, status=400)
 
-        # existence check - wrong ! 
-        if email and User.objects.filter(email = email).exists():
+        if not username:
+            return JsonResponse({'MESSAGE': 'KEY_ERROR'}, status=400)
+
+        # existence check
+        if email    and User.objects.filter(email         = email).exists():
             return JsonResponse({'MESSAGE': 'EXISTENCE_ERROR'}, status=400)
-        if mobile_number and User.objects.filter(mobile_number = mobile_number).exists():
+       
+        if mobile   and User.objects.filter(mobile_number = mobile).exists():
+            return JsonResponse({'MESSAGE': 'EXISTENCE_ERROR'}, status=400)
+        
+        if username and User.objects.filter(username      = username).exists():
             return JsonResponse({'MESSAGE': 'EXISTENCE_ERROR'}, status=400)
 
+        # create user account
         a_user = User.objects.create(
             email         = email,
-            mobile_number = mobile_number,
+            mobile_number = mobile,
             full_name     = data['full_name'],
-            username      = data['username'],
+            username      = username,
             password      = data['password']
         )
 
         return JsonResponse({'MESSAGE': 'SUCCESS'}, status=200)
-       
+
+class LogInView(View):
+
+    def post(self, request):
+        data          = json.loads(request.body)
+        email, mobile = check_email_or_mobile(data['phone_name_email'])
+        password      = data['password']
+
+        if not password:
+            return JsonResponse({'MESSAGE': 'KEY_ERROR'}, status=400)
+
+        if email:
+            try:
+                if User.objects.get(email=email).password == password:
+                    return JsonResponse({'MESSAGE': 'SUCCESS'}, status=200)
+
+                return JsonResponse({'MESSAGE': 'INVALID_USER'}, status=400)
+            except:
+                return JsonResponse({'MESSAGE': 'INVALID_USER'}, status=400)
+
+
+        if mobile:
+            try:
+                if User.objects.get(mobile_number=mobile).password == password:
+                    return JsonResponse({'MESSAGE': 'SUCCESS'}, status=200)
+
+                return JsonResponse({'MESSAGE': 'INVALID_USER'}, status=400)
+            except:
+                return JsonResponse({'MESSAGE': 'INVALID_USER'}, status=400)
+        
+        username = data['phone_name_email']
+
+        if username:
+            try:
+                if User.objects.get(username=username).password == password:
+                    return JsonResponse({'MESSAGE': 'SUCCESS'}, status=200)
+
+                return JsonResponse({'MESSAGE': 'INVALID_USER'}, status=400)
+            except:
+                return JsonResponse({'MESSAGE': 'INVALID_USER'}, status=400)
+        
+        # empty input.
+        return JsonResponse({'MESSAGE': 'KEY_ERROR'}, status=400)
 
 def check_email_or_mobile(item):
 
-    if validate_mobile(item): # validate_mobile is more strict than validate_email
+    if validate_mobile(item):
         email = ''
         mobile_number = ''.join(item.split('-'))
         return email, mobile_number
