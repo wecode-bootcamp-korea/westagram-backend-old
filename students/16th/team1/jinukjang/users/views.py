@@ -51,8 +51,8 @@ class SignupView(View):
                 password = password
             )
             return JsonResponse({'MESSAGE': 'SUCCESS'}, status=200) 
-        except:
-            return JsonResponse({'MESSAGE': 'KEY ERROR'}, status=400)
+        except KeyError:
+            return JsonResponse({'MESSAGE': "KEY ERROR"}, status=400)
 
 
 class LoginView(View):
@@ -68,11 +68,9 @@ class LoginView(View):
             elif 'phone'    in data:
                 user = User.objects.get(phone=data['phone'])
 
-            print(data['password'])
-            print(user.password)
             if user.password == data['password']:
                 return JsonResponse({'MESSAGE': 'SUCCESS'}, status=200)
             return JsonResponse({'MESSAGE': 'INVALID_USER'}, status=401)
-        except:
+        except KeyError:
             return JsonResponse({'MESSAGE': 'INVALID_USER'}, status=401)
          

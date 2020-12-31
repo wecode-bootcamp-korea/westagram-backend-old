@@ -1,7 +1,9 @@
 from django.urls import path
-from .views      import CreatePostView, ReadPostView
+from .views      import CreatePostView, ReadPostView, CreateCommentView, ReadCommentView
 
 urlpatterns = [
-    path('/create',CreatePostView.as_view()),
-    path('/read'  ,ReadPostView.as_view())
+    path('/createpost',CreatePostView.as_view()),
+    path('/read',ReadPostView.as_view()),
+    path('/comments/create',CreateCommentView.as_view()),
+    path('/comments/read',ReadCommentView.as_view()),
 ]

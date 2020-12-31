@@ -1,5 +1,4 @@
 from django.db import models
-from django.db.models.fields import CharField
 
 class Post(models.Model):
 
@@ -19,3 +18,15 @@ class PostImage(models.Model):
 
     class Meta:
         db_table = "post_images"
+
+
+class Comment(models.Model):
+    
+    post = models.ForeignKey('posts.Post',on_delete=models.CASCADE)
+    user = models.ForeignKey('users.User',on_delete=models.CASCADE)
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "comments"
