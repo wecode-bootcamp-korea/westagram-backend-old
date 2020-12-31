@@ -155,7 +155,6 @@ class LikeView(View):
                 likes.delete()
 
                 return JsonResponse({'MESSAGE :':f"DISLIKED POST {post.title}"},status = 200)
-
             PostLike.objects.create(post=post, user=user)
 
             return JsonResponse({'MESSAGE :':f"LIKED POST {post.title}"},status = 200)

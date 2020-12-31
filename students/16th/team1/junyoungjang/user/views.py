@@ -3,8 +3,9 @@ import re
 
 from django.http      import JsonResponse
 from django.views     import View
+from django.db.models import Q
 
-from .models          import User
+from .models          import User, Follow
 
 
 class RegisterView(View):
@@ -80,4 +81,52 @@ class LoginView(View):
             return JsonResponse({'MESSAGE :':"INDEX_ERROR"},status = 400)
         
         except User.DoesNotExist:
-            return JsonResponse({'MESSAGE :':"INVAILD_USER"},status = 401)                        
+            return JsonResponse({'MESSAGE :':"INVAILD_USER"},status = 401)
+
+class FollowView(View):
+    def post(self, request):
+        
+        try:
+            data            = json.loads(request.body)
+            followee        = User.objects.get(id = data['followee'])
+            follower        = User.objects.get(id = data['follower'])
+            follow_relation = Follow.objects.filter(
+                Q(followee=followee) &
+                Q(follower=follower)
+            )
+            if follow_relation.exists():
+                follow_relation.delete()
+            
+                return JsonResponse({'MESSAGE :':f"UNFOLLOWED {followee.nickname}!"},status = 200)
+            Follow.objects.create(followee=followee, follower=follower)
+
+            return JsonResponse({'MESSAGE :':f"FOLLOWED  {followee.nickname}!"},status = 200)
+
+        except KeyError:
+            return JsonResponse({'MESSAGE :':"KEY_ERROR"},status = 400)
+
+        except ValueError:
+            return JsonResponse({'MESSAGE :':"VALUE_ERROR"},status = 400)
+
+        except User.DoesNotExist:
+            return JsonResponse({'MESSAGE :':"INVAILD_USER"},status = 401)
+                
+    def get(self, request):
+        
+        try:
+            follows = Follow.objects.all()
+            req_list = []
+
+            for follow in follows:
+                req_dict   = {
+                    'id'       : follow.id,
+                    'followee' : follow.followee.nickname,
+                    'follower' : follow.follower.nickname,
+                }
+                req_list.append(req_dict)
+            return JsonResponse({'follows :':req_list},status = 200)
+            
+        except KeyError:
+                return JsonResponse({'MESSAGE :':"KEY_ERROR"},status = 400)
+
+                        
