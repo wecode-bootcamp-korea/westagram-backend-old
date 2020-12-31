@@ -14,3 +14,13 @@ class Image(models.Model):
 
     class Meta:
         db_table = 'images'
+
+class Comment(models.Model):
+    post     = models.ForeignKey('Post', on_delete=models.CASCADE)
+    user     = models.ForeignKey('user.User', on_delete=models.CASCADE)
+    content  = models.CharField(max_length=10000)
+    pub_date = models.DateTimeField(auto_now_add=True)
+
+
+    class Meta:
+        db_table = 'comments'

@@ -18,13 +18,35 @@ class PostView(View):
             pub_date = datetime.now() # 2020-12-30 11:47:45.781887
 
             Post.objects.create(user=user, pub_date=pub_date)
-            post = Post.objects.filter(user=user).last() # 한 유저가 여러개의 포스트 작성 가능. 지금 들어온 포스트로 가져와야함
+            post = Post.objects.filter(user=user).last()
             Image.objects.create(post=post,image=image)
 
             return JsonResponse({'message':'SUCCESS'}, status=200)
 
         except KeyError:
             return JsonResponse({'message':'KEY_ERROR'}, status=400)
+
+
+    def get(serlf, request):
+        posts  = Post.objects.all()
+        images = Image.objects.all()
+
+        posts_list  = []
+        images_list = []
+        for post in posts:
+            posts_dict = {
+                'user'     : post.user.name,
+                'pub_date' : post.pub_date
+            }
+        posts_list.append(posts_dict)
+
+        for image in images:
+            images_dict = {
+                'image'  : image.image
+            }
+        posts_list.append(images_dict)
+
+        return JsonResponse({'posts':posts_list}, status=200)
 
 
 
