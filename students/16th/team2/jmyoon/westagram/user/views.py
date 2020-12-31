@@ -1,8 +1,8 @@
 import json
 
-from django.http import JsonResponse
-from django.views import View
-from user.models import User
+from django.http   import JsonResponse
+from django.views  import View
+from user.models   import User
 
 class SignupView(View):
     def post(self, request):
@@ -46,11 +46,3 @@ class SignupView(View):
             return JsonResponse(
                 {'MESSAGE' : 'KeyERROR'}, status = 400
             )
-            
-
-
-
-        email
-
-
-
