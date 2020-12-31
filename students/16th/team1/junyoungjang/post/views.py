@@ -1,11 +1,12 @@
 import json
-from ast           import literal_eval
+from ast              import literal_eval
 
-from django.views  import View
-from django.http   import JsonResponse
+from django.views     import View
+from django.http      import JsonResponse
+from django.db.models import Q
 
-from .models       import Post, PostImage, Comment
-from user.models   import User
+from .models          import Post, PostImage, Comment, PostLike
+from user.models      import User
 
 class PostCreateView(View):
     def post(self, request):
@@ -42,7 +43,8 @@ class PostReadView(View):
             req_list = []
 
             for post in posts:
-                images = post.postimage_set.all()
+                images    = post.postimage_set.all()
+                likes     = post.postlike_set.all().count()
 
                 if images.exists():
                     image_list = [ image.image_url for image in images ]  
@@ -57,6 +59,7 @@ class PostReadView(View):
                     'image_url' : image_list,
                     'created_at': post.created_at,
                     'updated_at': post.updated_at,
+                    'likes'     : likes,
                 }
                 req_list.append(req_dict)
 
@@ -75,7 +78,7 @@ class CommentCreateView(View):
                 image_url = data['image_url']
             except:
                 image_url = None
-            
+
             comment = Comment.objects.create(
                 writer    = user,
                 post      = post,
@@ -138,3 +141,34 @@ class CommentReadView(View):
             return JsonResponse({'comment':req_list},status = 200)
         except KeyError:
             return JsonResponse({'MESSAGE :':"KEY_ERROR"},status = 400)
+
+class LikeView(View):
+    def post(self, request):
+        try:
+            data = json.loads(request.body)
+            post = Post.objects.get(id=data['post'])
+            user = User.objects.get(id=data['user'])
+            likes = PostLike.objects.filter(
+                    Q(post=post) & Q(user=user) 
+            )
+            if likes.exists():
+                likes.delete()
+
+                return JsonResponse({'MESSAGE :':f"DISLIKED POST {post.title}"},status = 200)
+                
+            PostLike.objects.create(post=post, user=user)
+
+            return JsonResponse({'MESSAGE :':f"LIKED POST {post.title}"},status = 200)
+            
+        except KeyError:
+            return JsonResponse({'MESSAGE :':"KEY_ERROR"},status = 400)
+
+        except User.DoesNotExist:
+            return JsonResponse({'MESSAGE :':"INVAILD_USER"},status = 400)
+        
+        except Post.DoesNotExist:
+            return JsonResponse({'MESSAGE :':"INVAILD_POST"},status = 400)
+
+        except ValueError:
+            return JsonResponse({'MESSAGE :':"VALUE_ERROR"},status = 400)
+        
