@@ -47,7 +47,7 @@ class SignUpSignInView(View):
 
             if 'phone' in data: # 전화번호로 로그인할 경우
                 phone = data["phone"]
-                if not User.objects.filter(phone=data["phone"]):
+                if not User.objects.get(phone=data["phone"]):
                     return JsonResponse({'message':'INVALID_USER'}, status=400)
                 password_check = User.objects.get(phone=data["phone"]).password
                 if password == password_check:
@@ -57,7 +57,7 @@ class SignUpSignInView(View):
              
             if 'name' in data: # 이름으로 로그인할 경우
                 name = data["name"]
-                if not User.objects.filter(name=data["name"]):
+                if not User.objects.get(name=data["name"]):
                     return JsonResponse({'message':'INVALID_USER'}, status=400)
                 password_check = User.objects.get(name=data["name"]).password
                 if password == password_check:
@@ -67,7 +67,7 @@ class SignUpSignInView(View):
 
             if 'email' in data: # 이메일로 로그인할 경우
                 email = data["email"]
-                if not User.objects.filter(email=data["email"]):
+                if not User.objects.get(email=data["email"]):
                     return JsonResponse({'message':'INVALID_USER'}, status=400)
                 password_check = User.objects.get(email=data["email"]).password
                 if password == password_check:
