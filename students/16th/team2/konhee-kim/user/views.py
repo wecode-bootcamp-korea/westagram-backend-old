@@ -11,25 +11,29 @@ class SignUpView(View):
 
     def post(self, request):
         data = json.loads(request.body)
-        
+        print(data)
+
         email, mobile_number = check_email_or_mobile(data['email_or_mobile'])
-        if bool(email) and bool(mobile_number) == False:
+        print("check:", end='')
+        print(email, bool(email), mobile_number, bool(mobile_number))
+        if not (bool(email) or bool(mobile_number)):
+
             return JsonResponse({'MESSAGE': 'KEY_ERROR'}, status=400)
         
         if not(validate_password(data['password'])):
             return JsonResponse({'MESSAGE': 'KEY_ERROR'}, status=400)
 
-        # existence check
+        # existence check - wrong ! 
         if email and User.objects.filter(email = email).exists():
             return JsonResponse({'MESSAGE': 'EXISTENCE_ERROR'}, status=400)
         if mobile_number and User.objects.filter(mobile_number = mobile_number).exists():
             return JsonResponse({'MESSAGE': 'EXISTENCE_ERROR'}, status=400)
 
         a_user = User.objects.create(
-            email         = email
-            mobile_number = mobile_number
-            full_name     = data['full_name']
-            username      = data['username']
+            email         = email,
+            mobile_number = mobile_number,
+            full_name     = data['full_name'],
+            username      = data['username'],
             password      = data['password']
         )
 
@@ -40,15 +44,15 @@ def check_email_or_mobile(item):
 
     if validate_mobile(item): # validate_mobile is more strict than validate_email
         email = ''
-        mobile_number = int(''.join(item.split('-')))
+        mobile_number = ''.join(item.split('-'))
         return email, mobile_number
 
     if validate_email(item):
         email = item
-        mobile_number = None
+        mobile_number = ''
         return email, mobile_number
         
-    email, mobile_number = ('', None)
+    email, mobile_number = ('', '')
     return email, mobile_number
 
 def validate_email(email):
@@ -56,9 +60,9 @@ def validate_email(email):
     for email validation. check email_addresss whether include '@' & '.'
     """
     try:
-        return re.match(r".+@.+\..+", email).group(0) == email:
+        return re.match(r".+@.+\..+", email).group(0) == email
     except:
-        return False:
+        return False
     
 def validate_mobile(mobile):
     """
@@ -69,7 +73,7 @@ def validate_mobile(mobile):
                 r"^01[0-9]-?[0-9][0-9][0-9][0-9]-?[0-9][0-9][0-9][0-9]$", mobile
                 ).group(0) == mobile
     except:
-        return False:
+        return False
 
 def validate_password(password):
     """

@@ -1,8 +1,8 @@
 from django.db import models
 
-class User(models.model)
-    email         = models.EmailField(unique=True, blank=True)
-    mobile_number = models.IntegerField(unique=True, null=True)
+class User(models.Model):
+    email         = models.EmailField(blank=True)
+    mobile_number = models.CharField(blank=True, max_length=11)
     full_name     = models.CharField(max_length=50, blank=True)
     username      = models.CharField(max_length=50, blank=True)
     password      = models.CharField(max_length=20)
