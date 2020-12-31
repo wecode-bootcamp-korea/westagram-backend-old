@@ -2,6 +2,7 @@ import json
 import re
 from django.http  import JsonResponse
 from django.views import View
+from django.db.models import Q  
 
 from user.models  import User
 
@@ -20,7 +21,7 @@ class SignUpView(View):
             if not email and password: 
                 return JsonResponse({'MESSAGE':'KEY_ERROR'}, status=400)
             
-            if len(password) < MIN_LEN_PWD: 
+            if len(password) < MIN_LEN_PWD:  # 유형1
                 return JsonResponse({'MESSAGE':f'PASSWORD SHOULD BE OVER {MIN_LEN_PWD} CHAR'}, status=400)
  
             if not p.match(email):
@@ -43,6 +44,24 @@ class SignUpView(View):
 
 
     def get(self, request):
-        result = [user_info.name for user in User.objects.all()]
-        return JsonResponse({'result':result}, status=200)
+        result = [user.email for user in User.objects.all()]
+        return JsonResponse({'RESULT':result}, status=200)
 
+
+class LoginView(View):
+    def post(self, request):
+        try:
+            data = json.loads(request.body)
+            email = data['email']
+            password = data['password']
+        
+            if User.objects.filter(email=email,password=password).exists():
+                return JsonResponse({'MESSAGE':'로그인에 성공하셨습니다.'}, status=200)
+            return JsonResponse({'MESSAGE':'아이디와 비밀번호에 문제가 있습니다.'}, status=400)
+
+        except KeyError as e: # POST 메서드를 날릴때 email에서 만약 emai라고 날려 버리면 오류가 발생함.
+            return JsonResponse({'MESSAGE':'키에러가 발생했습니다.'}, status=400)
+
+    def get(self, request):
+        result = [user.email for user in User.objects.all()]
+        return JsonResponse({'RESULT':result}, status=200)     
