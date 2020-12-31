@@ -63,7 +63,7 @@ class PostReadView(View):
                 }
                 req_list.append(req_dict)
 
-            return JsonResponse({'menus':req_list},status = 200)
+            return JsonResponse({'posts':req_list},status = 200)
         except KeyError:
             return JsonResponse({'MESSAGE :':"KEY_ERROR"},status = 400)
 
@@ -116,7 +116,7 @@ class CommentReadAllView(View):
                     'updated_at': comment.updated_at,
                 }
                 req_list.append(req_dict)
-            return JsonResponse({'comment':req_list},status = 200)
+            return JsonResponse({'comments':req_list},status = 200)
         except KeyError:
             return JsonResponse({'MESSAGE :':"KEY_ERROR"},status = 400)
 
@@ -138,7 +138,7 @@ class CommentReadView(View):
                     'updated_at': comment.updated_at,
                 }
                 req_list.append(req_dict)
-            return JsonResponse({'comment':req_list},status = 200)
+            return JsonResponse({'comments':req_list},status = 200)
         except KeyError:
             return JsonResponse({'MESSAGE :':"KEY_ERROR"},status = 400)
 
@@ -155,7 +155,7 @@ class LikeView(View):
                 likes.delete()
 
                 return JsonResponse({'MESSAGE :':f"DISLIKED POST {post.title}"},status = 200)
-                
+
             PostLike.objects.create(post=post, user=user)
 
             return JsonResponse({'MESSAGE :':f"LIKED POST {post.title}"},status = 200)

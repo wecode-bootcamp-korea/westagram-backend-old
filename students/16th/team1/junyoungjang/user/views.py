@@ -1,10 +1,10 @@
 import json
 import re
 
-from django.http  import JsonResponse
-from django.views import View
+from django.http      import JsonResponse
+from django.views     import View
 
-from .models      import User
+from .models          import User
 
 
 class RegisterView(View):
@@ -80,5 +80,4 @@ class LoginView(View):
             return JsonResponse({'MESSAGE :':"INDEX_ERROR"},status = 400)
         
         except User.DoesNotExist:
-            return JsonResponse({'MESSAGE :':"INVAILD_USER"},status = 401)
-
+            return JsonResponse({'MESSAGE :':"INVAILD_USER"},status = 401)                        
