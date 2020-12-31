@@ -1,15 +1,17 @@
+import datetime
 from django.db import models
 
-# Create your models here.
+# 사용자
 class Users(models.Model):
     
-    phone_number = models.CharField(max_length = 50, blank = False)
-    user_name    = models.CharField(max_length = 50, blank = False)
-    email        = models.EmailField(max_length = 254, blank = False)
-    password     = models.CharField(max_length = 50)
+    phone_number = models.CharField(max_length = 50)
+    user_name    = models.CharField(max_length = 50)
+    email        = models.EmailField(max_length = 254)
+    password     = models.BinaryField(max_length = 500)
     
     class Meta:
         db_table = 'users'
+
 
 
 
