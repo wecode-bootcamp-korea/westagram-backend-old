@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 
 from pathlib import Path
 
+import my_settings
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -20,7 +22,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '_i@cj9$4x($$c!$bpvv8m%m9bmjv&#ea!xp58qipe1@x70j4lv'
+# SECRET_KEY = '_i@cj9$4x($$c!$bpvv8m%m9bmjv&#ea!xp58qipe1@x70j4lv'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -82,7 +84,7 @@ WSGI_APPLICATION = 'westagram.wsgi.application'
 #         'NAME': BASE_DIR / 'db.sqlite3',
 #     }
 # }
-import my_settings
+
 DATABASES  = my_settings.DATABASES
 SECRET_KEY = my_settings.SECRET
     
