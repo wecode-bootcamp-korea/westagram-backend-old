@@ -7,7 +7,6 @@ from user.models import User
 
 class UserView(View):
     def post(self, request):
-        print('a--------------')
         data        = json.loads(request.body)
         name        = data.get('name')
         password    = data.get('password')
