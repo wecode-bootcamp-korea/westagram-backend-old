@@ -9,9 +9,9 @@ from .models import User
 class UserView(View):
 
     def post(self, request):
-         data = json.loads(request.body)
-         name = data['name']
-         email = data['email']
+         data     = json.loads(request.body)
+         name     = data['name']
+         email    = data['email']
          password = data['password']
 
          email_rule = re.compile('^[a-zA-Z0-9+-_.]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$')
@@ -35,8 +35,8 @@ class UserView(View):
 
              if not User.objects.filter(email=email).exists():
                  User.objects.create(
-                     name = name,
-                     email = email,
+                     name     = name,
+                     email    = email,
                      password = password
                  )
                  return JsonResponse({"message": "SUCCESS"}, status=200)
