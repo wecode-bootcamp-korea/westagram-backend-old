@@ -7,11 +7,16 @@ from user.models import User
 
 class UserView(View):
     def post(self, request):
-        data     = json.loads(request.body)
-        name     = data.get('name')
-        password = data.get('password')
-        email    = data.get('email')
-        phone    = data.get('phone')
+        print('a--------------')
+        data        = json.loads(request.body)
+        name        = data.get('name')
+        password    = data.get('password')
+        email       = data.get('email')
+        phone       = data.get('phone')
+        name_in_db  = User.objects.filter(name=name)
+        phone_in_db = User.objects.filter(phone=phone)
+        email_in_db = User.objects.filter(email=email)
+
 
         if email is None and phone is None and name is None:
             return JsonResponse({'MESSAGE': 'KEY_ERRORS'}, status=400)
@@ -25,10 +30,10 @@ class UserView(View):
         
         if len(password) < 8:
             return JsonResponse({'MESSAGE': 'INVALID_PASSWORD'}, status=400)
-        
-        if User.objects.filter(name=name).exists() or User.objects.filter(phone=phone).exists() or User.objects.filter(email=email).exists():
+   
+        if name_in_db.exists() or phone_in_db.exists() or email_in_db.exists():
             return JsonResponse({'MESSAGE': 'EXIST_USER'}, status=400)
-
+        
         User.objects.create(name=name, password=password, email=email, phone=phone)
         
         return JsonResponse({'MESSAGE':'SUCCESS'}, status=200)
@@ -50,6 +55,7 @@ class LoginView(View):
         if name is not None:
             if User.objects.filter(name= name).exists():
                 user = User.objects.get(name= name)
+
                 if user.password != password:
                     return JsonResponse({'MESSAGE': 'INVALID_USER'}, status=401)
             else:
@@ -58,6 +64,7 @@ class LoginView(View):
         if email is not None:
             if User.objects.filter(email= email).exists():
                 user = User.objects.get(email= email)
+
                 if user.password != password:
                     return JsonResponse({'MESSAGE': 'INVALID_USER'}, status=401)
             else:
@@ -66,6 +73,7 @@ class LoginView(View):
         if phone is not None:
             if User.objects.filter(phone= phone).exists():
                 user = User.objects.get(phone= phone)
+
                 if user.password != password:
                     return JsonResponse({'MESSAGE': 'INVALID_USER'}, status=401)
             else:
