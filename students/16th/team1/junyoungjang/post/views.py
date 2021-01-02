@@ -170,4 +170,52 @@ class LikeView(View):
 
         except ValueError:
             return JsonResponse({'MESSAGE :':"VALUE_ERROR"},status = 400)
+
+
+class PostDeleteView(View):
+    def post(self, request):
+        try:
+            data           = json.loads(request.body)
+            post           = Post.objects.get(id=data['post'])
+            delete_message = f"POST '{post.title}' DELETED!"
+            
+            post.delete()
+
+            return JsonResponse({'MESSAGE :':delete_message}, status = 200)
+
+        except KeyError:
+            return JsonResponse({'MESSAGE :':"KEY_ERROR"},status = 400)
+
+        except User.DoesNotExist:
+            return JsonResponse({'MESSAGE :':"INVAILD_USER"},status = 400)
         
+        except Post.DoesNotExist:
+            return JsonResponse({'MESSAGE :':"INVAILD_POST"},status = 400)
+
+        except ValueError:
+            return JsonResponse({'MESSAGE :':"VALUE_ERROR"},status = 400)
+
+class CommentDeleteView(View):
+    def post(self, request):
+        try:
+            data           = json.loads(request.body)
+            comment        = Comment.objects.get(id=data['comment'])
+            delete_message = f"Comment '{comment.id}' DELETED!"
+
+            comment.delete()
+
+            return JsonResponse({'MESSAGE :':delete_message}, status = 200)
+
+        except KeyError:
+            return JsonResponse({'MESSAGE :':"KEY_ERROR"},status = 400)
+
+        except User.DoesNotExist:
+            return JsonResponse({'MESSAGE :':"INVAILD_USER"},status = 400)
+        
+        except Post.DoesNotExist:
+            return JsonResponse({'MESSAGE :':"INVAILD_POST"},status = 400)
+
+        except ValueError:
+            return JsonResponse({'MESSAGE :':"VALUE_ERROR"},status = 400)
+
+                 
