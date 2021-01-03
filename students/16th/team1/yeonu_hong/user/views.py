@@ -32,7 +32,7 @@ class SignUpSignInView(View):
                 phone    = phone,
                 email    = email).save()
     
-            return JsonResponse({'message': 'SUCCESS'}, status=200)
+            return JsonResponse({'message': 'SUCCESS'}, status=201)
             
         except KeyError:
             return JsonResponse({'message':'KEY_ERROR'}, status=400)

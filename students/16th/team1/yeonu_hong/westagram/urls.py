@@ -19,7 +19,7 @@ from django.urls import path, include
 urlpatterns = [
     path('signup', include('user.urls')),
     path('signin', include('user.urls')),
-    path('post', include('post.urls')),
+    path('post/', include('post.urls')),
     path('comment/', include('post.urls')),
 
 ]

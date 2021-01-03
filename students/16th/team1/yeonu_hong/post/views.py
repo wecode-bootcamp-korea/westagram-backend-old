@@ -3,7 +3,7 @@ from decorator        import login_check
 from django.shortcuts import render
 from django.http      import JsonResponse
 from django.views     import View
-from .models          import Post, Image, Comment
+from .models          import Post, Image, Comment, Like
 from user.models      import User
 from datetime         import datetime
 
@@ -21,7 +21,7 @@ class PostView(View):
             post = Post.objects.filter(user=user).last()
             Image.objects.create(post=post,image=image)
 
-            return JsonResponse({'message':'SUCCESS'}, status=200)
+            return JsonResponse({'message':'SUCCESS'}, status=201)
 
         except KeyError:
             return JsonResponse({'message':'KEY_ERROR'}, status=400)
@@ -38,14 +38,13 @@ class PostView(View):
                 'user'     : post.user.name,
                 'pub_date' : post.pub_date
             }
-
-        posts_list.append(posts_dict)
+            posts_list.append(posts_dict)
 
         for image in images:
             images_dict = {
                 'image'  : image.image
             }
-        posts_list.append(images_dict)
+            posts_list.append(images_dict)
 
         return JsonResponse({'posts':posts_list}, status=200)
 
@@ -67,7 +66,7 @@ class CommentView(View):
                 content   = content
             ).save()
 
-            return JsonResponse({'message':'SUCCESS'}, status=200)
+            return JsonResponse({'message':'SUCCESS'}, status=201)
 
         except KeyError:
             return JsonResponse({'message':'KEY_ERROR'}, status=400)
@@ -98,4 +97,33 @@ class CommentView(View):
 
         return JsonResponse({'comment':comment_dict}, status=200)
        
-        
+
+class LikeView(View):
+    @login_check
+    def post(self, request, post_id, user_id):
+        try:
+            data = json.loads(request.body)
+            post_querySet = Post.objects.filter(id=post_id)
+            post = post_querySet[0]
+            user = User.objects.get(id=user_id)
+
+            if Like.objects.filter(post=post_id): # 좋아요 테이블에 있는 게시물일 때
+                likes = Like.objects.filter(post=post_id)
+                for like in likes:
+                    if like.user.id == user.id:
+                        post.likes -= 1
+                        like.delete()
+                    else:
+                        post.likes += 1
+            else:
+                Like.objects.create(post=post, user=user)
+
+            post_likes = Like.objects.filter(post=post_id).count()
+            post_querySet.update(likes = post_likes)
+
+            return JsonResponse({'message':'SUCCESS'}, status=201)
+
+        except KeyError:
+         return JsonResponse({'message':'KEY_ERROR'}, status=400)          
+
+

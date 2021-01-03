@@ -7,7 +7,7 @@ def login_check(func):
     def wrapper(self, request, *args, **kwargs):
         data = json.loads(request.body)
         if not User.objects.filter(name=data['user']):
-            return JsonResponse({'message':'INVALID_USER'}, status=400)
+            return JsonResponse({'message':'INVALID_USER'}, status=401)
         return func(self, request, *args, **kwargs)
     return wrapper
 
