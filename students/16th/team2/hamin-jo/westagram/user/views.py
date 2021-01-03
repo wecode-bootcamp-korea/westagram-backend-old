@@ -1,4 +1,5 @@
 import json
+import re
 
 from django.views import View
 from django.http import JsonResponse
@@ -6,35 +7,41 @@ from django.http import JsonResponse
 from user.models import User
 
 class UserView(View):
-    def post(self, request):
-        data     = json.loads(request.body)
-        name     = data.get('name')
-        password = data.get('password')
-        email    = data.get('email')
-        phone    = data.get('phone')
+    def create(self, request):
+        data           = json.loads(request.body)
+        name           = data.get('name')
+        password       = data.get('password')
+        email          = data.get('email')
+        phone          = data.get('phone')
+        email_regex    = '^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w{2,3}$'
+        password_regex = '[A-Za-z0-9@#$]{8,12}'
+        name_db        = User.objects.filter(name=name)
+        email_db       = User.objects.filter(email=email)
+        phone_db       = User.objects.filter(phone=phone)
+
 
         if email is None and phone is None and name is None:
             return JsonResponse({'MESSAGE': 'KEY_ERRORS'}, status=400)
 
         if email is not None:
-            if '@' not in email or '.' not in email:
+            if not (re.search(email_regex,email)):
                 return JsonResponse({'MESSAGE': 'INVALID_EMAIL'}, status=400)
 
         if password is None:
             return JsonResponse({'MESSAGE': 'KEY_ERRORS'}, status=400)
-        
-        if len(password) < 8:
+            
+        if not (re.search(password_regex, password)):
             return JsonResponse({'MESSAGE': 'INVALID_PASSWORD'}, status=400)
-        
-        if User.objects.filter(name=name).exists() or User.objects.filter(phone=phone).exists() or User.objects.filter(email=email).exists():
+            
+        if name_db.exists() or email_db.exists() or phone_db.exists():
             return JsonResponse({'MESSAGE': 'EXIST_USER'}, status=400)
 
-        User.objects.create(name=name, password=password, email=email, phone=phone)
-        
+        User.objects.create(name= name, password= password, email= email, phone= phone)
         return JsonResponse({'MESSAGE':'SUCCESS'}, status=200)
 
+
 class LoginView(View):
-    def post(self, request):
+    def login(self, request):
         data        = json.loads(request.body)
         name        = data.get('name')
         email       = data.get('email')
