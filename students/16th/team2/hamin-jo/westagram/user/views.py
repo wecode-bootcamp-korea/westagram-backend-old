@@ -7,7 +7,7 @@ from django.http import JsonResponse
 from user.models import User
 
 class UserView(View):
-    def create(self, request):
+    def post(self, request):
         data           = json.loads(request.body)
         name           = data.get('name')
         password       = data.get('password')
@@ -41,7 +41,7 @@ class UserView(View):
 
 
 class LoginView(View):
-    def login(self, request):
+    def post(self, request):
         data        = json.loads(request.body)
         name        = data.get('name')
         email       = data.get('email')
