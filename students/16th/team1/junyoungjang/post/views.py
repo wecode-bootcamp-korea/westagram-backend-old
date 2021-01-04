@@ -107,7 +107,7 @@ class CommentReadAllView(View):
                 'updated_at': comment.updated_at,
             }
             req_list.append(req_dict)
-        return JsonResponse({'comments':req_list},status = 200)
+        return JsonResponse({'COMMENTS :':req_list},status = 200)
 
 
 #[추가 구현 사항]: 5번 게시물의 댓글만 표출
@@ -128,7 +128,7 @@ class CommentReadView(View):
                 'updated_at': comment.updated_at,
             }
             req_list.append(req_dict)
-        return JsonResponse({'comments':req_list},status = 200)
+        return JsonResponse({'COMMENTS :':req_list},status = 200)
 
 class LikeView(View):
     @exception_check
@@ -143,10 +143,10 @@ class LikeView(View):
             if likes.exists():
                 likes.delete()
 
-                return JsonResponse({'MESSAGE :':f"DISLIKED POST {post.title}"},status = 200)
+                return JsonResponse({'MESSAGE :':f"DISLIKED_POST_{post.title}"},status = 200)
             PostLike.objects.create(post=post, user=user)
 
-            return JsonResponse({'MESSAGE :':f"LIKED POST {post.title}"},status = 200)
+            return JsonResponse({'MESSAGE :':f"LIKED_POST_{post.title}"},status = 200)
             
         except User.DoesNotExist:
             return JsonResponse({'MESSAGE :':"INVAILD_USER"},status = 400)
@@ -161,7 +161,7 @@ class PostDeleteView(View):
         try:
             data           = json.loads(request.body)
             post           = Post.objects.get(id=data['post'])
-            delete_message = f"POST '{post.title}' DELETED!"
+            delete_message = f"POST_'{post.title}'_DELETED!"
             
             post.delete()
 
@@ -179,7 +179,7 @@ class CommentDeleteView(View):
         try:
             data           = json.loads(request.body)
             comment        = Comment.objects.get(id=data['comment'])
-            delete_message = f"Comment '{comment.id}' DELETED!"
+            delete_message = f"Comment_'{comment.id}'_DELETED!"
 
             comment.delete()
 
@@ -191,4 +191,32 @@ class CommentDeleteView(View):
         except Post.DoesNotExist:
             return JsonResponse({'MESSAGE :':"INVAILD_POST"},status = 400)
 
-                 
+class PostUpdateView(View):
+    @exception_check
+    def post(self, request):
+        try:
+            data         = json.loads(request.body)
+            post         = Post.objects.get(id=data['post'])
+            post.content = data['content']
+
+            post.save()
+
+            return JsonResponse({'MESSAGE :':"SUCCESS"}, status = 200)
+        
+        except Post.DoesNotExist:
+            return JsonResponse({'MESSAGE :':"INVAILD_POST"},status = 400)
+
+class CommentUpdateView(View):
+    @exception_check
+    def post(self, request):
+        try:
+            data            = json.loads(request.body)
+            comment         = Comment.objects.get(id=data['comment'])
+            comment.content = data['content']
+
+            comment.save()
+
+            return JsonResponse({'MESSAGE :':"SUCCESS"}, status = 200)
+        
+        except Comment.DoesNotExist:
+            return JsonResponse({'MESSAGE :':"INVAILD_COMMENT"},status = 400)

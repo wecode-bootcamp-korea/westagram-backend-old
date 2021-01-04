@@ -25,25 +25,25 @@ class RegisterView(View):
             p = re.compile('^[a-zA-Z0-9+-_.]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$')
 
             if p.match(email) == None:
-                return JsonResponse({'MESSAGE :':"INVAILD EMAIL ADDRESS!"},status = 400)
+                return JsonResponse({'MESSAGE :':"INVAILD_EMAIL_ADDRESS!"},status = 400)
 
             if not len(password)>MIN_PASSWORD_LENGTH:
-                return JsonResponse({'MESSAGE :':f"PASSWORD MUST TO BE OVER {MIN_PASSWORD_LENGTH} DIGITS"},status = 400)
+                return JsonResponse({'MESSAGE :':f"PASSWORD_MUST_TO_BE_OVER_{MIN_PASSWORD_LENGTH}_DIGITS"},status = 400)
 
             if User.objects.filter(email=email).exists():
-                return JsonResponse({'MESSAGE :':"EMAIL ALREADY EXISTS!"},status = 400)
+                return JsonResponse({'MESSAGE :':"EMAIL_ALREADY_EXISTS!"},status = 400)
 
             if User.objects.filter(phonenumber=phonenumber).exists():
-                return JsonResponse({'MESSAGE :':"PHONENUMBER ALREADY EXISTS!"},status = 400)
+                return JsonResponse({'MESSAGE :':"PHONENUMBER_ALREADY_EXISTS!"},status = 400)
 
             if not phonenumber.isdigit():
-                return JsonResponse({'MESSAGE :':"PHONENUMBER SHOULD CONTAIN ONLY DIGITS"},status = 400)
+                return JsonResponse({'MESSAGE :':"PHONENUMBER_SHOULD_CONTAIN_ONLY_DIGITS"},status = 400)
 
             if User.objects.filter(nickname=nickname).exists():
-                return JsonResponse({'MESSAGE :':"NICKNAME ALREADY EXISTS!"},status = 400)
+                return JsonResponse({'MESSAGE :':"NICKNAME_ALREADY_EXISTS!"},status = 400)
 
             if not len(nickname)>MIN_NICKNAME_LENGTH:
-                return JsonResponse({'MESSAGE :':f"NICKNAME MUST BE OVER {MIN_NICKNAME_LENGTH} CHARACTERS!"},status = 400)
+                return JsonResponse({'MESSAGE :':f"NICKNAME_MUST_BE_OVER_{MIN_NICKNAME_LENGTH}_CHARACTERS!"},status = 400)
             
             User.objects.create(
                 name        = name,
@@ -95,10 +95,10 @@ class FollowView(View):
             if follow_relation.exists():
                 follow_relation.delete()
             
-                return JsonResponse({'MESSAGE :':f"UNFOLLOWED {followee.nickname}!"},status = 200)
+                return JsonResponse({'MESSAGE :':f"UNFOLLOWED_{followee.nickname}!"},status = 200)
             Follow.objects.create(followee=followee, follower=follower)
 
-            return JsonResponse({'MESSAGE :':f"FOLLOWED  {followee.nickname}!"},status = 200)
+            return JsonResponse({'MESSAGE :':f"FOLLOWED_{followee.nickname}!"},status = 200)
 
         except User.DoesNotExist:
             return JsonResponse({'MESSAGE :':"INVAILD_USER"},status = 401)
