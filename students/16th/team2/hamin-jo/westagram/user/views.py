@@ -20,11 +20,11 @@ class UserView(View):
         phone_db       = User.objects.filter(phone=phone)
 
         # email, phone, name 중 1개이상 입력 확인
-        if email is not None and phone is not None and name is not None:
+        if not email and not phone and not name:
             return JsonResponse({'MESSAGE': 'KEY_ERRORS'}, status=400)
         
         # password 입력확인
-        if password is not None:
+        if not password:
             return JsonResponse({'MESSAGE': 'KEY_ERRORS'}, status=400)
 
         # password 조건확인
@@ -61,15 +61,15 @@ class LoginView(View):
         password    = data.get('password')
 
         # email, phone, name 중 1개이상 입력 확인
-        if email is not None and phone is not None and name is not None:
+        if not email and not phone and not name:
             return JsonResponse({'MESSAGE': 'KEY_ERRORS'}, status=400)
 
         # password 입력확인
-        if password is not None:
+        if not password:
             return JsonResponse({'MESSAGE': 'KEY_ERRORS'}, status=400)
 
         # name 입력 시 회원 유무 확인 후 password 매칭 확인
-        if name is not None:
+        if not name:
             if User.objects.filter(name= name).exists():
                 user = User.objects.get(name= name)
                 if user.password != password:
@@ -78,16 +78,16 @@ class LoginView(View):
                 return JsonResponse({'MESSAGE': 'INVALID_USER'}, status=401)
 
         # email 입력 시 회원 유무 확인 후 password 매칭 확인
-        if email is not None:
+        if not email:
             if User.objects.filter(email= email).exists():
                 user = User.objects.get(email= email)
                 if user.password != password:
                     return JsonResponse({'MESSAGE': 'INVALID_USER'}, status=401)
             else:
                 return JsonResponse({'MESSAGE': 'INVALID_USER'}, status=401)
-
+                
         # phone 입력 시 회원 유무 확인 후 password 매칭 확인
-        if phone is not None:
+        if not phone:
             if User.objects.filter(phone= phone).exists():
                 user = User.objects.get(phone= phone)
                 if user.password != password:
