@@ -1,7 +1,8 @@
 import json
 from django.http  import JsonResponse
 from django.views import View
-from .models      import User
+from decorator    import login_check
+from .models      import User#, Follow
 
 # 회원가입
 class SignUpSignInView(View):
@@ -79,3 +80,22 @@ class SignUpSignInView(View):
 
         except KeyError:
             return JsonResponse({'message':'KEY_ERROR 비번없음'}, status=400)
+
+
+# class FollowView(View):
+#     @login_check
+#     def post(self, request, user_id):
+#         try:
+#             data     = json.loads(request.body)
+#             user     = User.objects.get(id=user_id)
+#             follower = User.objects,get(name=data['user']) # 로그인 하면서 받는 유저
+
+
+#             if Follow.objects.get(user=user_id):
+#                 if Follow.objects.get(user=user_id, follower=follower): # unfollow
+#                     pass
+#             else:
+#                 Follow.objects.create(user=user, follower=follower)
+#         except KeyError:
+#             return JsonResponse({'message':'KEY_ERROR'}, status=400)   
+

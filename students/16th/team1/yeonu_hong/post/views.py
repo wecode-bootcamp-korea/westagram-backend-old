@@ -108,13 +108,12 @@ class LikeView(View):
             user = User.objects.get(id=user_id)
 
             if Like.objects.filter(post=post_id): # 좋아요 테이블에 있는 게시물일 때
-                likes = Like.objects.filter(post=post_id)
-                for like in likes:
-                    if like.user.id == user.id:
-                        post.likes -= 1
-                        like.delete()
-                    else:
-                        post.likes += 1
+                if Like.objects.filter(post=post_id, user=user_id):
+                    post.likes -= 1
+                    like = Like.objects.filter(post=post_id, user=user_id)
+                    like.delete()
+                else:
+                    post.likes += 1
             else:
                 Like.objects.create(post=post, user=user)
 
