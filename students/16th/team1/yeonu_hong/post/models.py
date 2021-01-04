@@ -4,7 +4,7 @@ from django.db import models
 class Post(models.Model):
     user      = models.ForeignKey('user.User', on_delete=models.CASCADE)
     pub_date  = models.DateTimeField(auto_now_add=True)
-    likes     = models.IntegerField(default=0)
+    likes     = models.IntegerField(default=0) # 이 컬럼이 꼭 필요할까?
 
     class Meta:
         db_table = 'posts'

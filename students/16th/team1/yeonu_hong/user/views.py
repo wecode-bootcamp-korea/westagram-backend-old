@@ -2,7 +2,7 @@ import json
 from django.http  import JsonResponse
 from django.views import View
 from decorator    import login_check
-from .models      import User#, Follow
+from .models      import User, Follow
 
 # 회원가입
 class SignUpView(View):
@@ -82,20 +82,22 @@ class SignInView(View):
             return JsonResponse({'message':'KEY_ERROR 비번없음'}, status=400)
 
 
-# class FollowView(View):
-#     @login_check
-#     def post(self, request, user_id):
-#         try:
-#             data     = json.loads(request.body)
-#             user     = User.objects.get(id=user_id)
-#             follower = User.objects,get(name=data['user']) # 로그인 하면서 받는 유저
+class FollowView(View):
+    @login_check
+    def post(self, request, user_id):
+        try:
+            data     = json.loads(request.body)
+            user     = User.objects.get(id=user_id)
+            follower = User.objects.get(name=data['user']) # 로그인 하면서 받는 유저
 
-
-#             if Follow.objects.get(user=user_id):
-#                 if Follow.objects.get(user=user_id, follower=follower): # unfollow
-#                     pass
-#             else:
-#                 Follow.objects.create(user=user, follower=follower)
-#         except KeyError:
-#             return JsonResponse({'message':'KEY_ERROR'}, status=400)   
-
+            if follower.id == user_id:
+                return JsonResponse({'message':'자기 자신은 follow할 수 없습니다.'}, status=400)
+        
+            if Follow.objects.filter(user=user_id):
+                if Follow.objects.filter(user=user_id, follower=follower): # unfollow
+                    Follow.objects.filter(user=user_id, follower=follower).delete()
+            else:
+                Follow.objects.create(user=user, follower=follower)
+            return JsonResponse({'message':'SUCCESS'}, status=201)
+        except KeyError:
+            return JsonResponse({'message':'KEY_ERROR'}, status=400)
