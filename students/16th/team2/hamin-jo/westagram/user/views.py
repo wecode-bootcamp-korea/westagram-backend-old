@@ -32,10 +32,10 @@ class UserView(View):
             
         if not (re.search(password_regex, password)):
             return JsonResponse({'MESSAGE': 'INVALID_PASSWORD'}, status=400)
-            
+        print(name_db)    
         if name_db.exists() or email_db.exists() or phone_db.exists():
             return JsonResponse({'MESSAGE': 'EXIST_USER'}, status=400)
-
+        print(1)
         User.objects.create(name= name, password= password, email= email, phone= phone)
         return JsonResponse({'MESSAGE':'SUCCESS'}, status=200)
 
@@ -77,6 +77,6 @@ class LoginView(View):
                     return JsonResponse({'MESSAGE': 'INVALID_USER'}, status=401)
             else:
                 return JsonResponse({'MESSAGE': 'INVALID_USER'}, status=401)
-
+        
         return JsonResponse({"message":"SUCCESS"}, status= 200) 
         
