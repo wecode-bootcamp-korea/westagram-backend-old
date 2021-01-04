@@ -60,13 +60,16 @@ class LoginView(View):
         phone       = data.get('phone')
         password    = data.get('password')
 
-        if email is None and phone is None and name is None:
+        # email, phone, name 중 1개이상 입력 확인
+        if not email and not phone and not name:
             return JsonResponse({'MESSAGE': 'KEY_ERRORS'}, status=400)
 
-        if password is None:
+        # password 입력확인
+        if not password:
             return JsonResponse({'MESSAGE': 'KEY_ERRORS'}, status=400)
 
-        if name is not None:
+        # name 입력 시 회원 유무 확인 후 password 매칭 확인
+        if not name:
             if User.objects.filter(name= name).exists():
                 user = User.objects.get(name= name)
                 if user.password != password:
@@ -74,7 +77,8 @@ class LoginView(View):
             else:
                 return JsonResponse({'MESSAGE': 'INVALID_USER'}, status=401)
 
-        if email is not None:
+        # email 입력 시 회원 유무 확인 후 password 매칭 확인
+        if not email:
             if User.objects.filter(email= email).exists():
                 user = User.objects.get(email= email)
                 if user.password != password:
@@ -82,7 +86,8 @@ class LoginView(View):
             else:
                 return JsonResponse({'MESSAGE': 'INVALID_USER'}, status=401)
 
-        if phone is not None:
+        # phone 입력 시 회원 유무 확인 후 password 매칭 확인
+        if not phone:
             if User.objects.filter(phone= phone).exists():
                 user = User.objects.get(phone= phone)
                 if user.password != password:
