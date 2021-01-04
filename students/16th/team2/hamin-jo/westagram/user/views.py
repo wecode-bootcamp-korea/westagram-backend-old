@@ -19,23 +19,35 @@ class UserView(View):
         email_db       = User.objects.filter(email=email)
         phone_db       = User.objects.filter(phone=phone)
 
-
-        if email is None and phone is None and name is None:
+        # email, phone, name 중 1개이상 입력 확인
+        if not email and not phone and not name:
+            return JsonResponse({'MESSAGE': 'KEY_ERRORS'}, status=400)
+        
+        # password 입력확인
+        if not password:
             return JsonResponse({'MESSAGE': 'KEY_ERRORS'}, status=400)
 
-        if email is not None:
-            if not (re.search(email_regex,email)):
-                return JsonResponse({'MESSAGE': 'INVALID_EMAIL'}, status=400)
-
-        if password is None:
-            return JsonResponse({'MESSAGE': 'KEY_ERRORS'}, status=400)
-            
+        # password 조건확인
         if not (re.search(password_regex, password)):
             return JsonResponse({'MESSAGE': 'INVALID_PASSWORD'}, status=400)
-        print(name_db)    
-        if name_db.exists() or email_db.exists() or phone_db.exists():
-            return JsonResponse({'MESSAGE': 'EXIST_USER'}, status=400)
-        print(1)
+
+        # email 입력시, 조건확인과 기존회원 유무확인
+        if email:
+            if not (re.search(email_regex,email)):
+                return JsonResponse({'MESSAGE': 'INVALID_EMAIL'}, status=400)
+            if email_db.exist():
+                return JsonResponse({'MESSAGE': 'EXIST_USER'}, status=400) 
+
+        # name 입력시 기존회원 유무확인
+        if name:
+           if name_db.exists():
+               return JsonResponse({'MESSAGE': 'EXIST_USER'}, status=400)
+        
+        # phone 입력시 기존회원 유무확인
+        if phone:
+            if phone_db.exists():
+                return JsonResponse({'MESSAGE': 'EXIST_USER'}, status=400)
+                
         User.objects.create(name= name, password= password, email= email, phone= phone)
         return JsonResponse({'MESSAGE':'SUCCESS'}, status=200)
 
