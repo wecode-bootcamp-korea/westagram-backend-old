@@ -65,12 +65,17 @@ class RegisterView(View):
 class LoginView(View):
     @exception_check
     def post(self,request):
-
         try:
-            data             = json.loads(request.body)
-            email            = data['email']
-            password         = data['password']
-            user_info        = User.objects.get(email=email)
+            data            = json.loads(request.body)
+            password        = data['password']
+            verifiable_list = ['email','nickname','phonenumber'] 
+            # email, phone, nickname 셋 중 하나로 로그인 가능 
+            verify_info     = {x : data[x] for x in data if x in verifiable_list}
+
+            if not verify_info:
+                return JsonResponse({'MESSAGE :':"PLEASE_ENTER_EMAIL_NICKNAME_OR_PHONENUMER"},status = 401)
+
+            user_info = User.objects.get(**verify_info)
 
             if user_info.password == password:
                 return JsonResponse({'MESSAGE :':"SUCCESS"}, status = 200)
@@ -116,7 +121,7 @@ class FollowView(View):
                 'follower' : follow.follower.nickname,
             }
             req_list.append(req_dict)
-        return JsonResponse({'follows :':req_list},status = 200)
+        return JsonResponse({'FOLLOWS :':req_list},status = 200)
             
 
                         

@@ -130,9 +130,9 @@ class CommentReadAllView(View):
 
 #[추가 구현 사항]: 5번 게시물의 댓글만 표출
 class CommentReadView(View):
-    def get(self, request):
+    def get(self, request, post_id):
         try:
-            post     = Post.objects.get(id=5)
+            post     = Post.objects.get(id=post_id)
             comments = Comment.objects.filter(post=post) 
             req_list = []
 

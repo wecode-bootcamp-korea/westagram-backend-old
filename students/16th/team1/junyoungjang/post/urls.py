@@ -21,7 +21,7 @@ urlpatterns = [
     path('/post_update',      PostUpdateView.as_view()),
     path('/comment_create',   CommentCreateView.as_view()),
     path('/comment_read_all', CommentReadAllView.as_view()),
-    path('/comment_read',     CommentReadView.as_view()),
+    path('/comment_read/<int:post_id>/', CommentReadView.as_view()),
     path('/comment_delete',   CommentDeleteView.as_view()),
     path('/comment_update',   CommentUpdateView.as_view()),
 ]
