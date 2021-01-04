@@ -73,7 +73,6 @@ class SigninView(View):
         try:
             # 이메일로 로그인 시
             if 'email' in data.keys():
-            #if data.get('email')is not None:
                 if User.objects.filter(email = email).exists():
                     if User.objects.get(email = email).password ==  password:
                         return JsonResponse({'MESSAGE' : 'SignIn SUCCES'}, status = 200)
@@ -84,7 +83,6 @@ class SigninView(View):
 
             # 휴대폰번호로 로그인 시
             elif 'phone' in data.keys():
-            #elif data.get('phone')is not None:
                 if User.objects.filter(phone = phone).exists():
                     if User.objects.get(phone = phone).password == password:
                         return JsonResponse({'MESSAGE' : 'SignIn SUCCES'}, status = 200)
@@ -95,7 +93,6 @@ class SigninView(View):
 
             # 사용자이름으로 로그인 시
             elif 'user_name' in data.keys():
-            #elif data.get('user_name')is not None:
                 if User.objects.filter(user_name = user_name).exists():
                     if User.objects.get(user_name = user_name).password == password:
                         return JsonResponse({'MESSAGE' : 'SignIn SUCCES'}, status = 200)
