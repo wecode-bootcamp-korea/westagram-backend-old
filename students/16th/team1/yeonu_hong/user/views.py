@@ -5,7 +5,7 @@ from decorator    import login_check
 from .models      import User#, Follow
 
 # 회원가입
-class SignUpSignInView(View):
+class SignUpView(View):
     def post(self, request): 
         try:
             data      = json.loads(request.body)
@@ -40,8 +40,8 @@ class SignUpSignInView(View):
 
 
 # # 로그인
-# class SignInView(View):
-    def get(self, request):
+class SignInView(View):
+    def post(self, request):
         try:
             data = json.loads(request.body)
             password  = data['password']
