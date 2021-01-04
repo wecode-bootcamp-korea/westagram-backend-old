@@ -7,7 +7,6 @@ class Post(models.Model):
     content     = models.TextField()
     created_at  = models.DateTimeField(auto_now_add=True)
     updated_at  = models.DateTimeField(auto_now=True)
-    count_likes = models.IntegerField(default=0)
 
     class Meta:
         db_table = "posts"

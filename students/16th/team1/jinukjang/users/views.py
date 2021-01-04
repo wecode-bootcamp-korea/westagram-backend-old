@@ -1,4 +1,5 @@
 import json
+import re
 
 from django.views import View
 from django.http  import JsonResponse
@@ -7,70 +8,73 @@ from .models      import User
 
 
 class SignupView(View):
-
-    def get(self,request):
-        user_data = User.objects.values()
-        return JsonResponse({'user_data': list(user_data)}, status=200)
-
     def post(self,request):
         try:
             MIN_PASSWORD_LENGHT = 8
 
             data = json.loads(request.body)
 
-            # username, email, phone이 입력되지 않았다면 None
-            username = data['username'] if 'username' in data else None
-            email    = data['email']    if 'email'    in data else None
-            phone    = data['phone']    if 'phone'    in data else None
-
+            user_id  = data['user_id']
             password = data['password']
+            nickname = data['nickname']
             
-            # username, email, phone이 모두 입력되지 않았을때
-            if (username or email or phone) == None:
-                return JsonResponse({'MESSAGE': 'KEY ERROR'}, status=400)
+            # user, phone, email은 필수가 아님
+            name     = data.get('name', None)
+            phone    = data.get('phone', None)
+            email    = data.get('email', None)
+            
+            p = re.compile('^[a-zA-Z0-9+-_.]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$')
 
-            if username != None and User.objects.filter(username=username).exists():
-                return JsonResponse({'MESSAGE :':"이미 존재하는 사용자 이름입니다."},status = 400)
+            if User.objects.filter(user_id=user_id).exists():
+                return JsonResponse({'MESSAGE :':"USER_ID ALREADY EXISTS!"},status = 400)
 
-            if email    != None and ('@' not in email or '.' not in email):
-                return JsonResponse({'MESSAGE :':"EMAIL VALIDATION"},status = 400)
+            if User.objects.filter(nickname=nickname).exists():
+                return JsonResponse({'MESSAGE :':"NICKNAME ALREADY EXISTS!"},status = 400)
+
+            if email    != None and p.match(email) == None:
+                return JsonResponse({'MESSAGE :':"INVAILD_EMAIL_ADDRESS!"},status = 400)
             
             if email    != None and User.objects.filter(email=email).exists():
-                return JsonResponse({'MESSAGE :':"이미 존재하는 이메일입니다."},status = 400)
-
-            if phone    != None and User.objects.filter(phone=phone).exists():
-                return JsonResponse({'MESSAGE :':"이미 존재하는 전화번호입니다."},status = 400)
+                return JsonResponse({'MESSAGE :':"EMAIL ALREADY EXISTS!"},status = 400)
 
             if len(password) < MIN_PASSWORD_LENGHT:
                 return JsonResponse({'MESSAGE :':"PASSWORD VALIDATION"},status = 400)
 
+            if phone    != None and User.objects.filter(phone=phone).exists():
+                return JsonResponse({'MESSAGE :':"PHONE ALREADY EXISTS!"},status = 400)
+                    
+            print(phone.replace('-','').isdigit())
+            if phone    != None and not phone.replace('-','').isdigit():
+                return JsonResponse({'MESSAGE :':"PHONENUMBER_SHOULD_CONTAIN_ONLY_DIGITS"},status = 400)
+            
+
             User.objects.create(
-                username = username,
+                user_id  = user_id,
+                nickname = nickname,
+                name     = name,
                 email    = email,
                 phone    = phone,
                 password = password
             )
-            return JsonResponse({'MESSAGE': 'SUCCESS'}, status=200) 
+            return JsonResponse({'MESSAGE': 'SUCCESS'}, status=200)
+            
         except KeyError:
-            return JsonResponse({'MESSAGE': "KEY ERROR"}, status=400)
+            return JsonResponse({'MESSAGE': "KEY_ERROR"}, status=400)
 
 
 class LoginView(View):
     def get(self,request):
         try:
             data = json.loads(request.body)
-            user = User()
-
-            if   'username' in data:
-                user = User.objects.get(username=data['username'])
-            elif 'email'    in data:
-                user = User.objects.get(email=data['email'])
-            elif 'phone'    in data:
-                user = User.objects.get(phone=data['phone'])
+            user = User.objects.get(user_id=data['user_id'])
 
             if user.password == data['password']:
                 return JsonResponse({'MESSAGE': 'SUCCESS'}, status=200)
-            return JsonResponse({'MESSAGE': 'INVALID_USER'}, status=401)
+            return JsonResponse({'MESSAGE': 'WORONG PASSWORD'}, status=401)
+
         except KeyError:
-            return JsonResponse({'MESSAGE': 'INVALID_USER'}, status=401)
-         
+            return JsonResponse({'MESSAGE :':"KEY_ERROR"},status = 400)
+            
+        except User.DoesNotExist:
+            return JsonResponse({'MESSAGE :':"INVAILD USER"},status = 400)
+            

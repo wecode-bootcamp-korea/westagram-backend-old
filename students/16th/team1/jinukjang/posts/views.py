@@ -11,17 +11,11 @@ class CreatePostView(View):
     def post(self, request):
         try:
             data = json.loads(request.body)
-            user = User()
-            if   'username' in data:
-                user = User.objects.get(username=data['username'])
-            elif 'email'    in data:
-                user = User.objects.get(email=data['email'])
-            elif 'phone'    in data:
-                user = User.objects.get(phone=data['phone'])
+            user = User.objects.get(user_id=data['user_id'])
 
-            # 동일한 제목의 Post생성 불가능.
+            # 동일한 제목의 Post생성 불가능. -> CommentView에서 Post의 title로 접근할거임.
             if Post.objects.filter(title=data['title']).exists():
-                raise KeyError                
+                return JsonResponse({'MESSAGE': 'TITLE ALREADY EXISTS!'}, status=400) 
 
             post = Post.objects.create(
                 title   = data['title'],
@@ -38,12 +32,14 @@ class CreatePostView(View):
                         post    = post,
                         img_url = img_url.strip()
                     )
-            except:
+            except: # img_url이 없는 경우.
                 pass
             return JsonResponse({'MESSAGE': 'SUCCESS'}, status=200) 
         except KeyError:
-            return JsonResponse({'MESSAGE': 'KEY ERROR'}, status=400)
-
+            return JsonResponse({'MESSAGE :':"KEY_ERROR"},status = 400)
+            
+        except User.DoesNotExist:
+            return JsonResponse({'MESSAGE :':"INVAILD USER"},status = 400)
         
 
 class PostView(View):
@@ -53,21 +49,24 @@ class PostView(View):
             post_list = []
 
             for post in posts:
-                imges    = post.postimage_set.all()
+                imges = post.postimage_set.all()
+                likes = post.like_set.all().count()
+
                 img_list = [img.img_url for img in imges]
 
                 post_dict = {
-                    'writer'    : post.writer.email or post.writer.username or post.writer.phone,
+                    'writer'    : post.writer.nickname,
                     'title'     : post.title,
                     'content'   : post.content,
                     'img'       : img_list,
                     'created_at': post.created_at,
                     'updated_at': post.updated_at,
+                    'cnt_likes' : likes
                 }
 
                 post_list.append(post_dict)
 
-            return JsonResponse({'menus':post_list},status = 200)
+            return JsonResponse({'posts':post_list},status = 200)
         except KeyError:
             return JsonResponse({'MESSAGE :':"KEY_ERROR"},status = 400)
 
@@ -79,32 +78,37 @@ class CommentView(View):
             data = json.loads(request.body)
             post = Post.objects.get(title=data['title'])
 
-            return JsonResponse({'menus':list(comment_data)},status = 200)
+            comment = post.comment_set.all()
+
+            return JsonResponse({'posts':list(comment)},status = 200)
         except KeyError:
             return JsonResponse({'MESSAGE :':"KEY_ERROR"},status = 400)
+
+        except Post.DoesNotExist:
+            return JsonResponse({'MESSAGE :':"INVAILD POST"},status = 400)
 
 # username, email, phone와 Post의 title 입력
 class CreateCommentView(View):
     def post(self, request):
         try:
             data = json.loads(request.body)
-            user = User()
-            if   'username' in data:
-                user = User.objects.get(username=data['username'])
-            elif 'email'    in data:
-                user = User.objects.get(email=data['email'])
-            elif 'phone'    in data:
-                user = User.objects.get(phone=data['phone'])
 
             Comment.objects.create(
-                user    = user,
-                post    = Post.objects.get(title=data['title']),
+                user    = User.objects.get(nickname = data['nickname']),
+                post    = Post.objects.get(title    = data['title']),
                 content = data['content'],
             )
 
             return JsonResponse({'MESSAGE': 'SUCCESS'}, status=200) 
+
         except KeyError:
-            return JsonResponse({'MESSAGE': 'KEY ERROR'}, status=400)
+            return JsonResponse({'MESSAGE :':"KEY_ERROR"},status = 400)
+            
+        except User.DoesNotExist:
+            return JsonResponse({'MESSAGE :':"INVAILD USER"},status = 400)
+
+        except Post.DoesNotExist:
+            return JsonResponse({'MESSAGE :':"INVAILD POST"},status = 400)
 
         
 # username, email, phone와 Post의 title 입력
@@ -112,28 +116,21 @@ class PostLikeView(View):
     def post(self, request):
         try:
             data = json.loads(request.body)
-            user = User()
-
-            # 요청시 username, email, phone로 User 찾기
-            if   'username' in data:
-                user = User.objects.get(username=data['username'])
-            elif 'email'    in data:
-                user = User.objects.get(email=data['email'])
-            elif 'phone'    in data:
-                user = User.objects.get(phone=data['phone'])
-            
+            user = User.objects.get(nickname=data['nickname'])
             post = Post.objects.get(title=data['title'])
 
             if  Like.objects.filter(user=user, post=post).exists():
                 Like.objects.filter(user=user, post=post).delete()
-                post.count_likes-=1
-                post.save()
                 return JsonResponse({'MESSAGE': 'POST_LIKE_CANCLE'}, status=200)
 
             Like.objects.create(user=user, post=post)
-            post.count_likes+=1
-            post.save()
             return JsonResponse({'MESSAGE': 'POST_LIKE'}, status=200) 
 
         except KeyError:
-            return JsonResponse({'MESSAGE': 'KEY ERROR'}, status=400)
+            return JsonResponse({'MESSAGE :':"KEY_ERROR"},status = 400)
+            
+        except User.DoesNotExist:
+            return JsonResponse({'MESSAGE :':"INVAILD USER"},status = 400)
+
+        except Post.DoesNotExist:
+            return JsonResponse({'MESSAGE :':"INVAILD POST"},status = 400)
