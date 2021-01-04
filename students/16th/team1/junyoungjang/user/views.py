@@ -1,5 +1,6 @@
 import json
 import re
+import jwt
 
 from django.http      import JsonResponse
 from django.views     import View
@@ -7,6 +8,7 @@ from django.db.models import Q
 
 from .exception_check import exception_check
 from .models          import User, Follow
+from my_settings      import JWT_SECRET
 
 class RegisterView(View):
     @exception_check
@@ -78,7 +80,8 @@ class LoginView(View):
             user_info = User.objects.get(**verify_info)
 
             if user_info.password == password:
-                return JsonResponse({'MESSAGE :':"SUCCESS"}, status = 200)
+                user_token = jwt.encode({'user_id':user_info.id},JWT_SECRET,algorithm="HS256")
+                return JsonResponse({'TOKEN :':user_token}, status = 200)
             else:
                 return JsonResponse({'MESSAGE :':"INVAILD_USER"},status = 401)
 
