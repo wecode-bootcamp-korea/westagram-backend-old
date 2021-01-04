@@ -5,14 +5,16 @@ from django.http      import JsonResponse
 from django.views     import View
 from django.db.models import Q
 
+from .exception_check import exception_check
 from .models          import User, Follow
 
-
 class RegisterView(View):
+    @exception_check
     def post(self,request):
 
         try:
             MIN_PASSWORD_LENGTH = 7
+            MIN_NICKNAME_LENGTH = 1
             data             = json.loads(request.body)
             name             = data['name']
             phonenumber      = data['phonenumber'].replace("-",'')
@@ -24,9 +26,9 @@ class RegisterView(View):
 
             if p.match(email) == None:
                 return JsonResponse({'MESSAGE :':"INVAILD EMAIL ADDRESS!"},status = 400)
-            
+
             if not len(password)>MIN_PASSWORD_LENGTH:
-                return JsonResponse({'MESSAGE :':f"PASSWORD NEEDS TO BE OVER {MIN_PASSWORD_LENGTH} DIGITS"},status = 400)
+                return JsonResponse({'MESSAGE :':f"PASSWORD MUST TO BE OVER {MIN_PASSWORD_LENGTH} DIGITS"},status = 400)
 
             if User.objects.filter(email=email).exists():
                 return JsonResponse({'MESSAGE :':"EMAIL ALREADY EXISTS!"},status = 400)
@@ -39,6 +41,9 @@ class RegisterView(View):
 
             if User.objects.filter(nickname=nickname).exists():
                 return JsonResponse({'MESSAGE :':"NICKNAME ALREADY EXISTS!"},status = 400)
+
+            if not len(nickname)>MIN_NICKNAME_LENGTH:
+                return JsonResponse({'MESSAGE :':f"NICKNAME MUST BE OVER {MIN_NICKNAME_LENGTH} CHARACTERS!"},status = 400)
             
             User.objects.create(
                 name        = name,
@@ -50,9 +55,6 @@ class RegisterView(View):
             
             return JsonResponse({'MESSAGE :':"SUCCESS "},status = 200)
 
-        except KeyError:
-            return JsonResponse({'MESSAGE :':"KEY_ERROR"},status = 400)
-
         except BlankFieldException as e:
             return JsonResponse({'MESSAGE :':e.__str__()},status = 400)
 
@@ -61,6 +63,7 @@ class RegisterView(View):
 
 
 class LoginView(View):
+    @exception_check
     def post(self,request):
 
         try:
@@ -73,17 +76,12 @@ class LoginView(View):
                 return JsonResponse({'MESSAGE :':"SUCCESS"}, status = 200)
             else:
                 return JsonResponse({'MESSAGE :':"INVAILD_USER"},status = 401)
-        
-        except KeyError:
-            return JsonResponse({'MESSAGE :':"KEY_ERROR"},status = 400)
 
-        except IndexError:
-            return JsonResponse({'MESSAGE :':"INDEX_ERROR"},status = 400)
-        
         except User.DoesNotExist:
             return JsonResponse({'MESSAGE :':"INVAILD_USER"},status = 401)
 
 class FollowView(View):
+    @exception_check
     def post(self, request):
         
         try:
@@ -102,31 +100,23 @@ class FollowView(View):
 
             return JsonResponse({'MESSAGE :':f"FOLLOWED  {followee.nickname}!"},status = 200)
 
-        except KeyError:
-            return JsonResponse({'MESSAGE :':"KEY_ERROR"},status = 400)
-
-        except ValueError:
-            return JsonResponse({'MESSAGE :':"VALUE_ERROR"},status = 400)
-
         except User.DoesNotExist:
             return JsonResponse({'MESSAGE :':"INVAILD_USER"},status = 401)
-                
-    def get(self, request):
-        
-        try:
-            follows = Follow.objects.all()
-            req_list = []
 
-            for follow in follows:
-                req_dict   = {
-                    'id'       : follow.id,
-                    'followee' : follow.followee.nickname,
-                    'follower' : follow.follower.nickname,
-                }
-                req_list.append(req_dict)
-            return JsonResponse({'follows :':req_list},status = 200)
+    @exception_check           
+    def get(self, request):
+    
+        follows = Follow.objects.all()
+        req_list = []
+
+        for follow in follows:
+            req_dict   = {
+                'id'       : follow.id,
+                'followee' : follow.followee.nickname,
+                'follower' : follow.follower.nickname,
+            }
+            req_list.append(req_dict)
+        return JsonResponse({'follows :':req_list},status = 200)
             
-        except KeyError:
-                return JsonResponse({'MESSAGE :':"KEY_ERROR"},status = 400)
 
                         
