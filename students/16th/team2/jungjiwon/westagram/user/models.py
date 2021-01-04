@@ -9,9 +9,6 @@ class User(models.Model):
     created_time = models.DateTimeField(auto_now_add = True)
     updated_time = models.DateTimeField(auto_now = True)
 
-    def __str__(self):
-        return self.account
-
     class Meta:
         db_table = 'users'
 
