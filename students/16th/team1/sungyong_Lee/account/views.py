@@ -64,7 +64,7 @@ class SignUpView(View):
             return JsonResponse({"message": "SUCCESS"}, status=200)
 
         except KeyError as e:
-            return JsonResponse({"message": "hi"}, status=400)
+            return JsonResponse({"message": "KEY_ERROR"}, status=400)
 
 
 class LoginView(View):
