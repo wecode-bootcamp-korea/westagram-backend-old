@@ -7,7 +7,7 @@ from django.views   import View
 from django.http    import JsonResponse
 
 from .models            import User, Follow
-from decorators.utils   import check_blank, login_required
+from decorators.utils   import check_blank, login_required, get_user
 from my_settings        import SECRET_KEY
 
 class UserSignUpView(View):
@@ -17,8 +17,8 @@ class UserSignUpView(View):
         email    = data["email"]
         password = data["password"]
         try:
-            regex = re.compile("[a-zA-Z0-9-_.]+@[a-z]+\.[a-z]+")
-            clean_email =regex.match(email).string
+            regex        = re.compile("[a-zA-Z0-9-_.]+@[a-z]+\.[a-z]+")
+            clean_email  = regex.match(email).string
         except AttributeError:
             return JsonResponse({"message":"NOT_EMAIL_FORMAT"}, status = 400)
         user = User.objects.filter(email = clean_email)
@@ -29,7 +29,7 @@ class UserSignUpView(View):
             return JsonResponse({"message":"PASSWORD_IS_AT_LEAST_8"}, status = 400)
 
         hash_password = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt())
-        User.objects.create(email = clean_email, password = hash_password.decode())
+        User.objects.create(email = clean_email, password = hash_password)
         return JsonResponse({"message":"SUCCESS"}, status = 200)
 
 class UserSignInView(View):
@@ -38,10 +38,10 @@ class UserSignInView(View):
         data        = json.loads(request.body)
         email       = data["email"]
         password    = data["password"]
-
+        
         try:
             user = User.objects.get(email = email)
-            password_check = bcrypt.checkpw(password.encode("utf-8"), user.password.encode("utf-8"))
+            password_check = bcrypt.checkpw(password.encode("utf-8"), user.password)
             if password_check:
                 encoded_jwt = jwt.encode(
                     {"id":user.id}, key = SECRET_KEY, algorithm = "HS256"
@@ -54,14 +54,16 @@ class UserSignInView(View):
 class FollowUser(View):
     @login_required
     def post(self, request):
-        data                = json.loads(request.body)
-        follower_email      = data["email"]
-        following_email     = data["following_email"]
-        follower            = User.objects.prefetch_related("follow").get(email = follower_email)
-
+        data            = json.loads(request.body)
+        token           = json.loads(request.headers.get("Token"))
+        follower        = get_user(token)
+        following_id    = data["user_id"]
+        
         try:
-            following   = User.objects.prefetch_related("following").get(email = following_email)
-            follow      = Follow.objects.filter(follow_user = follower, following_user = following)
+            following   = User.objects.get(id = following_id)
+            follow      = Follow.objects.filter(follow_user = follower, following_user = following).select_related("user")
+            if follower == following:
+                return JsonResponse({"message":"CAN_NOT_SELF_FOLLOW"}, status = 403)
             if follow.exists():
                 follow.delete()
                 return JsonResponse({"message":"UNFOLLOW"}, status = 200)
