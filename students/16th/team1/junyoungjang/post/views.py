@@ -42,8 +42,8 @@ class PostReadView(View):
         req_list = []
 
         for post in posts:
-            images    = post.postimage_set.all()
-            likes     = post.postlike_set.all().count()
+            images = post.postimage_set.all()
+            likes  = post.postlike_set.all().count()
 
             if images.exists():
                 image_list = [ image.image_url for image in images ]  
@@ -77,10 +77,19 @@ class CommentCreateView(View):
             except:
                 image_url = None
 
+            try:
+                recomment = Comment.objects.get(id = data['recomment'])
+                if recomment.recomment != None :
+                    return JsonResponse({'MESSAGE :':"CANNOT_REPLY_TO_REPLY"}, status = 400)
+
+            except:
+                recomment = None
+
             comment = Comment.objects.create(
                 writer    = user,
                 post      = post,
                 image_url = image_url,
+                recomment = recomment,
                 content   = data['content']
             )
             
@@ -92,51 +101,68 @@ class CommentCreateView(View):
             return JsonResponse({'MESSAGE :':"INVAILD_POST"},status = 400)
 
 class CommentReadAllView(View):
-    @exception_check
     def get(self, request):
-        comments = Comment.objects.all()
-        req_list = []
+        try:
+            comments = Comment.objects.all()
+            req_list = []
 
-        for comment in comments:
-            req_dict   = {
-                'id'        : comment.id,
-                'content'   : comment.content,
-                'writer'    : comment.writer.nickname,
-                'image_url' : comment.image_url,
-                'created_at': comment.created_at,
-                'updated_at': comment.updated_at,
-            }
-            req_list.append(req_dict)
-        return JsonResponse({'COMMENTS :':req_list},status = 200)
+            for comment in comments:
+                try:
+                    recomment = comment.recomment.id
+                except:
+                    recomment = None
+
+                req_dict   = {
+                    'id'           : comment.id,
+                    'content'      : comment.content,
+                    'writer'       : comment.writer.nickname,
+                    'image_url'    : comment.image_url,
+                    'recomment_id' : recomment,
+                    'created_at'   : comment.created_at,
+                    'updated_at'   : comment.updated_at,
+                }
+                req_list.append(req_dict)
+            return JsonResponse({'COMMENTS :':req_list},status = 200)
+        except KeyError:
+            return JsonResponse({'MESSAGE :':"KEY_ERROR"},status = 400)
+
 
 
 #[추가 구현 사항]: 5번 게시물의 댓글만 표출
 class CommentReadView(View):
-    @exception_check
     def get(self, request):
-        post     = Post.objects.get(id=5)
-        comments = Comment.objects.filter(post=post) 
-        req_list = []
+        try:
+            post     = Post.objects.get(id=5)
+            comments = Comment.objects.filter(post=post) 
+            req_list = []
 
-        for comment in comments:
-            req_dict   = {
-                'id'        : comment.id,
-                'content'   : comment.content,
-                'writer'    : comment.writer.nickname,
-                'image_url' : comment.image_url,
-                'created_at': comment.created_at,
-                'updated_at': comment.updated_at,
-            }
-            req_list.append(req_dict)
-        return JsonResponse({'COMMENTS :':req_list},status = 200)
+            for comment in comments:
+                try:
+                    recomment = comment.recomment.id
+                except:
+                    recomment = None
+
+                req_dict   = {
+                    'id'           : comment.id,
+                    'content'      : comment.content,
+                    'writer'       : comment.writer.nickname,
+                    'image_url'    : comment.image_url,
+                    'recomment_id' : recomment,
+                    'created_at'   : comment.created_at,
+                    'updated_at'   : comment.updated_at,
+                }
+                req_list.append(req_dict)
+            return JsonResponse({'COMMENTS :':req_list},status = 200)
+        except KeyError:
+            return JsonResponse({'MESSAGE :':"KEY_ERROR"},status = 400)
 
 class LikeView(View):
     @exception_check
     def post(self, request):
         try:
-            data = json.loads(request.body)
-            post = Post.objects.get(id=data['post'])
-            user = User.objects.get(id=data['user'])
+            data  = json.loads(request.body)
+            post  = Post.objects.get(id=data['post'])
+            user  = User.objects.get(id=data['user'])
             likes = PostLike.objects.filter(
                     Q(post=post) & Q(user=user) 
             )

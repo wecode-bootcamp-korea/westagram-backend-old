@@ -106,7 +106,7 @@ class FollowView(View):
     @exception_check           
     def get(self, request):
     
-        follows = Follow.objects.all()
+        follows  = Follow.objects.all()
         req_list = []
 
         for follow in follows:
