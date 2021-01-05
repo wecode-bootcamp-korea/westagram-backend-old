@@ -38,20 +38,26 @@ class LogInView(View):
         data        = json.loads(request.body)
         signup_db   = User.objects.all()
         
+        login = None
 
         try:
+            if not (signup_db.filter(account = data['login_account']).exists()) and (signup_db.filter(email = data['login_account']).exists()) and (signup_db.filter(tel_num = data['login_account']).exists()):
+                return JsonResponse({'MESSAGE':'INVALID LOGIN ID'}, status=400)
             if signup_db.filter(account = data['login_account']).exists():
                 login = User.objects.get(account = data['login_account'])
             if signup_db.filter(email = data['login_account']).exists():
                 login = User.objects.get(email = data['login_account'])
             if signup_db.filter(tel_num = data['login_account']).exists():
                 login = User.objects.get(tel_num = data['login_account'])
+            
         
         except KeyError :
             return JsonResponse({'MESSAGE':'KEY_ERROR'}, status=400)
         
-        print(login.password)
-        if login.password == data['password']:
-            return JsonResponse({'MESSAGE':'LOGIN SUCCESS'}, status=200)
-        if login.password != data['password']:
-            return JsonResponse({'MESSAGE':'Invalid Password'}, status=400)
+        if login != None:
+            if login.password == data['password']:
+                return JsonResponse({'MESSAGE':'LOGIN SUCCESS'}, status=200)
+            if login.password != data['password']:
+                return JsonResponse({'MESSAGE':'Invalid Password'}, status=400)
+        if login == None:
+            return JsonResponse({'MESSAGE':'INVALID LOGIN ID'}, status=400)
