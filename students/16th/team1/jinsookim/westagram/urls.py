@@ -19,3 +19,7 @@ urlpatterns = [
     path('user', include('user.urls')),
     path('post', include('posting.urls'))
 ]
+
+
+
+
