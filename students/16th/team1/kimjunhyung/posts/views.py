@@ -5,9 +5,10 @@ from django.http        import JsonResponse
 
 from .models            import Post, Comment, Like, CommentByComment
 from users.models       import User
-from decorators.utils   import check_blank, login_required, get_user
+from decorators.utils   import check_blank, login_required
         
 class PostView(View):
+    @login_required
     def get(self, request):
         posts       = Post.objects.all()
         comments    = Comment.objects.select_related("post")
@@ -19,24 +20,26 @@ class PostView(View):
                 "created_at"            : post.created_at,
                 "first_comment_content" : post.comment_set.all().order_by("-created_at")[0].content 
                                         if comments.filter(post = post).exists() 
-                                        else "댓글을 추가해주세요" ,
+                                        else "댓글을 추가해주세요",
                 "first_comment_user"    : post.comment_set.all().order_by("-created_at")[0].user.email     
                                         if comments.filter(post = post).exists()
                                         else "" 
             }
             for post in posts
         ]
+       
         return JsonResponse({"data" : data}, status = 200)
 
 class PostCreateView(View):
     @check_blank
     @login_required
     def post(self, request):
+        data        = json.loads(request.body)
         token       = json.loads(request.headers.get("Token"))
         user        = get_user(token)
         content     = data["content"]
         image_url   = data["image_url"]
-    
+
         Post.objects.create(user = user, content = content, image_url = image_url)
         return JsonResponse({"message":"SUCCESS"}, status = 200)
 
@@ -45,15 +48,17 @@ class PostLikeView(View):
     def post(self, request):
         data        = json.loads(request.body)
         post_id     = data["post_id"]
-        token       = json.loads(request.headers.get("Token"))
-        user        = get_user(token)
-        post        = Post.objects.get(id = post_id)
-        check_like  = Like.objects.filter(user = user, post = post).select_related("user").select_related("post")
+        user        = request.user
+        print(user)
+        post        = Post.objects.filter(id = post_id)
 
+        if not post.exists():
+            return JsonResponse({"message":"POST_DOES_NOT_EXIST"}, status = 400)
+        check_like  = Like.objects.filter(user = user, post = post[0])
         if check_like.exists():
-            Like.objects.filter(user = user, post = post).delete()
+            Like.objects.filter(user = user, post = post[0]).delete()
             return JsonResponse({"message":"USER_CANCLE_LIKE"}, status = 200)
-        Like.objects.create(user = user, post = post)
+        Like.objects.create(user = user, post = post[0])
         return JsonResponse({"message":"USER_LIKE_POST"}, status = 200)
 
 class PostUpdateView(View):
@@ -61,14 +66,13 @@ class PostUpdateView(View):
     @login_required
     def put(self, request, post_id):
         data        = json.loads(request.body)
-        token       = json.loads(request.headers.get("Token"))
-        user        = get_user(token)
+        user        = request.user
         content     = data['content']
         image_url   = data['image_url']
 
         try:
             post        = Post.objects.filter(id = post_id)
-            owner       = User.objects.prefetch_related("post_set").filter(post = post[0])[0]
+            owner       = User.objects.filter(post = post[0])[0]
             if user == owner:
                 post.update(user = owner, content = content, image_url = image_url)
                 return JsonResponse({"message":"SUCCESS"}, status = 200)
@@ -80,8 +84,7 @@ class PostDeleteView(View):
     @login_required
     def delete(self, request):
         data    = json.loads(request.body)
-        token   = json.loads(request.headers.get("Token"))
-        user    = get_user(token)
+        User    = request.user
         post_id = data['post_id']
         post    = Post.objects.filter(id = post_id)
         
@@ -89,15 +92,15 @@ class PostDeleteView(View):
             return JsonResponse({"message":"POST_DOES_NOT_EXIST"}, status = 400)
         if not user == post[0].user:
             return JsonResponse({"message":"PERMISSION_DENIED"}, status = 403)
-            
         post[0].delete()
         return JsonResponse({"message":"POST_DELETE"}, status = 200)
 
 class CommentView(View):
     @check_blank
     def get(self, request, post_id):
-        post        = Post.objects.get(id = post_id)
-        comments    = Comment.objects.filter(post = post)
+        post        = Post.objects.filter(id = post_id)
+        comments    = Comment.objects.filter(post = post[0])
+        print(comments.query)
         
         data = [
             {
@@ -118,8 +121,7 @@ class CommentCreateView(View):
             data        = json.loads(request.body)
             content     = data["content"]
             post        = Post.objects.get(id = post_id)
-            token       = json.loads(request.headers.get("Token"))
-            user        = get_user(token)
+            user        = request.user
 
             Comment.objects.select_related("user").create(user = user, content = content, post = post)
             return JsonResponse({"message":"SUCCESS"}, status = 200)
@@ -129,8 +131,7 @@ class CommentCreateView(View):
 class CommentDeleteView(View):
     @login_required
     def delete(self, request, post_id, comment_id):
-        token   = json.loads(request.headers.get("Token"))
-        user    = get_user(token)
+        user    = request.user
         post    = Post.objects.filter(id = post_id)
         if not post.exists():
             return JsonResponse({"message":"POST_DOES_NOT_EXIST"}, status = 400)
@@ -149,8 +150,7 @@ class CommentAddComment(View):
     @login_required
     def post(self, request, post_id, comment_id):
         data    = json.loads(request.body)
-        token   = json.loads(request.headers.get("Token"))
-        user    = get_user(token)
+        user    = request.user
         content = data['content']
         post    = Post.objects.filter(id = post_id)
         comment = Comment.objects.filter(id = comment_id).select_related("post")
