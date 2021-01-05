@@ -70,6 +70,8 @@ class CommentView(View):
 
         except KeyError:
             return JsonResponse({'message':'KEY_ERROR'}, status=400)
+        except Post.DoesNotExist :
+            return JsonResponse({'message':'해당하는 게시물이 없습니다.'}, status=400)
        
     
     def get(self, request, post_id): # post 출력 따로 comment 출력 따로..?
@@ -100,7 +102,7 @@ class CommentView(View):
 
 class LikeView(View):
     @login_check
-    def post(self, request, post_id, user_id):
+    def post(self, request, post_id):
         try:
             data          = json.loads(request.body)
             post_querySet = Post.objects.filter(id=post_id)
@@ -108,9 +110,9 @@ class LikeView(View):
             user          = request.user
 
             if Like.objects.filter(post=post_id): # 좋아요 테이블에 있는 게시물일 때
-                if Like.objects.filter(post=post_id, user=user_id):
+                if Like.objects.filter(post=post_id, user=user.id):
                     post.likes -= 1
-                    like = Like.objects.filter(post=post_id, user=user_id)
+                    like = Like.objects.filter(post=post_id, user=user.id)
                     like.delete()
                 else:
                     post.likes += 1
@@ -124,6 +126,8 @@ class LikeView(View):
             return JsonResponse({'message':'SUCCESS'}, status=201)
 
         except KeyError:
-         return JsonResponse({'message':'KEY_ERROR'}, status=400)          
+            return JsonResponse({'message':'KEY_ERROR'}, status=400)
+        except IndexError :
+            return JsonResponse({'message':'해당하는 게시물이 없습니다.'}, status=400)      
 
 

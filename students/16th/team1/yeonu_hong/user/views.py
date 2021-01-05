@@ -112,3 +112,6 @@ class FollowView(View):
             return JsonResponse({'message':'SUCCESS'}, status=201)
         except KeyError:
             return JsonResponse({'message':'KEY_ERROR'}, status=400)
+        except User.DoesNotExist :
+            return JsonResponse({'message':'해당하는 유저가 없습니다.'}, status=400)
+
