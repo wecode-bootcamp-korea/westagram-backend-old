@@ -1,6 +1,9 @@
 import json
+import bcrypt
+import jwt
 from django.http  import JsonResponse
 from django.views import View
+from my_settings  import SECRET
 from decorator    import login_check
 from .models      import User, Follow
 
@@ -12,7 +15,10 @@ class SignUpView(View):
             name      = data['name']
             phone     = data['phone']
             email     = data['email']
-            password  = data['password']
+
+            password  = data['password'].encode('utf-8')
+            password_encoded = bcrypt.hashpw(password, bcrypt.gensalt())
+            password_decoded = password_encoded.decode('utf-8')
 
             if User.objects.filter(name=data["name"]):
                 name_dup  = User.objects.filter(name=data["name"])
@@ -24,12 +30,12 @@ class SignUpView(View):
                 email_dup = User.objects.filter(email=data["email"])
                 return JsonResponse({'message': '이미 사용중인 email'}, status=400)
 
-            if len(password) > 8:
+            if len(password) < 8:
                 return JsonResponse({'message': '비밀번호 길이는 8글자 이상'}, status=400)
 
             User(
                 name     = name,
-                password = password,
+                password = password_decoded,
                 phone    = phone,
                 email    = email).save()
     
@@ -49,32 +55,38 @@ class SignInView(View):
             if 'phone' in data: # 전화번호로 로그인할 경우
                 phone = data["phone"]
                 if not User.objects.get(phone=data["phone"]):
-                    return JsonResponse({'message':'INVALID_USER'}, status=400)
-                password_check = User.objects.get(phone=data["phone"]).password
-                if password == password_check:
-                    return JsonResponse({'message':'SUCCESS'}, status=200)
+                    return JsonResponse({'message':'INVALID_USER'}, status=401)
+                user =  User.objects.get(phone=data["phone"])
+                password_check = user.password
+                if bcrypt.checkpw(password.encode('utf-8'), password_check.encode('utf-8')):
+                    token = jwt.encode({'id': user.id}, SECRET, algorithm='HS256')
+                    return JsonResponse({'token':token}, status=200)
                 else:
-                     return JsonResponse({'message':'INVALID_USER'}, status=400)
+                     return JsonResponse({'message':'INVALID_USER'}, status=401)
              
             if 'name' in data: # 이름으로 로그인할 경우
                 name = data["name"]
                 if not User.objects.get(name=data["name"]):
-                    return JsonResponse({'message':'INVALID_USER'}, status=400)
-                password_check = User.objects.get(name=data["name"]).password
-                if password == password_check:
-                    return JsonResponse({'message':'SUCCESS'}, status=200)
+                    return JsonResponse({'message':'INVALID_USER'}, status=401)
+                user =  User.objects.get(name=data["name"])
+                password_check = user.password
+                if bcrypt.checkpw(password.encode('utf-8'), password_check.encode('utf-8')):
+                    token = jwt.encode({'id': user.id}, SECRET, algorithm='HS256')
+                    return JsonResponse({'token':token}, status=200)
                 else:
-                     return JsonResponse({'message':'INVALID_USER'}, status=400)
+                     return JsonResponse({'message':'INVALID_USER'}, status=401)
 
             if 'email' in data: # 이메일로 로그인할 경우
                 email = data["email"]
                 if not User.objects.get(email=data["email"]):
-                    return JsonResponse({'message':'INVALID_USER'}, status=400)
-                password_check = User.objects.get(email=data["email"]).password
-                if password == password_check:
-                    return JsonResponse({'message':'SUCCESS'}, status=200)
+                    return JsonResponse({'message':'INVALID_USER'}, status=401)
+                user =  User.objects.get(email=data["email"])
+                password_check = user.password
+                if bcrypt.checkpw(password.encode('utf-8'), password_check.encode('utf-8')):
+                    token = jwt.encode({'id': user.id}, SECRET, algorithm='HS256')
+                    return JsonResponse({'token':token}, status=200)
                 else:
-                     return JsonResponse({'message':'INVALID_USER'}, status=400)
+                     return JsonResponse({'message':'INVALID_USER'}, status=401)
 
             return JsonResponse({'message':'KEY_ERROR 비번만넣음'}, status=400)
 
@@ -88,14 +100,13 @@ class FollowView(View):
         try:
             data     = json.loads(request.body)
             user     = User.objects.get(id=user_id)
-            follower = User.objects.get(name=data['user']) # 로그인 하면서 받는 유저
+            follower = request.user # 로그인 하면서 받는 유저
 
             if follower.id == user_id:
                 return JsonResponse({'message':'자기 자신은 follow할 수 없습니다.'}, status=400)
-        
-            if Follow.objects.filter(user=user_id):
-                if Follow.objects.filter(user=user_id, follower=follower): # unfollow
-                    Follow.objects.filter(user=user_id, follower=follower).delete()
+            
+            if Follow.objects.filter(user=user_id, follower=follower): # unfollow
+                Follow.objects.filter(user=user_id, follower=follower).delete()
             else:
                 Follow.objects.create(user=user, follower=follower)
             return JsonResponse({'message':'SUCCESS'}, status=201)

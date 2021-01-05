@@ -12,8 +12,8 @@ class PostView(View):
     @login_check
     def post(self, request):
         try:
-            data = json.loads(request.body)
-            user     = User.objects.get(name=data['user'])
+            data     = json.loads(request.body)
+            user     = request.user
             image    = data['image']
             pub_date = datetime.now() # 2020-12-30 11:47:45.781887
 
@@ -55,7 +55,7 @@ class CommentView(View):
         try:
             data      = json.loads(request.body)
             post      = Post.objects.get(id=post_id)
-            user      = User.objects.get(name=data['user'])
+            user      = request.user
             pub_date  = datetime.now()
             content   = data['content']
 
@@ -102,10 +102,10 @@ class LikeView(View):
     @login_check
     def post(self, request, post_id, user_id):
         try:
-            data = json.loads(request.body)
+            data          = json.loads(request.body)
             post_querySet = Post.objects.filter(id=post_id)
-            post = post_querySet[0]
-            user = User.objects.get(id=user_id)
+            post          = post_querySet[0]
+            user          = request.user
 
             if Like.objects.filter(post=post_id): # 좋아요 테이블에 있는 게시물일 때
                 if Like.objects.filter(post=post_id, user=user_id):
@@ -116,6 +116,7 @@ class LikeView(View):
                     post.likes += 1
             else:
                 Like.objects.create(post=post, user=user)
+                post.likes += 1
 
             post_likes = Like.objects.filter(post=post_id).count()
             post_querySet.update(likes = post_likes)

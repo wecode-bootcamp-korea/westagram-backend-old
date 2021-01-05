@@ -1,13 +1,17 @@
 import json
+import jwt
 from django.http import JsonResponse
+from my_settings import SECRET
 from user.models import User
 
 # 로그인 체크
 def login_check(func):
-    def wrapper(self, request, *args, **kwargs): # name, phone, email로 로그인할 수 있게 만들어놓고 여기서는 name으로만 받는 중;;
-        data = json.loads(request.body)
-        if not User.objects.filter(name=data['user']):
+    def wrapper(self, request, *args, **kwargs):
+        data       = json.loads(request.body)
+        user_token = jwt.decode(data['token'], SECRET, algorithms='HS256')
+        if not User.objects.filter(id=user_token['id']).exists():
             return JsonResponse({'message':'INVALID_USER'}, status=401)
+        setattr(request, 'user', User.objects.get(id=user_token['id']))
         return func(self, request, *args, **kwargs)
     return wrapper
 
