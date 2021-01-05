@@ -35,25 +35,16 @@ class SignUpView(View):
                 return JsonResponse({'MESSAGE':'SUCCESS'}, status=201)
             
             return JsonResponse({'MESSAGE':'EMAIL ALREADY EXISTS.'}, status=400)
+
+        except KeyError:
+            return JsonResponse({'MESSAGE': 'KEY ERROR OCCURED!'},status=400)
+
+        except ValueError:
+            return JsonResponse({'MESSAGE': 'VALUE ERROR OCCURED!'},status=400)
             
         except User.DoesNotExist:
             return JsonResponse({'MESSAGE':'USER DOES NOT EXISTS'}, status=400)
-
-        except KeyError:
-            return JsonResponse({'MESSAGE':"KEY ERROR OCCUR"}, status=400)
-
-
-    def get(self, request):
-        try:
-            result = [{'user.email':user.email,
-                       'user.password':user.password}
-                        for user in User.objects.all()
-                     ]
-            return JsonResponse({'RESULT':result}, status=200)
-        except KeyError:
-            return JsonResponse({'MESSAGE':"KEY ERROR OCCUR"}, status=400)
         
-
 
 class LoginView(View):
     def post(self, request):
@@ -66,9 +57,8 @@ class LoginView(View):
                 return JsonResponse({'MESSAGE':'로그인에 성공하셨습니다.'}, status=200)
             return JsonResponse({'MESSAGE':'아이디와 비밀번호에 문제가 있습니다.'}, status=400)
 
-        except KeyError as e: # POST 메서드를 날릴때 email에서 만약 emai라고 날려 버리면 오류가 발생함.
-            return JsonResponse({'MESSAGE':'키에러가 발생했습니다.'}, status=400)
+        except KeyError:
+            return JsonResponse({'MESSAGE': 'KEY ERROR OCCURED!'},status=400)
 
-    def get(self, request):
-        result = [user.email for user in User.objects.all()]
-        return JsonResponse({'RESULT':result}, status=200)     
+        except ValueError:
+            return JsonResponse({'MESSAGE': 'VALUE ERROR OCCURED!'},status=400)
