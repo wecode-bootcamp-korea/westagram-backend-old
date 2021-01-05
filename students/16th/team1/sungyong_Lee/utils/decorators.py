@@ -13,11 +13,11 @@ class LoginCahsed(object):
 
     def __call__(self, request, *args, **kwargs):
         try:
-            token   = request.headers['AUTHORIZATION']
-            payload = jwt.decode(token, SECRET_KEY, algorithms = "HS256")
-            user    = User.objects.get(pk = payload.get('user_id'))
-            request.user = user
-            
+            token        = request.headers['AUTHORIZATION']
+            payload      = jwt.decode(token, SECRET_KEY, algorithms = "HS256")
+            user         = User.objects.get(pk = payload.get('user_id'))
+            request.user = user # request 는 object
+
             return self.func(self, request, *args, **kwargs)
 
         except KeyError:

@@ -1,9 +1,7 @@
-import json, jwt
+import json
 
-from account.models   import User
 from django.http      import JsonResponse
 from django.views     import View
-from my_settings      import SECRET_KEY
 from utils.decorators import LoginCahsed
 
 from .models import Post
@@ -13,8 +11,8 @@ class CreatePostView(View):
     @LoginCahsed
     def post(self, request):
         try:
-            data  = json.loads(request.body)
-
+            data = json.loads(request.body)
+            
             [title, content, image_url] = data.values()
             
             Post.objects.create(
