@@ -10,8 +10,8 @@ from .models          import Post, PostImage, Comment, PostLike
 from user.models      import User
 
 class PostCreateView(View):
-    @exception_check
     def post(self, request):
+
         try :
             data = json.loads(request.body)
             user = User.objects.get(nickname = data['writer'])
@@ -31,42 +31,50 @@ class PostCreateView(View):
                     pass
 
             return JsonResponse({'MESSAGE :':"SUCCESS"},status = 200)
+        except KeyError:
+            return JsonResponse({'MESSAGE :':"KEY_ERROR"},status = 400)
 
+        except ValueError:
+            return JsonResponse({'MESSAGE :':"VALUE_ERROR"},status = 400)
+        
         except User.DoesNotExist:
             return JsonResponse({'MESSAGE :':"INVAILD_USER"},status = 400)
 
 class PostReadView(View):
-    @exception_check
     def get(self, request):
-        posts    = Post.objects.all()
-        req_list = []
 
-        for post in posts:
-            images = post.postimage_set.all()
-            likes  = post.postlike_set.all().count()
+        try:
+            posts    = Post.objects.all()
+            req_list = []
 
-            if images.exists():
-                image_list = [ image.image_url for image in images ]  
-            else:
-                image_list = []
-            
-            req_dict   = {
-                'id'        : post.id,
-                'title'     : post.title,
-                'content'   : post.content,
-                'writer'    : post.writer.nickname,
-                'image_url' : image_list,
-                'created_at': post.created_at,
-                'updated_at': post.updated_at,
-                'likes'     : likes,
-            }
-            req_list.append(req_dict)
+            for post in posts:
+                images = post.postimage_set.all()
+                likes  = post.postlike_set.all().count()
 
-        return JsonResponse({'posts':req_list},status = 200)
+                if images.exists():
+                    image_list = [ image.image_url for image in images ]  
+                else:
+                    image_list = []
+                
+                req_dict   = {
+                    'id'        : post.id,
+                    'title'     : post.title,
+                    'content'   : post.content,
+                    'writer'    : post.writer.nickname,
+                    'image_url' : image_list,
+                    'created_at': post.created_at,
+                    'updated_at': post.updated_at,
+                    'likes'     : likes,
+                }
+                req_list.append(req_dict)
+
+            return JsonResponse({'posts':req_list},status = 200)
+        except KeyError:
+            return JsonResponse({'MESSAGE :':"KEY_ERROR"},status = 400)
 
 class CommentCreateView(View):
-    @exception_check
     def post(self,request):
+
         try:
             data = json.loads(request.body)
             user = User.objects.get(nickname=data['writer'])
@@ -94,6 +102,12 @@ class CommentCreateView(View):
             )
             
             return JsonResponse({'MESSAGE :':"SUCCESS"},status = 200)
+        except KeyError:
+            return JsonResponse({'MESSAGE :':"KEY_ERROR"},status = 400)
+
+        except ValueError:
+            return JsonResponse({'MESSAGE :':"VALUE_ERROR"},status = 400)
+        
         except User.DoesNotExist:
             return JsonResponse({'MESSAGE :':"INVAILD_USER"},status = 400)
         
@@ -102,6 +116,7 @@ class CommentCreateView(View):
 
 class CommentReadAllView(View):
     def get(self, request):
+
         try:
             comments = Comment.objects.all()
             req_list = []
@@ -131,6 +146,7 @@ class CommentReadAllView(View):
 #[추가 구현 사항]: 5번 게시물의 댓글만 표출
 class CommentReadView(View):
     def get(self, request, post_id):
+
         try:
             post     = Post.objects.get(id=post_id)
             comments = Comment.objects.filter(post=post) 
@@ -157,8 +173,8 @@ class CommentReadView(View):
             return JsonResponse({'MESSAGE :':"KEY_ERROR"},status = 400)
 
 class LikeView(View):
-    @exception_check
     def post(self, request):
+
         try:
             data  = json.loads(request.body)
             post  = Post.objects.get(id=data['post'])
@@ -173,7 +189,12 @@ class LikeView(View):
             PostLike.objects.create(post=post, user=user)
 
             return JsonResponse({'MESSAGE :':f"LIKED_POST_{post.title}"},status = 200)
-            
+        except KeyError:
+            return JsonResponse({'MESSAGE :':"KEY_ERROR"},status = 400)
+
+        except ValueError:
+            return JsonResponse({'MESSAGE :':"VALUE_ERROR"},status = 400)    
+        
         except User.DoesNotExist:
             return JsonResponse({'MESSAGE :':"INVAILD_USER"},status = 400)
         
@@ -182,8 +203,8 @@ class LikeView(View):
             
 
 class PostDeleteView(View):
-    @exception_check
     def post(self, request):
+
         try:
             data           = json.loads(request.body)
             post           = Post.objects.get(id=data['post'])
@@ -192,6 +213,11 @@ class PostDeleteView(View):
             post.delete()
 
             return JsonResponse({'MESSAGE :':delete_message}, status = 200)
+        except KeyError:
+            return JsonResponse({'MESSAGE :':"KEY_ERROR"},status = 400)
+
+        except ValueError:
+            return JsonResponse({'MESSAGE :':"VALUE_ERROR"},status = 400)
 
         except User.DoesNotExist:
             return JsonResponse({'MESSAGE :':"INVAILD_USER"},status = 400)
@@ -200,8 +226,8 @@ class PostDeleteView(View):
             return JsonResponse({'MESSAGE :':"INVAILD_POST"},status = 400)
 
 class CommentDeleteView(View):
-    @exception_check
     def post(self, request):
+
         try:
             data           = json.loads(request.body)
             comment        = Comment.objects.get(id=data['comment'])
@@ -210,6 +236,11 @@ class CommentDeleteView(View):
             comment.delete()
 
             return JsonResponse({'MESSAGE :':delete_message}, status = 200)
+        except KeyError:
+            return JsonResponse({'MESSAGE :':"KEY_ERROR"},status = 400)
+
+        except ValueError:
+            return JsonResponse({'MESSAGE :':"VALUE_ERROR"},status = 400)
 
         except User.DoesNotExist:
             return JsonResponse({'MESSAGE :':"INVAILD_USER"},status = 400)
@@ -218,8 +249,8 @@ class CommentDeleteView(View):
             return JsonResponse({'MESSAGE :':"INVAILD_POST"},status = 400)
 
 class PostUpdateView(View):
-    @exception_check
     def post(self, request):
+
         try:
             data         = json.loads(request.body)
             post         = Post.objects.get(id=data['post'])
@@ -228,13 +259,18 @@ class PostUpdateView(View):
             post.save()
 
             return JsonResponse({'MESSAGE :':"SUCCESS"}, status = 200)
-        
+        except KeyError:
+            return JsonResponse({'MESSAGE :':"KEY_ERROR"},status = 400)
+
+        except ValueError:
+            return JsonResponse({'MESSAGE :':"VALUE_ERROR"},status = 400)
+
         except Post.DoesNotExist:
             return JsonResponse({'MESSAGE :':"INVAILD_POST"},status = 400)
 
 class CommentUpdateView(View):
-    @exception_check
     def post(self, request):
+
         try:
             data            = json.loads(request.body)
             comment         = Comment.objects.get(id=data['comment'])
@@ -243,6 +279,11 @@ class CommentUpdateView(View):
             comment.save()
 
             return JsonResponse({'MESSAGE :':"SUCCESS"}, status = 200)
+        except KeyError:
+            return JsonResponse({'MESSAGE :':"KEY_ERROR"},status = 400)
+
+        except ValueError:
+            return JsonResponse({'MESSAGE :':"VALUE_ERROR"},status = 400)
         
         except Comment.DoesNotExist:
             return JsonResponse({'MESSAGE :':"INVAILD_COMMENT"},status = 400)
