@@ -1,6 +1,7 @@
 import json
 import re
 import jwt
+import bcrypt
 
 from django.http      import JsonResponse
 from django.views     import View
@@ -8,7 +9,7 @@ from django.db.models import Q
 
 from .exception_check import exception_check
 from .models          import User, Follow
-from my_settings      import JWT_SECRET
+from my_settings      import JWT_SECRET, SALT
 
 class RegisterView(View):
     @exception_check
@@ -23,7 +24,7 @@ class RegisterView(View):
             email            = data['email']
             password         = data['password']
             nickname         = data['nickname']
-            
+
             p = re.compile('^[a-zA-Z0-9+-_.]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$')
 
             if p.match(email) == None:
@@ -47,14 +48,17 @@ class RegisterView(View):
             if not len(nickname)>MIN_NICKNAME_LENGTH:
                 return JsonResponse({'MESSAGE :':f"NICKNAME_MUST_BE_OVER_{MIN_NICKNAME_LENGTH}_CHARACTERS!"},status = 400)
             
+            encoded_password = password.encode('utf-8')
+            hashed_password  = bcrypt.hashpw(encoded_password, bcrypt.gensalt()).decode()
+
+            
             User.objects.create(
                 name        = name,
                 phonenumber = phonenumber, 
                 email       = email, 
-                password    = password,
+                password    = hashed_password,
                 nickname    = nickname
             )
-            
             return JsonResponse({'MESSAGE :':"SUCCESS "},status = 200)
 
         except BlankFieldException as e:
@@ -65,7 +69,6 @@ class RegisterView(View):
 
 
 class LoginView(View):
-    @exception_check
     def post(self,request):
         try:
             data            = json.loads(request.body)
@@ -79,10 +82,11 @@ class LoginView(View):
 
             user_info = User.objects.get(**verify_info)
 
-            if user_info.password == password:
+            if bcrypt.checkpw(password.encode('utf-8'), user_info.password.encode('utf-8')):
                 user_token = jwt.encode({'user_id':user_info.id},JWT_SECRET,algorithm="HS256")
                 return JsonResponse({'TOKEN :':user_token}, status = 200)
             else:
+                print("wrong")
                 return JsonResponse({'MESSAGE :':"INVAILD_USER"},status = 401)
 
         except User.DoesNotExist:
