@@ -22,19 +22,16 @@ class SignUpView(View):
             password         = data["password"]
             password_hashed  = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
 
-            if User.objects.filter(
-                Q(name=name) and Q(email=email) and Q(phone_number=phone_number)
-            ).exists():
+            if User.objects.filter(name=name, email=email, phone_number=phone_number).exists():
                 return JsonResponse(
-                    {"message": "USER_{}_EXIST_SIGN_IN".format(name)}, status=400
-                )
-
+                    {"message": "USER_EXIST_SIGN_IN"}, status=400)
+                    
             if not pattern.match(email):
                 return JsonResponse({"message": "NOT_PROPER_EMAIL"}, status=400)
 
             if len(password) < MIN_LENGTH_PASSWORD:
                 return JsonResponse(
-                    {"message": "AT_LEAST_{}_PASSOWRD".format(MIN_LENGTH_PASSWORD)}, status = 400)
+                    {"message": "SHORT_PASSOWRD"}, status = 400)
 
             if User.objects.filter(
                 Q(name=name) | Q(email=email) | Q(phone_number=phone_number)
