@@ -11,14 +11,16 @@ from .models      import User, Follow
 class SignUpView(View):
     def post(self, request): 
         try:
-            data      = json.loads(request.body)
-            name      = data['name']
-            phone     = data['phone']
-            email     = data['email']
-
-            password  = data['password'].encode('utf-8')
+            data  = json.loads(request.body)
+            # 셋 중 하나만 들어와도 가입이 진행되어야하는데 무조건 keyError로 넘어가버림
+            # 들어오는 값만 변수에 지정하기 어떻게 하지?!
+            name  = data['name']
+            phone = data['phone']
+            email = data['email']
+            password         = data['password'].encode('utf-8')
             password_encoded = bcrypt.hashpw(password, bcrypt.gensalt())
             password_decoded = password_encoded.decode('utf-8')
+
 
             if User.objects.filter(name=data["name"]):
                 name_dup  = User.objects.filter(name=data["name"])
@@ -30,17 +32,19 @@ class SignUpView(View):
                 email_dup = User.objects.filter(email=data["email"])
                 return JsonResponse({'message': '이미 사용중인 email'}, status=400)
 
+            if '@' and '.' not in email:
+                return JsonResponse({'message': '잘못된 email 형식'}, status=400)
             if len(password) < 8:
                 return JsonResponse({'message': '비밀번호 길이는 8글자 이상'}, status=400)
 
-            User(
-                name     = name,
-                password = password_decoded,
-                phone    = phone,
-                email    = email).save()
-    
-            return JsonResponse({'message': 'SUCCESS'}, status=201)
-            
+            if name is not None and phone is not None and email is not None:
+                User(
+                    name     = name,
+                    password = password_decoded,
+                    phone    = phone,
+                    email    = email).save()
+                return JsonResponse({'message': 'SUCCESS'}, status=201)
+            return JsonResponse({'message': '계정을 작성해주세요.'}, status=400)
         except KeyError:
             return JsonResponse({'message':'KEY_ERROR'}, status=400)
 

@@ -3,10 +3,10 @@ from django.db import models
 # Create your models here.
 
 class User(models.Model):
-    name      = models.CharField(max_length=30)
+    name      = models.CharField(max_length=30, null=True)
     password  = models.CharField(max_length=2000)
-    phone     = models.CharField(max_length=40)
-    email     = models.EmailField(max_length=130)
+    phone     = models.CharField(max_length=40, null=True)
+    email     = models.EmailField(max_length=130, null=True)
     follow    = models.ManyToManyField('self', through='Follow', related_name='followers')
 
     class Meta:

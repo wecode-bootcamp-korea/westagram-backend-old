@@ -48,6 +48,22 @@ class PostView(View):
 
         return JsonResponse({'posts':posts_list}, status=200)
 
+class DeletePostView(View):    
+    @login_check
+    def delete(self, request, post_id):
+        try:
+            data = json.loads(request.body)
+            post = Post.objects.get(id=post_id)
+            user = request.user
+            if post.user.id == user.id:
+                post.delete()
+                return JsonResponse({'message':'게시물 삭제 완료'}, status=200)
+            else:
+                return JsonResponse({'message':'권한이 없습니다.'}, status=403)
+        except Post.DoesNotExist:
+            return JsonResponse({"message":'해당하는 게시물이 없습니다.'}, status=400)
+
+
 
 class CommentView(View):
     @login_check
@@ -81,7 +97,7 @@ class CommentView(View):
         pub_date = post.pub_date
 
         if comments.count() == 0:
-            return JsonResponse({'message':'댓글이 없는 포스트'}, status=400)
+            return JsonResponse({'message':'댓글이 없는 게시물입니다.'}, status=400)
 
         contents_list = []
         for index, comment in enumerate(comments):
@@ -98,6 +114,27 @@ class CommentView(View):
         }
 
         return JsonResponse({'comment':comment_dict}, status=200)
+
+class DeleteCommentView(View):
+    @login_check
+    def delete(self, request, post_id, comment_id):
+        try:
+            data    = json.loads(request.body)
+            user    = request.user
+            post    = Post.objects.get(id=post_id)
+            comment = post.comment_set.get(id=comment_id) # post 테이블에 oneToManyField 달아줘야할까?
+
+            if comment.user.id == user.id:
+                comment.delete()
+                return JsonResponse({'message':'댓글 삭제 완료'}, status=200)
+            return JsonResponse({'message':'권한이 없습니다.'}, status=403)
+            
+        except Post.DoesNotExist:
+            return JsonResponse({'message':'해당하는 게시물이 없습니다.'}, status=400) 
+        except Comment.DoesNotExist:
+            return JsonResponse({'message':'해당하는 댓글이 없습니다.'}, status=400) 
+
+
        
 
 class LikeView(View):
