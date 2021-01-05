@@ -92,8 +92,8 @@ class LoginView(View):
                 return JsonResponse({"message": "INVALID_USER_SIGN_UP"}, status=401)
 
             if user.exists():
-                if password != user[0].password:
-                    return JsonResponse({"message": "INCORRECT_PASSWORD"}, status=401)
+                if not bcrypt.checkpw(password.encode('utf-8'), user[0].password):
+                   return JsonResponse({"message": "INCORRECT_PASSWORD"}, status=401)
                 else:
                     jwt_encoded = jwt.encode( {'user_id': user[0].id }, SECRET_KEY, algorithm='HS256'  )
                     return JsonResponse({"message": "SUCCESS",
