@@ -19,6 +19,7 @@ class UserView(View):
         email_db       = User.objects.filter(email=email)
         phone_db       = User.objects.filter(phone=phone)
 
+
         # email, phone, name 중 1개이상 입력 확인
         if not email and not phone and not name:
             return JsonResponse({'MESSAGE': 'KEY_ERRORS'}, status=400)
