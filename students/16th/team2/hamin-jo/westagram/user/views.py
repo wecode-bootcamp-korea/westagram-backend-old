@@ -12,7 +12,7 @@ class UserView(View):
         name           = data.get('name')
         password       = data.get('password')
         email          = data.get('email')
-        phone          = data.get('phone')
+        phone          = '0'+data.get('phone')
         email_regex    = '^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w{2,3}$'
         password_regex = '[A-Za-z0-9@#$]{8,12}'
         name_db        = User.objects.filter(name=name)
@@ -35,7 +35,7 @@ class UserView(View):
         if email:
             if not (re.search(email_regex,email)):
                 return JsonResponse({'MESSAGE': 'INVALID_EMAIL'}, status=400)
-            if email_db.exist():
+            if email_db.exists():
                 return JsonResponse({'MESSAGE': 'EXIST_USER'}, status=400) 
 
         # name 입력시 기존회원 유무확인
@@ -47,7 +47,7 @@ class UserView(View):
         if phone:
             if phone_db.exists():
                 return JsonResponse({'MESSAGE': 'EXIST_USER'}, status=400)
-                
+     
         User.objects.create(name= name, password= password, email= email, phone= phone)
         return JsonResponse({'MESSAGE':'SUCCESS'}, status=200)
 
