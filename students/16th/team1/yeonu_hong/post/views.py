@@ -15,7 +15,7 @@ class PostView(View):
             data     = json.loads(request.body)
             user     = request.user
             image    = data['image']
-            pub_date = datetime.now() # 2020-12-30 11:47:45.781887
+            pub_date = datetime.now() # 2020-12-30 11:47:45.781887 -  영국시간임
 
             Post.objects.create(user=user, pub_date=pub_date)
             post = Post.objects.filter(user=user).last()
@@ -25,7 +25,6 @@ class PostView(View):
 
         except KeyError:
             return JsonResponse({'message':'KEY_ERROR'}, status=400)
-
 
     def get(self, request):
         posts  = Post.objects.all()
@@ -48,18 +47,40 @@ class PostView(View):
 
         return JsonResponse({'posts':posts_list}, status=200)
 
-class DeletePostView(View):    
+class PostDeleteView(View):    
     @login_check
     def delete(self, request, post_id):
         try:
             data = json.loads(request.body)
             post = Post.objects.get(id=post_id)
             user = request.user
+
             if post.user.id == user.id:
                 post.delete()
                 return JsonResponse({'message':'게시물 삭제 완료'}, status=200)
             else:
                 return JsonResponse({'message':'권한이 없습니다.'}, status=403)
+        except Post.DoesNotExist:
+            return JsonResponse({"message":'해당하는 게시물이 없습니다.'}, status=400)
+
+class PostUpdateView(View):
+    @login_check
+    def put(self, request, post_id):
+        try:
+            data          = json.loads(request.body)
+            post_querySet = Post.objects.filter(id=post_id)
+            post          = post_querySet[0]
+            user          = request.user
+            new_image     = data['image']
+            image         = post.image_set.all()
+
+            if post.user.id == user.id:
+                post_querySet.update(pub_date = datetime.now())
+                image.update(image=new_image)
+                return JsonResponse({'message':'게시물 수정 완료'}, status=200)
+            else:
+                return JsonResponse({'message':'권한이 없습니다.'}, status=403)
+                
         except Post.DoesNotExist:
             return JsonResponse({"message":'해당하는 게시물이 없습니다.'}, status=400)
 
@@ -69,7 +90,8 @@ class CommentView(View):
     @login_check
     def post(self, request, post_id):
         try:
-            data      = json.loads(request.body)
+            data      = json.loads(request.body) 
+            # 이렇게 변수 안만들고 아래서 바로 할당해버리는게 더 보기 좋을까?
             post      = Post.objects.get(id=post_id)
             user      = request.user
             pub_date  = datetime.now()
@@ -89,7 +111,6 @@ class CommentView(View):
         except Post.DoesNotExist :
             return JsonResponse({'message':'해당하는 게시물이 없습니다.'}, status=400)
        
-    
     def get(self, request, post_id): # post 출력 따로 comment 출력 따로..?
         post     = Post.objects.get(id=post_id)
         user     = post.user.name
@@ -115,7 +136,7 @@ class CommentView(View):
 
         return JsonResponse({'comment':comment_dict}, status=200)
 
-class DeleteCommentView(View):
+class CommentDeleteView(View):
     @login_check
     def delete(self, request, post_id, comment_id):
         try:
@@ -128,14 +149,12 @@ class DeleteCommentView(View):
                 comment.delete()
                 return JsonResponse({'message':'댓글 삭제 완료'}, status=200)
             return JsonResponse({'message':'권한이 없습니다.'}, status=403)
-            
+
         except Post.DoesNotExist:
             return JsonResponse({'message':'해당하는 게시물이 없습니다.'}, status=400) 
         except Comment.DoesNotExist:
             return JsonResponse({'message':'해당하는 댓글이 없습니다.'}, status=400) 
 
-
-       
 
 class LikeView(View):
     @login_check
