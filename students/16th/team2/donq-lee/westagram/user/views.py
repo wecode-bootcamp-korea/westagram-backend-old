@@ -12,7 +12,7 @@ class UserSignUpView(View):
         email    = data['email']
         password = data['password']
         
-        if not email and password:
+        if not email or password:
             return JsonResponse({'message': 'KEY_ERROR'}, status = 400)
         if User.objects.filter(email = email).exists():
             return JsonResponse({'message':'EXIST_EMAIL'}, status = 400)
