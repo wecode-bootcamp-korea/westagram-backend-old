@@ -192,22 +192,23 @@ class RecommentView(View):
     @login_check
     def post(self, request, post_id, comment_id):
         try:
-            data = json.loads(request.body)
-
-            if Comment.objects.get(id=post_id).id == comment_id:
-                Recomment(
-                    post      = Post.objects.get(id=post_id),
-                    user      = request.user,
-                    comment   = Comment.objects.get(id=comment_id),
-                    content   = data['content'],
-                    pub_date  = datetime.now()
-                ).save()
-                return JsonResponse({'message':'SUCCESS'}, status=201)
-            else:
-                return JsonResponse({'message':'해당하는 댓글이 없습니다.'}, status=400)
+            data     = json.loads(request.body)
+            comments = Comment.objects.filter(post=post_id)
+            for comment in comments:
+                if comment.id == comment_id:
+                    Recomment(
+                        post      = Post.objects.get(id=post_id),
+                        user      = request.user,
+                        comment   = Comment.objects.get(id=comment_id),
+                        content   = data['content'],
+                        pub_date  = datetime.now()
+                    ).save()
+                    return JsonResponse({'message':'SUCCESS'}, status=201)
+    
+            return JsonResponse({'message':'해당하는 댓글이 없습니다.'}, status=400)
 
         except KeyError:
             return JsonResponse({'message':'KEY_ERROR'}, status=400)
         except Comment.DoesNotExist :
-            return JsonResponse({'message':'해당하는 게시물이 없습니다.'}, status=400)
+           return JsonResponse({'message':'해당하는 게시물이 없습니다.'}, status=400)
         
