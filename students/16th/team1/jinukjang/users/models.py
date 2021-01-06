@@ -17,3 +17,7 @@ class Follow(models.Model):
 
     class Meta:
         db_table = "follows"
+
+
+
+## select_related

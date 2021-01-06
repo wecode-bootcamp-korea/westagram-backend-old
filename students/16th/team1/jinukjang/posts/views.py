@@ -1,10 +1,11 @@
 import json
 
-from django.views import View
-from django.http  import JsonResponse
+from django.views    import View
+from django.http     import JsonResponse
 
-from .models      import Post, PostImage, Comment, Like
-from users.models import User
+from .models         import Post, PostImage, Comment, Like
+from users.models    import User
+from users.decorator import login_decorator
 
 
 class PostView(View):
@@ -37,6 +38,7 @@ class PostView(View):
 
 
 class CreatePostView(View):
+    @login_decorator
     def post(self, request):
         try:
             data = json.loads(request.body)
@@ -48,7 +50,7 @@ class CreatePostView(View):
             post = Post.objects.create(
                 title   = data['title'],
                 content = data['content'],
-                writer  = User.objects.get(email=data['email'])
+                writer=request.user
             )
 
             # img_url 데이터를 콤마로 구분해서 입력받았을 때 리스트로 바꿔주기
@@ -65,17 +67,15 @@ class CreatePostView(View):
             return JsonResponse({'MESSAGE':'SUCCESS'}, status=200) 
         except KeyError:
             return JsonResponse({'MESSAGE':"KEY_ERROR"},status = 400)
-            
-        except User.DoesNotExist:
-            return JsonResponse({'MESSAGE':"INVALID USER"},status = 400)
 
 # title로 수정할 Post검색 후 content 수정 가능.
 class EditPostView(View):
+    @login_decorator
     def post(self, request):
         try:
             data = json.loads(request.body)
             post = Post.objects.get(
-                writer = User.objects.get(email = data['email']),
+                writer = request.user,
                 title  = data['title']
             )
 
@@ -86,27 +86,26 @@ class EditPostView(View):
         except KeyError:
             return JsonResponse({'MESSAGE':"KEY_ERROR"},status = 400)
 
-        except User.DoesNotExist:
-            return JsonResponse({'MESSAGE':"INVALID USER"},status = 400)
-
         except Post.DoesNotExist:
             return JsonResponse({'MESSAGE':"INVALID POST"},status = 400)
 
 class DeletePostView(View):
+    @login_decorator
     def post(self, request):
         try:
             data = json.loads(request.body)
-            Post.objects.get(title=data['title']).delete()
+            Post.objects.get(title=data['title'], writer = request.user).delete()
             return JsonResponse({'MESSAGE':"REMOVE POST"},status = 200)
 
         except Post.DoesNotExist:
             return JsonResponse({'MESSAGE':"INVALID POST"},status = 400)    
         
 class LikePostView(View):
+    @login_decorator
     def post(self, request):
         try:
             data = json.loads(request.body)
-            user = User.objects.get(email=data['email'])
+            user = request.user
             post = Post.objects.get(title=data['title'])
             like = Like.objects.filter(user=user, post=post)
 
@@ -119,9 +118,6 @@ class LikePostView(View):
 
         except KeyError:
             return JsonResponse({'MESSAGE':"KEY_ERROR"},status = 400)
-            
-        except User.DoesNotExist:
-            return JsonResponse({'MESSAGE':"INVALID USER"},status = 400)
 
         except Post.DoesNotExist:
             return JsonResponse({'MESSAGE':"INVALID POST"},status = 400)
@@ -143,14 +139,15 @@ class CommentView(View):
 
 # recomment <- comment.id로 입력
 class CreateCommentView(View):
+    @login_decorator
     def post(self, request):
         try:
             data      = json.loads(request.body)
             recomment = Comment.objects.get(id = data['recomment']) if 'recomment' in data else None
             
             Comment.objects.create(
-                user      = User.objects.get(email = data['email']),
-                post      = Post.objects.get(title    = data['title']),
+                user      = request.user,
+                post      = Post.objects.get(title = data['title']),
                 content   = data['content'],
                 recomment = recomment
             )
@@ -159,21 +156,19 @@ class CreateCommentView(View):
 
         except KeyError:
             return JsonResponse({'MESSAGE':"KEY_ERROR"},status = 400)
-            
-        except User.DoesNotExist:
-            return JsonResponse({'MESSAGE':"INVALID USER"},status = 400)
 
         except Post.DoesNotExist:
             return JsonResponse({'MESSAGE':"INVALID POST"},status = 400)
 
 class DeleteCommentView(View):
+    @login_decorator
     def post(self, request):
         try:
             data = json.loads(request.body)
 
             Comment.objects.filter(
-                user    = User.objects.get(email = data['email']),
-                post    = Post.objects.get(title    = data['title']),
+                user    = request.user,
+                post    = Post.objects.get(title = data['title']),
                 content = data['content'],
             ).delete()
 
@@ -181,9 +176,6 @@ class DeleteCommentView(View):
 
         except KeyError:
             return JsonResponse({'MESSAGE':"KEY ERROR"},status = 400)
-            
-        except User.DoesNotExist:
-            return JsonResponse({'MESSAGE':"INVALID USER"},status = 400)
 
         except Post.DoesNotExist:
             return JsonResponse({'MESSAGE':"INVALID POST"},status = 400)

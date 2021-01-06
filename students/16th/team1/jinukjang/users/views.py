@@ -8,6 +8,7 @@ from django.http  import JsonResponse
 
 from .models      import User, Follow
 from my_settings  import SECRET, ALGORITHM
+from .decorator   import login_decorator
 
 
 class SignupView(View):
@@ -58,14 +59,13 @@ class SignupView(View):
 class LoginView(View):
     def post(self,request):
         try:
-            data = json.loads(request.body)
-            user = User.objects.get(email=data['email'])
-
+            data     = json.loads(request.body)
+            user     = User.objects.get(email=data['email'])
             password = data['password']
 
             if bcrypt.checkpw(password.encode('utf-8'), user.password.encode('utf-8')):
                 user_token = jwt.encode({'user_id': user.id}, SECRET, algorithm=ALGORITHM)
-                return JsonResponse({'ACCESS TOKEN': user_token}, status=200)
+                return JsonResponse({'Authorization':user_token}, status=200)
             return JsonResponse({'MESSAGE':'WORONG PASSWORD'}, status=401)
 
         except KeyError:
@@ -76,18 +76,18 @@ class LoginView(View):
             
 
 class FollowView(View):
+    @login_decorator
     def post(self, request):
         try:
-            data      = json.loads(request.body)
-            from_user = User.objects.get(username=data['from_username'])
-            to_user   = User.objects.get(username=data['to_username'])
-            follow    = Follow.objects.filter(to_user=to_user, from_user=from_user)
+            data    = json.loads(request.body)
+            to_user = User.objects.get(email=data['to_email'])
+            follow  = Follow.objects.filter(to_user=to_user, from_user=request.user)
 
             if  follow:
                 follow.delete()
                 return JsonResponse({'MESSAGE':"REMOVE FOLLOW"},status = 200)
 
-            Follow.objects.create(to_user=to_user, from_user=from_user)
+            Follow.objects.create(to_user=to_user, from_user=request.user)
             return JsonResponse({'MESSAGE':"SUCESS FOLLOW"},status = 200)
             
         except KeyError:
