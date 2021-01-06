@@ -110,19 +110,55 @@ class CreateCommentView(View):
             return JsonResponse({'MESSAGE':"INVAILD POST"},status = 400)
 
         
-class PostLikeView(View):
+class LikePostView(View):
     def post(self, request):
         try:
             data = json.loads(request.body)
             user = User.objects.get(username=data['username'])
             post = Post.objects.get(title=data['title'])
+            like = Like.objects.filter(user=user, post=post)
 
-            if  Like.objects.filter(user=user, post=post).exists():
-                Like.objects.filter(user=user, post=post).delete()
+            if  like:
+                like.delete()
                 return JsonResponse({'MESSAGE':'POST_LIKE_CANCLE'}, status=200)
 
             Like.objects.create(user=user, post=post)
             return JsonResponse({'MESSAGE':'POST_LIKE'}, status=200) 
+
+        except KeyError:
+            return JsonResponse({'MESSAGE':"KEY_ERROR"},status = 400)
+            
+        except User.DoesNotExist:
+            return JsonResponse({'MESSAGE':"INVAILD USER"},status = 400)
+
+        except Post.DoesNotExist:
+            return JsonResponse({'MESSAGE':"INVAILD POST"},status = 400)
+
+class DeletePostView(View):
+    def post(self, request):
+        try:
+            data = json.loads(request.body)
+            Post.objects.get(title=data['title']).delete()
+            return JsonResponse({'MESSAGE':"REMOVE POST"},status = 200)
+
+        except Post.DoesNotExist:
+            return JsonResponse({'MESSAGE':"INVAILD POST"},status = 400)
+
+        except KeyError:
+            return JsonResponse({'MESSAGE':"KEY_ERROR"},status = 400)
+
+class DeleteCommentView(View):
+    def post(self, request):
+        try:
+            data = json.loads(request.body)
+
+            Comment.objects.filter(
+                user    = User.objects.get(username = data['username']),
+                post    = Post.objects.get(title    = data['title']),
+                content = data['content'],
+            ).delete()
+
+            return JsonResponse({'MESSAGE':'REMOVE COMMENT'}, status=200) 
 
         except KeyError:
             return JsonResponse({'MESSAGE':"KEY_ERROR"},status = 400)
