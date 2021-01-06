@@ -14,8 +14,8 @@ class UserView(View):
             data           = json.loads(request.body)
             name           = data.get('name')
             phone          = data.get('phone')
-            password       = data.get('password')
-            email          = data.get('email')
+            password       = data['password']
+            email          = data['email']
             email_regex    = '^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w{2,3}$'
             password_regex = '[A-Za-z0-9@#$]{8,12}'
             encoded_pw     = password.encode('utf-8')
@@ -52,24 +52,24 @@ class LoginView(View):
     def post(self, request):
         try:
             data        = json.loads(request.body)
-            email       = data.get('email')
-            password    = data.get('password').encode('utf-8')
+            email       = data['email']
+            password    = data['password'].encode('utf-8')
             
-            if email:
+            if 'email' in data.keys():
                 if User.objects.filter(email= email).exists():
                     user       = User.objects.get(email= email)
                     user_id    = user.id
                     user_pw    = user.password
                     
-                    if bcrypt.checkpw(password, user_pw.encode('utf-8')):
-                        print(234)
-                        token  = jwt.encode( {'user-id':user_id}, 'secret', algorithm='HS256')
-                        
-                        return JsonResponse({"token":token}, status= 200)
+                    if 'password' in data.keys():
+                        if bcrypt.checkpw(password, user_pw.encode('utf-8')):
+                            token  = jwt.encode( {'user-id':user_id}, 'secret', algorithm='HS256')
+                            
+                            return JsonResponse({"token":token}, status= 200)
 
                 return JsonResponse({'MESSAGE': 'INVALID_USER'}, status=401)
             return JsonResponse({'MESSAGE': 'KEY_ERRORS'}, status=400)
 
         except:
-             return JsonResponse({'MESSAGE': 'KEY_ERRORSSSS'}, status=400)
+             return JsonResponse({'MESSAGE': 'KEY_ERRORS'}, status=400)
         
