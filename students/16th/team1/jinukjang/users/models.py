@@ -2,7 +2,6 @@ from django.db import models
 
 class User(models.Model):
 
-    username = models.CharField(unique=True, max_length=10)
     password = models.CharField(max_length=100)
     name     = models.CharField(max_length=10, null=True)
     email    = models.EmailField(unique=True, null=True)
@@ -18,4 +17,3 @@ class Follow(models.Model):
 
     class Meta:
         db_table = "follows"
-

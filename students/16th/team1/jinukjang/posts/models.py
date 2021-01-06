@@ -23,9 +23,10 @@ class PostImage(models.Model):
 
 class Comment(models.Model):
     
-    post = models.ForeignKey('posts.Post', related_name="comments", on_delete=models.CASCADE)
-    user = models.ForeignKey('users.User', related_name="comments", on_delete=models.CASCADE)
-    content = models.TextField()
+    post       = models.ForeignKey('posts.Post', related_name="comments", on_delete=models.CASCADE)
+    user       = models.ForeignKey('users.User', related_name="comments", on_delete=models.CASCADE)
+    recomment  = models.ForeignKey('Comment', related_name="comments", on_delete=models.CASCADE, null=True)
+    content    = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

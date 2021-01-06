@@ -17,7 +17,6 @@ class SignupView(View):
 
             data = json.loads(request.body)
 
-            username = data['username']
             password = data['password']
             
             # user, phone, email은 필수가 아님
@@ -26,9 +25,6 @@ class SignupView(View):
             email = data.get('email')
             
             p = re.compile('^[a-zA-Z0-9+-_.]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$')
-
-            if User.objects.filter(username=username).exists():
-                return JsonResponse({'MESSAGE':"USER_ID ALREADY EXISTS!"},status = 400)
 
             if email and p.match(email) == None:
                 return JsonResponse({'MESSAGE':"INVAILD_EMAIL_ADDRESS!"},status = 400)
@@ -48,7 +44,6 @@ class SignupView(View):
             hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
 
             User.objects.create(
-                username = username,
                 name     = name,
                 email    = email,
                 phone    = phone,
@@ -64,19 +59,20 @@ class LoginView(View):
     def post(self,request):
         try:
             data = json.loads(request.body)
-            user = User.objects.get(username=data['username'])
+            user = User.objects.get(email=data['email'])
+
             password = data['password']
 
             if bcrypt.checkpw(password.encode('utf-8'), user.password.encode('utf-8')):
                 user_token = jwt.encode({'user_id': user.id}, SECRET, algorithm=ALGORITHM)
-                return JsonResponse({'TOKEN': user_token}, status=200)
+                return JsonResponse({'ACCESS TOKEN': user_token}, status=200)
             return JsonResponse({'MESSAGE':'WORONG PASSWORD'}, status=401)
 
         except KeyError:
             return JsonResponse({'MESSAGE':"KEY_ERROR"},status = 400)
             
         except User.DoesNotExist:
-            return JsonResponse({'MESSAGE':"INVAILD USER"},status = 400)
+            return JsonResponse({'MESSAGE':"INVALID USER"},status = 400)
             
 
 class FollowView(View):
@@ -98,5 +94,5 @@ class FollowView(View):
             return JsonResponse({'MESSAGE':"KEY_ERROR"},status = 400)
             
         except User.DoesNotExist:
-            return JsonResponse({'MESSAGE':"INVAILD USER"},status = 400)
+            return JsonResponse({'MESSAGE':"INVALID USER"},status = 400)
         

@@ -7,11 +7,39 @@ from .models      import Post, PostImage, Comment, Like
 from users.models import User
 
 
+class PostView(View):
+    def get(self, request):
+        try:
+            posts = Post.objects.all()
+            post_list = []
+
+            for post in posts:
+                images = post.post_images.all()
+                likes = post.likes.all().count()
+
+                img_list = [img.img_url for img in images]
+
+                post_dict = {
+                    'writer'    : post.writer.email,
+                    'title'     : post.title,
+                    'content'   : post.content,
+                    'img'       : img_list,
+                    'created_at': post.created_at,
+                    'updated_at': post.updated_at,
+                    'cnt_likes' : likes
+                }
+
+                post_list.append(post_dict)
+
+            return JsonResponse({'posts':post_list},status = 200)
+        except KeyError:
+            return JsonResponse({'MESSAGE':"KEY_ERROR"},status = 400)
+
+
 class CreatePostView(View):
     def post(self, request):
         try:
             data = json.loads(request.body)
-            user = User.objects.get(username=data['username'])
 
             # 동일한 제목의 Post생성 불가능. -> CommentView에서 Post의 title로 접근할거임.
             if Post.objects.filter(title=data['title']).exists():
@@ -20,7 +48,7 @@ class CreatePostView(View):
             post = Post.objects.create(
                 title   = data['title'],
                 content = data['content'],
-                writer  = user
+                writer  = User.objects.get(email=data['email'])
             )
 
             # img_url 데이터를 콤마로 구분해서 입력받았을 때 리스트로 바꿔주기
@@ -39,82 +67,46 @@ class CreatePostView(View):
             return JsonResponse({'MESSAGE':"KEY_ERROR"},status = 400)
             
         except User.DoesNotExist:
-            return JsonResponse({'MESSAGE':"INVAILD USER"},status = 400)
-        
+            return JsonResponse({'MESSAGE':"INVALID USER"},status = 400)
 
-class PostView(View):
-    def get(self, request):
-        try:
-            posts = Post.objects.all()
-            post_list = []
-
-            for post in posts:
-                images = post.postimages.all()
-                likes = post.likes.all().count()
-
-                img_list = [img.img_url for img in imges]
-
-                post_dict = {
-                    'writer'    : post.writer.username,
-                    'title'     : post.title,
-                    'content'   : post.content,
-                    'img'       : img_list,
-                    'created_at': post.created_at,
-                    'updated_at': post.updated_at,
-                    'cnt_likes' : likes
-                }
-
-                post_list.append(post_dict)
-
-            return JsonResponse({'posts':post_list},status = 200)
-        except KeyError:
-            return JsonResponse({'MESSAGE':"KEY_ERROR"},status = 400)
-
-
-# Post의 title입력
-class CommentView(View):
-    def get(self, request):
-        try:
-            data = json.loads(request.body)
-            post = Post.objects.get(title=data['title'])
-
-            comment = post.comments.all()
-
-            return JsonResponse({'posts':list(comment)},status = 200)
-        except KeyError:
-            return JsonResponse({'MESSAGE':"KEY_ERROR"},status = 400)
-
-        except Post.DoesNotExist:
-            return JsonResponse({'MESSAGE':"INVAILD POST"},status = 400)
-
-class CreateCommentView(View):
+# title로 수정할 Post검색 후 content 수정 가능.
+class EditPostView(View):
     def post(self, request):
         try:
             data = json.loads(request.body)
-
-            Comment.objects.create(
-                user    = User.objects.get(username = data['username']),
-                post    = Post.objects.get(title    = data['title']),
-                content = data['content'],
+            post = Post.objects.get(
+                writer = User.objects.get(email = data['email']),
+                title  = data['title']
             )
 
-            return JsonResponse({'MESSAGE':'SUCCESS'}, status=200) 
+            post.content = data['content']
+            post.save()
+            return JsonResponse({'MESSAGE':'POST EDIT SUCCESS'}, status=200) 
 
         except KeyError:
             return JsonResponse({'MESSAGE':"KEY_ERROR"},status = 400)
-            
+
         except User.DoesNotExist:
-            return JsonResponse({'MESSAGE':"INVAILD USER"},status = 400)
+            return JsonResponse({'MESSAGE':"INVALID USER"},status = 400)
 
         except Post.DoesNotExist:
-            return JsonResponse({'MESSAGE':"INVAILD POST"},status = 400)
+            return JsonResponse({'MESSAGE':"INVALID POST"},status = 400)
 
+class DeletePostView(View):
+    def post(self, request):
+        try:
+            data = json.loads(request.body)
+            Post.objects.get(title=data['title']).delete()
+            return JsonResponse({'MESSAGE':"REMOVE POST"},status = 200)
+
+        except Post.DoesNotExist:
+            return JsonResponse({'MESSAGE':"INVALID POST"},status = 400)    
         
 class LikePostView(View):
     def post(self, request):
         try:
             data = json.loads(request.body)
-            user = User.objects.get(username=data['username'])
+            user = User.objects.get(email=data['email'])
             post = Post.objects.get(title=data['title'])
             like = Like.objects.filter(user=user, post=post)
 
@@ -129,23 +121,50 @@ class LikePostView(View):
             return JsonResponse({'MESSAGE':"KEY_ERROR"},status = 400)
             
         except User.DoesNotExist:
-            return JsonResponse({'MESSAGE':"INVAILD USER"},status = 400)
+            return JsonResponse({'MESSAGE':"INVALID USER"},status = 400)
 
         except Post.DoesNotExist:
-            return JsonResponse({'MESSAGE':"INVAILD POST"},status = 400)
+            return JsonResponse({'MESSAGE':"INVALID POST"},status = 400)
 
-class DeletePostView(View):
+# Post의 title입력
+class CommentView(View):
+    def get(self, request):
+        try:
+            data    = json.loads(request.body)
+            post    = Post.objects.get(title=data['title'])
+            comment = post.comments.all()
+            return JsonResponse({'posts':list(comment)},status = 200)
+            
+        except KeyError:
+            return JsonResponse({'MESSAGE':"KEY_ERROR"},status = 400)
+
+        except Post.DoesNotExist:
+            return JsonResponse({'MESSAGE':"INVALID POST"},status = 400)
+
+# recomment <- comment.id로 입력
+class CreateCommentView(View):
     def post(self, request):
         try:
-            data = json.loads(request.body)
-            Post.objects.get(title=data['title']).delete()
-            return JsonResponse({'MESSAGE':"REMOVE POST"},status = 200)
+            data      = json.loads(request.body)
+            recomment = Comment.objects.get(id = data['recomment']) if 'recomment' in data else None
+            
+            Comment.objects.create(
+                user      = User.objects.get(email = data['email']),
+                post      = Post.objects.get(title    = data['title']),
+                content   = data['content'],
+                recomment = recomment
+            )
 
-        except Post.DoesNotExist:
-            return JsonResponse({'MESSAGE':"INVAILD POST"},status = 400)
+            return JsonResponse({'MESSAGE':'SUCCESS'}, status=200) 
 
         except KeyError:
             return JsonResponse({'MESSAGE':"KEY_ERROR"},status = 400)
+            
+        except User.DoesNotExist:
+            return JsonResponse({'MESSAGE':"INVALID USER"},status = 400)
+
+        except Post.DoesNotExist:
+            return JsonResponse({'MESSAGE':"INVALID POST"},status = 400)
 
 class DeleteCommentView(View):
     def post(self, request):
@@ -153,7 +172,7 @@ class DeleteCommentView(View):
             data = json.loads(request.body)
 
             Comment.objects.filter(
-                user    = User.objects.get(username = data['username']),
+                user    = User.objects.get(email = data['email']),
                 post    = Post.objects.get(title    = data['title']),
                 content = data['content'],
             ).delete()
@@ -161,10 +180,10 @@ class DeleteCommentView(View):
             return JsonResponse({'MESSAGE':'REMOVE COMMENT'}, status=200) 
 
         except KeyError:
-            return JsonResponse({'MESSAGE':"KEY_ERROR"},status = 400)
+            return JsonResponse({'MESSAGE':"KEY ERROR"},status = 400)
             
         except User.DoesNotExist:
-            return JsonResponse({'MESSAGE':"INVAILD USER"},status = 400)
+            return JsonResponse({'MESSAGE':"INVALID USER"},status = 400)
 
         except Post.DoesNotExist:
-            return JsonResponse({'MESSAGE':"INVAILD POST"},status = 400)
+            return JsonResponse({'MESSAGE':"INVALID POST"},status = 400)
