@@ -6,7 +6,7 @@ from django.http      import JsonResponse
 from django.views     import View
 from django.shortcuts import render
 from user.models      import User
-from .models          import Post, Image, Comment, Like
+from .models          import Post, Image, Comment, Like, Recomment
 
 # 게시물 등록, 전체 조회
 class PostView(View):
@@ -93,18 +93,13 @@ class CommentView(View):
     @login_check
     def post(self, request, post_id):
         try:
-            data      = json.loads(request.body) 
-            # 이렇게 변수 안만들고 아래서 바로 할당해버리는게 더 보기 좋을까?
-            post      = Post.objects.get(id=post_id)
-            user      = request.user
-            pub_date  = datetime.now()
-            content   = data['content']
+            data      = json.loads(request.body)
 
             Comment(
-                post      = post,
-                user      = user,
-                pub_date  = pub_date,
-                content   = content
+                post      = Post.objects.get(id=post_id),
+                user      = request.user,
+                pub_date  = datetime.now(),
+                content   = data['content']
             ).save()
 
             return JsonResponse({'message':'SUCCESS'}, status=201)
@@ -192,4 +187,27 @@ class LikeView(View):
         except IndexError :
             return JsonResponse({'message':'해당하는 게시물이 없습니다.'}, status=400)      
 
+# 대댓글 달기
+class RecommentView(View):
+    @login_check
+    def post(self, request, post_id, comment_id):
+        try:
+            data = json.loads(request.body)
 
+            if Comment.objects.get(id=post_id).id == comment_id:
+                Recomment(
+                    post      = Post.objects.get(id=post_id),
+                    user      = request.user,
+                    comment   = Comment.objects.get(id=comment_id),
+                    content   = data['content'],
+                    pub_date  = datetime.now()
+                ).save()
+                return JsonResponse({'message':'SUCCESS'}, status=201)
+            else:
+                return JsonResponse({'message':'해당하는 댓글이 없습니다.'}, status=400)
+
+        except KeyError:
+            return JsonResponse({'message':'KEY_ERROR'}, status=400)
+        except Comment.DoesNotExist :
+            return JsonResponse({'message':'해당하는 게시물이 없습니다.'}, status=400)
+        

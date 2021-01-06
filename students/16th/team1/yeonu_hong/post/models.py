@@ -4,7 +4,7 @@ from django.db import models
 class Post(models.Model):
     user      = models.ForeignKey('user.User', on_delete=models.CASCADE)
     pub_date  = models.DateTimeField(auto_now_add=True)
-    likes     = models.IntegerField(default=0) # 이 컬럼이 꼭 필요할까?
+    likes     = models.IntegerField(default=0)
 
     class Meta:
         db_table = 'posts'
@@ -22,7 +22,6 @@ class Comment(models.Model):
     content  = models.CharField(max_length=10000)
     pub_date = models.DateTimeField(auto_now_add=True)
 
-
     class Meta:
         db_table = 'comments'
 
@@ -32,3 +31,17 @@ class Like(models.Model):
 
     class Meta:
         db_table = 'likes'
+
+class Recomment(models.Model):
+    post     = models.ForeignKey('Post', on_delete=models.CASCADE)
+    comment  = models.ForeignKey('Comment', on_delete=models.CASCADE)
+    user     = models.ForeignKey('user.User', on_delete=models.CASCADE)
+    content  = models.CharField(max_length=10000)
+    pub_date = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'recomments'
+        
+
+
+
