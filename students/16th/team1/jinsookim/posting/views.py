@@ -1,11 +1,14 @@
 import json
 import jwt
+
 from django.views import View 
-from westagram.settings import SECRET
-from .models import Users
 from django.http import JsonResponse
-from .models import Post_register, Post_express, Comments_register, Love
+
+from westagram.settings import SECRET
 from user.utils import login_decorator
+
+from .models import Post_register, Post_express, Comments_register, Love
+from .models import Users
 
 class Post(View):
     def get(self, request):
@@ -15,7 +18,7 @@ class Post(View):
             for post in all_post:
                 post_list.append(
                     {
-                        'user_id'     : post.id,
+                        'post_id'     : post.id,
                         'content'     : post.content,
                         'title'       : post.title,
                         'image_url'   : post.image_url,
@@ -30,14 +33,15 @@ class Post(View):
             
     @login_decorator
     def post(self, request):
-        data = json.loads(request.body)
-        token     = request.headers.get('Token')
+        data      = json.loads(request.body)
+        token     = request.headers.get('Authorization')
         access    = jwt.decode(token, SECRET, algorithms="HS256").get("id")
         user      = Users.objects.get(id = access)
         content   = data['content']
         title     = data['title']
         image_url = data['image_url']
         Post_register.objects.create(user = user, content = content, title = title, image_url = image_url)
+        
         return JsonResponse({'message' : 'SUCCESS'}, status=200)
 
 
@@ -70,32 +74,106 @@ class Comment(View):
             
 
     @login_decorator
-    def post(self, request):
-        data    = json.loads(request.body)
-        comment = data['comment']
-        post    = Post_register.objects.get(id=data["post_id"])
-        user    = Users.objects.get(email = data['user'])
-        Comments_register.objects.create(post_register=post, user=user, comment=comment)
-        return JsonResponse({"message" : "SUCCESS"}, status=200)
+    def post(self, request, post_id):
+        try:
+            data     = json.loads(request.body)
 
-    
+            token    = request.headers.get("Authorization")
+            jwt_user = jwt.decode(token, SECRET, algorithms="HS256")
+
+            comment  = data['comment']
+            user     = Users.objects.get(id = jwt_user["id"])
+            post     = Post_register.objects.get(id=post_id)
+            Comments_register.objects.create(post_register=post, user=user, comment=comment)
+
+            return JsonResponse({"message" : "SUCCESS"}, status=200)
+
+        except Post_register.DoesNotExist:
+            return JsonResponse({"message" : "해당 게시물이 없습니다."}, status=400)
+        except KeyError:
+            return JsonResponse({"mesage" : "KeyError"}, status=400)
 
 
 class Love_Function(View):  
     @login_decorator
-    def post(self, request):
-        data = json.loads(request.body)
-        user = Users.objects.get(email = data['user'])
-        post = Post_register.objects.get(id=data["post_id"])
+    def post(self, request, post_id):
+        try:
+            token = request.headers.get("Authorization")
+            jwt_user = jwt.decode(token, SECRET, algorithms="HS256")
+            user = Users.objects.get(id = jwt_user["id"])
+            post = Post_register.objects.get(id=post_id)
 
-        user_love = Love(
-            user = user,
-            post_register = post
+            user_love = Love(
+                user          = user,
+                post_register = post
             )
-        user_love.save()
-        return JsonResponse({"message" : "SUCCESS"}, status=200)
+            user_love.save()
+            return JsonResponse({"message" : "SUCCESS"}, status=200)
+
+        except Post_register.DoesNotExist:
+            return JsonResponse({"mesage" : "해당 게시물이 없습니다"}, status=400)
 
 
+
+
+class Post_Delete_View(View):
+    @login_decorator
+    def post(self, request, post_id):
+        try:
+            token    = request.headers.get("Authorization")
+            jwt_user = jwt.decode(token, SECRET, algorithms="HS256")
+
+            if Post_register.objects.get(id = post_id):
+                post = Post_register.objects.get(id = post_id)
+                if jwt_user["id"] == post.user.id:
+                    Post_register.objects.get(id = post_id).delete()
+
+            return JsonResponse({"message" : "게시물이 정상적으로 삭제되었습니다."}, status=200)
+            
+        except Post_register.DoesNotExist:
+            return JsonResponse({"message" : "해당 게시물이 없습니다."}, status=400)
 
         
 
+class Comment_Delete_View(View):
+    @login_decorator
+    def post(self, request, post_id, comment_id):
+        try:
+            post    = Post_register.objects.get(id = post_id)
+            comment = post.comments_register_set.get(id = comment_id)
+            Comments_register.objects.filter(id = comment.id).delete()
+
+            return JsonResponse({"message" : "SUCCESS"}, status = 200)
+
+        except Post_register.DoesNotExist:
+            return JsonResponse({"message" : "해당 게시물이 없습니다."}, status=400)
+        
+        except Comments_register.DoesNotExist:
+            return JsonResponse({"message" : "해당 댓글이 없습니다."}, status=400)
+
+
+class UpdateView(View):
+    @login_decorator
+    def post(self, request, post_id):
+        try:
+            data      = json.loads(request.body)
+
+            content   = data.get("content")
+            title     = data.get("title")
+            image_url = data.get("image_url")
+
+            if Post_register.objects.get(id=post_id):
+                if content:
+                    Post_register.objects.filter(id = post_id).update(content=content)
+            
+                if title:
+                    Post_register.objects.filter(id = post_id).update(title=title)
+
+                if image_url:
+                    Post_register.objects.filter(id = post_id).update(image_url=image_url)
+
+            return JsonResponse({"message" : "SUCCESS"}, status = 200)
+
+        except Post_register.DoesNotExist:
+            return JsonResponse({"message" : "해당 게시물이 없습니다."}, status=400)
+            
