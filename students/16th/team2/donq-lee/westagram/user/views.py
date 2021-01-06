@@ -12,14 +12,14 @@ class UserSignUpView(View):
         email    = data['email']
         password = data['password']
         
-        if not email or password:
+        if not (email and password):
             return JsonResponse({'message': 'KEY_ERROR'}, status = 400)
         if User.objects.filter(email = email).exists():
             return JsonResponse({'message':'EXIST_EMAIL'}, status = 400)
-        if len(password) < 8:
-            return JsonResponse({'message':'INVALID_PASSWORD'}, status = 400)
         if '@' not in email or '.' not in email:
             return JsonResponse({'message':'INVALID_EMAIL'}, status = 400)
+        if len(password) < 8:
+            return JsonResponse({'message':'INVALID_PASSWORD'}, status = 400)
         encoded_pw = password.encode('utf-8')
         hashed_pw  = bcrypt.hashpw(encoded_pw, bcrypt.gensalt())
         encrypt_pw = hashed_pw.decode('utf-8')
