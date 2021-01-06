@@ -89,8 +89,13 @@ class LoginView(View):
                 user_token = jwt.encode({'user_id': user_info.id}, JWT_SECRET, algorithm = "HS256")
                 return JsonResponse({'TOKEN :': user_token}, status = 200)
             else:
-                print("wrong")
-                return JsonResponse({'MESSAGE :':"INVAILD_USER"},status = 401)
+                return JsonResponse({'MESSAGE :':"CHECK_YOUR_PASSWORD"},status = 401)
+
+        except KeyError:
+            return JsonResponse({'MESSAGE :':"KEY_ERROR"},status = 400)
+
+        except ValueError:
+            return JsonResponse({'MESSAGE :':"VALUE_ERROR"},status = 400)
 
         except User.DoesNotExist:
             return JsonResponse({'MESSAGE :':"INVAILD_USER"},status = 401)
