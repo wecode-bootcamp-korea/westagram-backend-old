@@ -8,6 +8,7 @@ urlpatterns = [
     path('/read/<int:pk>/comment', PostCommentView.as_view()),     # 댓글 조회
     
     path('/create/<int:pk>/like', PostLikeView.as_view()),           # 좋아요 등록
+    path('/delete/<int:pk>/like', PostLikeView.as_view()),           # 좋아요 등록
     path('/read/<int:pk>/like', PostLikeView.as_view()),            # 좋아요 조회
 
 
