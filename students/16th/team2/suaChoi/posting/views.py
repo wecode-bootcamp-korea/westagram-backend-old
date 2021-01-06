@@ -37,9 +37,9 @@ class PostView(View):
 
         except KeyError:
             return JsonResponse({"message": "KEY_ERROR"}, status=400)
-#        except:
-#            return JsonResponse({"message": "ERROR"}, status=500)
-#
+        except:
+            return JsonResponse({"message": "ERROR"}, status=500)
+
     def get(self, request):
         posts = Post.objects.all()
         post_list = []
@@ -48,6 +48,6 @@ class PostView(View):
                 'user_id'    : post.id,
                 'content'    : post.content,
                 'img'        : post.img,
-                'created_dt' : post.created_dt
+                'created_at' : post.created_at
             })
-        return JsonResponse({"posts": post_list}, stauts=200)
+        return JsonResponse({"posts": post_list}, status=200)
