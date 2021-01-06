@@ -1,13 +1,14 @@
 import json
+
+from datetime         import datetime
 from decorator        import login_check
-from django.shortcuts import render
 from django.http      import JsonResponse
 from django.views     import View
-from .models          import Post, Image, Comment, Like
+from django.shortcuts import render
 from user.models      import User
-from datetime         import datetime
+from .models          import Post, Image, Comment, Like
 
-# Create your views here.
+# 게시물 등록, 전체 조회
 class PostView(View):
     @login_check
     def post(self, request):
@@ -34,7 +35,7 @@ class PostView(View):
         images_list = []
         for post in posts:
             posts_dict = {
-                'user'     : post.user.name,
+                'user'     : post.user.email,
                 'pub_date' : post.pub_date
             }
             posts_list.append(posts_dict)
@@ -47,6 +48,7 @@ class PostView(View):
 
         return JsonResponse({'posts':posts_list}, status=200)
 
+# 게시물 삭제
 class PostDeleteView(View):    
     @login_check
     def delete(self, request, post_id):
@@ -63,6 +65,7 @@ class PostDeleteView(View):
         except Post.DoesNotExist:
             return JsonResponse({"message":'해당하는 게시물이 없습니다.'}, status=400)
 
+# 게시물 수정
 class PostUpdateView(View):
     @login_check
     def put(self, request, post_id):
@@ -85,7 +88,7 @@ class PostUpdateView(View):
             return JsonResponse({"message":'해당하는 게시물이 없습니다.'}, status=400)
 
 
-
+# 댓글 작성, 조회
 class CommentView(View):
     @login_check
     def post(self, request, post_id):
@@ -122,8 +125,10 @@ class CommentView(View):
 
         contents_list = []
         for index, comment in enumerate(comments):
+            print(comment.user.id)
             contents_dict = {
-                'content '+ str(index+1) : comment.content 
+                'content '+ str(index+1) : comment.content,
+                'writer_id'              : comment.user.id
             }
             contents_list.append(contents_dict)
 
@@ -136,6 +141,7 @@ class CommentView(View):
 
         return JsonResponse({'comment':comment_dict}, status=200)
 
+# 댓글 삭제
 class CommentDeleteView(View):
     @login_check
     def delete(self, request, post_id, comment_id):
@@ -155,7 +161,7 @@ class CommentDeleteView(View):
         except Comment.DoesNotExist:
             return JsonResponse({'message':'해당하는 댓글이 없습니다.'}, status=400) 
 
-
+# 좋아요 하기
 class LikeView(View):
     @login_check
     def post(self, request, post_id):
