@@ -1,12 +1,12 @@
 import json
 
-from datetime         import datetime
-from decorator        import login_check
 from django.http      import JsonResponse
 from django.views     import View
 from django.shortcuts import render
+
 from user.models      import User
 from .models          import Post, Image, Comment, Like, Recomment
+from decorator        import login_check
 
 # 게시물 등록, 전체 조회
 class PostView(View):
@@ -16,9 +16,8 @@ class PostView(View):
             data     = json.loads(request.body)
             user     = request.user
             image    = data['image']
-            pub_date = datetime.now() # 2020-12-30 11:47:45.781887 -  영국시간임
 
-            Post.objects.create(user=user, pub_date=pub_date)
+            Post.objects.create(user=user)
             post = Post.objects.filter(user=user).last()
             Image.objects.create(post=post,image=image)
 
@@ -78,7 +77,6 @@ class PostUpdateView(View):
             image         = post.image_set.all()
 
             if post.user.id == user.id:
-                post_querySet.update(pub_date = datetime.now())
                 image.update(image=new_image)
                 return JsonResponse({'message':'게시물 수정 완료'}, status=200)
             else:
@@ -98,7 +96,6 @@ class CommentView(View):
             Comment(
                 post      = Post.objects.get(id=post_id),
                 user      = request.user,
-                pub_date  = datetime.now(),
                 content   = data['content']
             ).save()
 
@@ -200,8 +197,7 @@ class RecommentView(View):
                         post      = Post.objects.get(id=post_id),
                         user      = request.user,
                         comment   = Comment.objects.get(id=comment_id),
-                        content   = data['content'],
-                        pub_date  = datetime.now()
+                        content   = data['content']
                     ).save()
                     return JsonResponse({'message':'SUCCESS'}, status=201)
     

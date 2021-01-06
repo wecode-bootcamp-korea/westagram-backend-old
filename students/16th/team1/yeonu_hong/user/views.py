@@ -5,6 +5,7 @@ import jwt
 from decorator    import login_check
 from django.http  import JsonResponse
 from django.views import View
+
 from my_settings  import SECRET
 from .models      import User, Follow
 

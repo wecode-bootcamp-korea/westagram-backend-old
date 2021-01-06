@@ -41,7 +41,7 @@ class Recomment(models.Model):
 
     class Meta:
         db_table = 'recomments'
-        
+
 
 
 
