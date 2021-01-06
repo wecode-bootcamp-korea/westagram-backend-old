@@ -1,9 +1,13 @@
 import json
 import re
+import bcrypt
+import jwt
 
 from django.http   import JsonResponse
 from django.views  import View
+
 from user.models   import User
+from my_settings   import SECRET_KEY
 
 class SignupView(View):
     def post(self, request):
@@ -14,13 +18,17 @@ class SignupView(View):
         name       = data['name']
         user_name  = data['user_name']
         password   = data['password']
-
+        
         # email 정규표현식
         vali_email = '^[a-zA-Z0-9+-_.]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
         validate_email=re.compile(vali_email)
 
         try:
-            if not (email and user_name and name and password and phone):
+            if not (email or phone):
+                return JsonResponse(
+                    {'MESSAGE' : 'KeyERROR'}, status = 400)
+
+            elif not (name and user_name):
                 return JsonResponse(
                     {'MESSAGE' : 'KeyERROR'}, status = 400)
             
@@ -38,12 +46,15 @@ class SignupView(View):
                     {'MESSAGE' : '이미 사용중'}, status = 400)
 
             else :
+                pw = password.encode()
+                pw_encrypt = bcrypt.hashpw(pw, bcrypt.gensalt())
+                pw_encrypt = pw_encrypt.decode()
                 User.objects.create(
                     email      = email,
                     phone      = phone,
                     name       = name,
                     user_name  = user_name,
-                    password   = password 
+                    password   = pw_encrypt 
                 )
                 return JsonResponse(
                     {'MESSAGE' : 'SignUp SUCCESS'}, status = 200)
@@ -57,10 +68,6 @@ class SigninView(View):
 
         data = json.loads(request.body)
 
-        # 변수지정했을때 KeyError발생, 왜지?
-        # 변수지정을 해줬을 때 에러가 뜬 이유 : 변수를 지정해 줬으나 
-        # http로 받아온 정보에는 해당 되는 변수가 없었기 때문에 에러가 발생한 것
-        # 받아온 데이터를 변수로 지정하고 싶다면 아래와 같이 해당 데이터가 있을 때 변수로 가져오는 형식으로 바꾸면 된다.
         if 'email' in data.keys():
             email      = data['email']
         if 'phone' in data.keys():
@@ -68,14 +75,16 @@ class SigninView(View):
         if 'user_name' in data.keys():
             user_name  = data['user_name']
         if 'password' in data.keys():
-            password = data['password']
+            password   = data['password']
        
         try:
             # 이메일로 로그인 시
             if 'email' in data.keys():
                 if User.objects.filter(email = email).exists():
-                    if User.objects.get(email = email).password ==  password:
-                        return JsonResponse({'MESSAGE' : 'SignIn SUCCES'}, status = 200)
+                    user=User.objects.get(email=email)
+                    if bcrypt.checkpw(password.encode(), user.password.encode()):
+                        token = jwt.encode({'id' : user.id}, SECRET_KEY, algorithm='HS256')
+                        return JsonResponse({'TOKEN' : token}, status = 200)
                     else:
                         return JsonResponse({'MESSAGE' : 'INCORRECT PASSWORD'}, status = 400)
                 else:
@@ -84,8 +93,10 @@ class SigninView(View):
             # 휴대폰번호로 로그인 시
             elif 'phone' in data.keys():
                 if User.objects.filter(phone = phone).exists():
-                    if User.objects.get(phone = phone).password == password:
-                        return JsonResponse({'MESSAGE' : 'SignIn SUCCES'}, status = 200)
+                    user=User.objects.get(phone=phone)
+                    if bcrypt.checkpw(password.encode(), user.password.encode()):
+                        token = jwt.encode({'id' : user.id}, SECRET_KEY, algorithm='HS256')
+                        return JsonResponse({'TOKEN' : token}, status = 200)
                     else:
                         return JsonResponse({'MESSAGE' : 'INCORRECT PASSWORD'}, status = 400)
                 else: 
@@ -94,8 +105,9 @@ class SigninView(View):
             # 사용자이름으로 로그인 시
             elif 'user_name' in data.keys():
                 if User.objects.filter(user_name = user_name).exists():
-                    if User.objects.get(user_name = user_name).password == password:
-                        return JsonResponse({'MESSAGE' : 'SignIn SUCCES'}, status = 200)
+                    user=User.objects.get(user_name=user_name)
+                    if bcrypt.checkpw(password.encode(), user.password.encode()):
+                        token = jwt.encode({'id' : user.id}, SECRET_KEY, algorithm='HS256')
                     else:
                         return JsonResponse({'MESSAGE' : 'INCORRECT PASSWORD'}, status = 400)
                 else: 
@@ -104,10 +116,13 @@ class SigninView(View):
         except KeyError:
             return JsonResponse({'MESSAGE' : 'KeyError'}, status = 400)
 
-            
-
-
-
+# def check_pw(item):
+#     signin_user = User.objects.get(item=data['item'])
+#     if bcrypt.checkpw(data['password'].encode(), signin_user.password.encode()):
+#         token = jwt.encode({'id' : signin_user.id}, SECRET_KEY, algorithm='HS256')
+#         return JsonResponse({'TOKEN' : token}, status = 200)
+#     else:
+#         return JsonResponse({'MESSAGE' : 'INVALID_USER'}, status = 400)
 
 
 
