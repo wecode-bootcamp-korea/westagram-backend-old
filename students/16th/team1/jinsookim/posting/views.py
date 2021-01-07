@@ -204,3 +204,4 @@ class CommentsInCommentsView(View):
 
         except Comments_register.DoesNotExist:
             return JsonResponse({"message" : "해당 댓글이 없습니다."}, status=400)
+        

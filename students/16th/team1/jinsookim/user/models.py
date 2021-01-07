@@ -13,7 +13,7 @@ class Users(models.Model):
 
 
 class Follow(models.Model):
-    follower = models.ForeignKey('Users', on_delete = models.CASCADE, related_name= 'follower')
+    folFolower = models.reignKey('Users', on_delete = models.CASCADE, related_name= 'follower')
     followee = models.ForeignKey('Users', on_delete = models.CASCADE, related_name= 'floowee')
 
     class Meta:
