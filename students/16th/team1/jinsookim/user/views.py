@@ -46,7 +46,7 @@ class SignUp(View):
                                 password      = password.decode('utf-8')
                                 )
 
-            return JsonResponse({"message" :"SUCCESS"}, status = 200)
+            return JsonResponse({"message" :"SUCCESS"}, status = 201)
 
         except KeyError as e:
             return JsonResponse({"message" : e.args[0] + " keyerror"}, status = 400)
@@ -72,6 +72,7 @@ class Signin(View):
                 if bcrypt.checkpw(password.encode('utf-8'),user.password.encode('utf-8')):
                     access_token_id = user.id
                     access_token    = jwt.encode({'id' : access_token_id}, SECRET, algorithm='HS256')
+
                     return JsonResponse( {"ACCESS_TOKEN": access_token}, status = 200)
                 return JsonResponse( {"message" : "비밀번호가 틀렸습니다"}, status = 400)
             
@@ -80,30 +81,29 @@ class Signin(View):
             return JsonResponse({"message" : e.args[0] + " keyerror"}, status = 400)
 
         except Users.DoesNotExist:
-            return JsonResponse({"message": "이메일이 틀렸습니다."}, status = 401) 
+            return JsonResponse({"message": "이메일이 틀렸습니다."}, status = 400) 
 
 class FollowView(View):
     @login_decorator
     def post(self, request, follower_id):
   
-        token    = request.headers.get("Authorization")
-        jwt_user = jwt.decode(token, SECRET, algorithms="HS256")
+        user     = request.user
 
         follower = Users.objects.get(id = follower_id)
-        followee = Users.objects.get(id = jwt_user["id"])
+        followee = Users.objects.get(id = user)
         
         if followee.id == follower_id:
             return JsonResponse({"message" : "자신의 계정을 follow 할 수 없습니다."}, status=400)
 
         if Follow.objects.filter(follower = follower, followee = followee).exists():
             Follow.objects.filter(follower = follower, followee = followee).delete()
-            return JsonResponse({"message" : "UNFOLLOWED"}, status=200)
+            return JsonResponse({"message" : "UNFOLLOWED"}, status=400)
 
         follow = Follow(
             follower = follower,
             followee = followee
         )
         follow.save()
-        return JsonResponse({"message" : "FOLLOWED"}, status=200)
+        return JsonResponse({"message" : "FOLLOWED"}, status=201)
         
             
