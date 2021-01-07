@@ -35,7 +35,7 @@ class SignUpView(View):
             except ValidationError:   
                 return JsonResponse({'MESSAGE':'유효한 이메일이 아닙니다!'}, status=400)
 
-            hash_pwd = bcrypt.hashpw(password.encode('utf-8'),bcrypt.gensalt()).decode() # 디코드 메서드 전까지는 바이트 값이고 이후 decode()를 통해서 byte-> string 참고. 암호 복원이 아니에요.
+            hash_pwd = bcrypt.hashpw(password.encode('utf-8'),bcrypt.gensalt()).decode() 
 
             User.objects.create(
                                 password=hash_pwd,
@@ -48,10 +48,7 @@ class SignUpView(View):
 
         except ValueError:
             return JsonResponse({'MESSAGE': 'VALUE 에러 발생!'},status=400)
-            
-        
-
-@method_decorator(auth, name='dispatch')
+                    
 class LoginView(View):
     def post(self, request):
         try:
@@ -59,7 +56,7 @@ class LoginView(View):
             password = data['password']
             user = User.objects.get(email=data['email'])
 
-            if bcrypt.checkpw(password.encode('utf-8'), user.password.encode('utf-8')): # 첫번째 브라우저로부터 가져온 값을 바이트로 바꾸고, 2번째인자는 db의 해싱된 문자열을 바이트로 비교해서 두값을 확인하여 True, False
+            if bcrypt.checkpw(password.encode('utf-8'), user.password.encode('utf-8')): 
                 user_token = jwt.encode({'user_id': user.id}, SECRET, algorithm=ALGORITHM)
                 return JsonResponse({'MESSAGE':'액세스 토큰 생성 성공!','엑세스 토큰': user_token}, status=200)
             return JsonResponse({'MESSAGE':'비밀번호를 다시 확인해주세요'}, STATUS=400)
