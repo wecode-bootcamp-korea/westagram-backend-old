@@ -7,7 +7,7 @@ from django.http   import JsonResponse
 from django.views  import View
 
 from user.models   import User
-from my_settings   import SECRET_KEY
+from my_settings   import SECRET_KEY, ALGORITHM
 
 class SignupView(View):
     def post(self, request):
@@ -20,7 +20,7 @@ class SignupView(View):
         try:
             if not data['email']:
                 return JsonResponse(
-                    {'MESSAGE' : 'KeyERROR'}, status = 400)
+                    {'MESSAGE' : 'email을 입력해주세요'}, status = 400)
             
             if not validate_email.match(data['email']):
                 return JsonResponse(
@@ -56,19 +56,19 @@ class SigninView(View):
             data = json.loads(request.body)
 
             # 이메일로 로그인 시
-            if 'email' in data.keys():
-                if User.objects.filter(email = data['email']).exists():
-                    user=User.objects.get(email=data['email'])
-                    if bcrypt.checkpw(data['password'].encode(), user.password.encode()):
-                        token = jwt.encode({'id' : user.id}, SECRET_KEY, algorithm='HS256')
-                        return JsonResponse({'TOKEN' : token}, status = 200)
-                    else:
-                        return JsonResponse({'MESSAGE' : 'INCORRECT PASSWORD'}, status = 400)
-                else:
-                    return JsonResponse({'MESSAGE' : 'INVALID_USER'}, status = 400)
-            else:
-                return JsonResponse({'MESSAGE' : 'KeyError'}, status = 400)
+            email = data['email']
+            if User.objects.filter(email = data['email']).exists():
+                user = User.objects.get(email=data['email'])
 
+                if bcrypt.checkpw(data['password'].encode(), user.password.encode()):
+                    token = jwt.encode({'id' : user.id}, SECRET_KEY, ALGORITHM)
+                    return JsonResponse({'TOKEN' : token}, status = 200)
+
+                else:
+                    return JsonResponse({'MESSAGE' : 'INCORRECT PASSWORD'}, status = 400)
+
+            else:
+                return JsonResponse({'MESSAGE' : 'INVALID_USER'}, status = 400)
             
-        except:
+        except KeyError:
             return JsonResponse({'MESSAGE' : 'KeyError'}, status = 400)
