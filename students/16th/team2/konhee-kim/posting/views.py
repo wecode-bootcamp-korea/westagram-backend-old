@@ -33,15 +33,23 @@ class PostingView(View):
             return JsonResponse({'MESSAGE': 'KEY_ERROR'}, status=400)
 
 
-class SeeAllArticlesView(View):
+class GetArticlesView(View):
     
     def get(self, request):
-        print("get!!")
+        try:
+            message = {}
+            
+            for article in Article.objects.all():
+                message[article.id] = {
+                        "created_user" : User.objects.get(id=article.user_id).username,
+                        "image_url"    : article.image_url,
+                        "content"      : article.content,
+                        "created"      : article.created
+                        }
 
-
-
-
-
+            return JsonResponse(message, status=200)
+        except:
+            return JsonResponse({'MESSAGE': 'KEY_ERROR'}, status=400)
 
 
 
