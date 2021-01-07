@@ -26,21 +26,21 @@ def generate_access_token(user_id_number):
     access_token = jwt.encode(payload, my_settings.SECRET, algorithm = 'HS256')
     return access_token
 
-def login_required(function):    # use it as decorator 
+def login_required(function):
     
-    def wrapper(arg, request):   # to be tested
-        headers      = json.loads(request.headers)
-        access_token = headers['Authorization'] # consider bearer later
-        header = jwt.decode(access_token, my_settings.SECRET, algorithms = 'HS256')
-
+    def wrapper(view_self, request, *args, **kwargs):
         try:
-            if access_token:
-                return function(arg, request)
+            access_token = request.headers["Authorization"].split(' ').pop()
+            header = jwt.decode(
+                    access_token,
+                    my_settings.SECRET,
+                    algorithms = 'HS256'
+                    )
+            request.user_id = header['user_id']
 
-            if not access_token:
-                return JsonResponse({'MESSAGE': 'LOGIN_REQUIRED'}, status=400)
+            return function(view_self, request, *args, **kwargs)
         except:
-                return JsonResponse({'MESSAGE': 'LOGIN_REQUIRED'}, status=400)
+            return JsonResponse({'MESSAGE': 'LOGIN_REQUIRED'}, status=400)
 
     return wrapper
 

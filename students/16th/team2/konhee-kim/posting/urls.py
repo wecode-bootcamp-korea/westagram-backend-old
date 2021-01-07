@@ -4,4 +4,5 @@ from posting.views import PostingView
 
 urlpatterns = [
     path('/posting', PostingView.as_view())
+   # path('/', 
 ] # just example
