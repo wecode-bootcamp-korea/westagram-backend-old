@@ -11,13 +11,13 @@ class PostingView(View):
     def post(self, request):   
         data    = json.loads(request.body)
         user_db = User.objects.all()
-        post=Posting(
+        post    = Posting(
             post_id     = User.objects.get(account=data['post_id']),
             post_url    = data['post_url'],
             description = data['description'],
         )
         name=post.post_id.account
-        print(name)
+
         try:
             
             if (data['post_id'] == None) or (data['post_url'] == None):
@@ -28,7 +28,6 @@ class PostingView(View):
             
             post.save()
             
-            #return JsonResponse(f"{name}, {post.post_url}, {post.description}")
 
             return JsonResponse({'MESSAGE':'SUCCESS'}, status=200)
         

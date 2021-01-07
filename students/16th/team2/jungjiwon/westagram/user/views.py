@@ -1,63 +1,81 @@
 import json
+import bcrypt
+import re
+import jwt
 from django.http    import JsonResponse
 from django.views   import View
 from user.models    import User
+from my_settings    import SECRET, ALGORITHM
 
-class UsersView(View):
+class SignupView(View):
     def post(self, request):   
-        data = json.loads(request.body)
-        signup_db = User.objects.all()
-        user=User(
-        account     = data['account'],
-        password    = data['password'],
-        email       = data['email'],
-        tel_num     = data['tel_num'],
-        )
-
+        
         try:
+            data = json.loads(request.body)
+
+            account     = data.get('account', None)
+            email       = data.get('email', None)
+            phone     = data.get('phone', None)
+            password    = data['password']
+
+            p = re.compile('^[a-zA-Z0-9+-_.]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$')
             
-            if signup_db.filter(account = data['account']).exists():
-                return JsonResponse({'MESSAGE':'EXISTING ID'}, status=400)
-            if signup_db.filter(email = data['email']).exists():
+            if len(email)==0:
+                return JsonResponse({'MESSAGE':"DIDN'T INPUT EMAIL"},status = 400)
+            
+            if len(password)==0:
+                return JsonResponse({'MESSAGE':"DIDN'T INPUT PASSWORD"},status = 400)
+
+            if email and p.match(email) == None:
+                return JsonResponse({'MESSAGE':"INVAILD_EMAIL_ADDRESS!"},status = 400)
+            
+            if account and User.objects.filter(account = account).exists():
+                return JsonResponse({'MESSAGE':'EXISTING ID'}, status=400)  
+            
+            if email and User.objects.filter(email = email).exists():
                 return  JsonResponse({'MESSAGE':'EXISTING MAIL'}, status=400)
-            if signup_db.filter(tel_num = data['tel_num']).exists():
+            
+            if phone and User.objects.filter(phone = phone).exists():
                 return  JsonResponse({'MESSAGE':'EXISTING NUMBER'}, status=400)
+            
             if len(data['password']) < 8:
                 return JsonResponse({'MESSAGE':'PASSWORD TOO SHORT'}, status=400)
-            if '@' or '.' not in data['email']:
+            
+            if not '@' and '.' in data['email']:
                 return JsonResponse({'MESSAGE':'INVALID EMAIL'}, status=400)
             
-            user.save()
+            hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+
+            User.objects.create(
+                account = account, 
+                email = email, 
+                phone = phone, 
+                password = hashed_password.decode('utf-8')
+            )    
+
             return JsonResponse({'MESSAGE':'SUCCESS'}, status=200)
-        
+    
         except KeyError :
-            return JsonResponse({'MESSAGE':'KEY_ERROR'}, status=400)
+            return JsonResponse({'MESSAGE':'KEY ERROR'}, status=400)
 
 class LogInView(View):
     def post(self, request):
+
         data        = json.loads(request.body)
         signup_db   = User.objects.all()
-        
-        login = None
-
+        password    = data['password']
         try:
-            if not (signup_db.filter(account = data['login_account']).exists()) and (signup_db.filter(email = data['login_account']).exists()) and (signup_db.filter(tel_num = data['login_account']).exists()):
+            if not signup_db.filter(email = data['email']).exists():
                 return JsonResponse({'MESSAGE':'INVALID LOGIN ID'}, status=400)
-            if signup_db.filter(account = data['login_account']).exists():
-                login = User.objects.get(account = data['login_account'])
-            if signup_db.filter(email = data['login_account']).exists():
-                login = User.objects.get(email = data['login_account'])
-            if signup_db.filter(tel_num = data['login_account']).exists():
-                login = User.objects.get(tel_num = data['login_account'])
+
+            if signup_db.filter(email = data['email']).exists():
+                login_id = User.objects.get(email = data['email'])
+                if bcrypt.checkpw(password.encode('utf-8'), login_id.password.encode('utf-8')):
+                    user_token = jwt.encode({'user_id': login_id.id}, SECRET, algorithm=ALGORITHM)
+                    return JsonResponse({'MESSAGE':user_token}, status=200)
+                else:
+                    return JsonResponse({'MESSAGE':'INVALID PASSWORD'}, status= 401)
             
-        
         except KeyError :
             return JsonResponse({'MESSAGE':'KEY_ERROR'}, status=400)
-        
-        if login != None:
-            if login.password == data['password']:
-                return JsonResponse({'MESSAGE':'LOGIN SUCCESS'}, status=200)
-            if login.password != data['password']:
-                return JsonResponse({'MESSAGE':'Invalid Password'}, status=400)
-        if login == None:
-            return JsonResponse({'MESSAGE':'INVALID LOGIN ID'}, status=400)
+
