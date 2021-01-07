@@ -14,38 +14,63 @@ class SignUpView(View):
     def post(self, request): 
         try:
             data            = json.loads(request.body)
-            email           = data['email']
+            email           = data.get('email')
+            name            = data.get('name')
+            phone           = data.get('phone')
             password        = data['password'].encode('utf-8')
             hashed_password = bcrypt.hashpw(password, bcrypt.gensalt()).decode('utf-8')
 
-            if User.objects.filter(email=data["email"]).exists():
-                return JsonResponse({'message': '이미 사용중인 email'}, status=400)
+            if email is not None: 
+                if User.objects.filter(email=data["email"]).exists():
+                    return JsonResponse({'message': '이미 사용중인 email'}, status=400)
+                elif '@' and '.' not in email:
+                    return JsonResponse({'message': '잘못된 email 형식'}, status=400)
 
-            if '@' and '.' not in email:
-                return JsonResponse({'message': '잘못된 email 형식'}, status=400)
             if len(password) < 8:
                 return JsonResponse({'message': '비밀번호 길이는 8글자 이상'}, status=400)
-
             User(
-                #name     = name,
+                name     = name,
                 password = hashed_password,
-                #phone    = phone,
+                phone    = phone,
                 email    = email).save()
             return JsonResponse({'message': 'SUCCESS'}, status=201)
         except KeyError:
             return JsonResponse({'message':'KEY_ERROR'}, status=400)
 
-
 # 로그인
 class SignInView(View):
     def post(self, request):
         try:
-            data = json.loads(request.body)
+            data      = json.loads(request.body)
             password  = data['password']
 
             if 'email' in data:
                 email = data["email"]
                 user =  User.objects.get(email=data["email"])
+                password_check = user.password
+                if bcrypt.checkpw(password.encode('utf-8'), password_check.encode('utf-8')):
+                    token = jwt.encode({'id': user.id}, SECRET, algorithm='HS256')
+                    return JsonResponse({'token':token}, status=200)
+                else:
+                     return JsonResponse({'message':'비밀반호 오류'}, status=401)
+            else:
+                return JsonResponse({'message':'KEY_ERROR'}, status=400)
+
+            if data.get('name') is not None:
+                name = data["name"]
+                user =  User.objects.get(name=data["name"])
+                password_check = user.password
+                if bcrypt.checkpw(password.encode('utf-8'), password_check.encode('utf-8')):
+                    token = jwt.encode({'id': user.id}, SECRET, algorithm='HS256')
+                    return JsonResponse({'token':token}, status=200)
+                else:
+                     return JsonResponse({'message':'비밀반호 오류'}, status=401)
+            else:
+                return JsonResponse({'message':'KEY_ERROR'}, status=400)
+
+            if data.get('phone') is not None:
+                phone = data["phone"]
+                user  =  User.objects.get(phone=data["phone"])
                 password_check = user.password
                 if bcrypt.checkpw(password.encode('utf-8'), password_check.encode('utf-8')):
                     token = jwt.encode({'id': user.id}, SECRET, algorithm='HS256')
