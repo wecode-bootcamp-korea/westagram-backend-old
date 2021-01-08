@@ -56,7 +56,6 @@ class SigninView(View):
             data = json.loads(request.body)
 
             # 이메일로 로그인 시
-            email = data['email']
             if User.objects.filter(email = data['email']).exists():
                 user = User.objects.get(email=data['email'])
 
