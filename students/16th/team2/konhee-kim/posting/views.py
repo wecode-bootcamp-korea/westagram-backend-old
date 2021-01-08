@@ -6,7 +6,7 @@ from django.views import View
 
 from user.utils      import login_required
 from user.models     import User
-from posting.models  import Article, Comment
+from posting.models  import Article, Comment, Like
 
 
 class PostingView(View):
@@ -88,4 +88,44 @@ class GetCommentsView(View):
             return JsonResponse(message, status=200)
         except:
             return JsonResponse({'MESSAGE': 'KEY_ERROR'}, status=400)
+
+class LikeView(View):
+
+    @login_required
+    def post(self, request):
+        try:
+            data       = json.loads(request.body)
+            article_id = data["article_id"]
+            user_id    = request.user_id
+
+            if Like.objects.filter(user_id=user_id, article_id=article_id).exists():
+                Like.objects.get(user_id=user_id, article_id=article_id).delete()
+                return JsonResponse({'MESSAGE': 'UNLIKE'}, status=200)
+
+            Like.objects.create(article=Article.objects.get(id=article_id), 
+                                user   =User.objects.get(id=user_id))
+
+            return JsonResponse({'MESSAGE': 'LIKE'}, status=200)
+        except:
+            return JsonResponse({'MESSAGE': 'KEY_ERROR'}, status=400)
+        
+class GetLikesView(View):
+    
+    def get(self, request):
+        try:
+            message = {}
+            article_id = request.GET.get("article_id", None)
+            
+            article_existence = Article.objects.filter(id=article_id).exists()
+            
+            if not article_existence:
+                return JsonResponse({'MESSAGE': 'INVALID_ARTICLE'}, status=400)
+
+            if article_existence:
+                message["count"] = Like.objects.filter(article_id=article_id).count()
+            
+            return JsonResponse(message, status=200)
+        except:
+            return JsonResponse({'MESSAGE': 'KEY_ERROR'}, status=400)
+
 
