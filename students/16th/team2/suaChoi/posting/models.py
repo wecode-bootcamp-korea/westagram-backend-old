@@ -13,8 +13,17 @@ class Post(models.Model):
 
 class Comment(models.Model):
     user       = models.ForeignKey(User, on_delete=models.CASCADE)
-    reply      = models.TextField(null=True)
+    post       = models.ForeignKey('Post', on_delete=models.CASCADE)
+    comment    = models.TextField(null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         db_table = "comments"
+
+class Like(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    post = models.ForeignKey('Post', on_delete=models.CASCADE)
+    is_deleted = models.BooleanField(default=False) # is deleted 가 true 였다가 false 였다가
+
+    class Meta:
+        db_table = "likes"

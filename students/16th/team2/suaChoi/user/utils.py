@@ -10,8 +10,8 @@ def check_user(func):
     def wrapper(self, request, *args, **kwargs):
 
         try:
-            token        = request.headers.get('Authorizatioin')
-            payload      = jwt.decode(token, SECRET, algorithm='HS256')
+            token        = request.headers.get('Authorization')
+            payload      = jwt.decode(token, SECRET, algorithms='HS256')
             user         = User.objects.get(id=payload['user_id'])
             request.user = user
 
