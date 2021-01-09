@@ -7,7 +7,7 @@ from westagram.my_settings  import ALGORITHM, SECRET
 
 from user.models            import User
 from posting.models         import Post
-
+# 
 class LoginConfirm:
     def __init__(self, func):
         self.func = func

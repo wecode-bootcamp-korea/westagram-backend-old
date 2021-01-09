@@ -3,14 +3,14 @@ from django.db import models
 
 class Post(models.Model):
     user        = models.ForeignKey('user.User', on_delete=models.CASCADE) 
-    title       = models.CharField(max_length=100,unique=True, default='')
+    title       = models.CharField(max_length=100, default='')
     content     = models.TextField(default='')
     created_dt  = models.DateTimeField(auto_now_add=True)
     image_url   = models.URLField(max_length=2800, default='',null=True)
     like_num    = models.IntegerField(default=0)
     
-    def __str__(self):
-        return self.user
+    # def __str__(self):
+    #     return self.user
     
     class Meta:
         db_table            = 'postings'
@@ -22,7 +22,7 @@ class Post(models.Model):
 class Comment(models.Model):
     user        = models.ForeignKey('user.User', on_delete=models.CASCADE) 
     post        = models.ForeignKey('posting.Post', on_delete=models.CASCADE)
-    title       = models.CharField(max_length=100,unique=True,)
+    title       = models.CharField(max_length=100)
     content     = models.TextField()
     created_dt  = models.DateTimeField(auto_now_add=True)
 

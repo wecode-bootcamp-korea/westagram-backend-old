@@ -76,6 +76,7 @@ class FollowView(View):
         try:
             follower  = request.user
             following = User.objects.get(id=pk)
+            
             if follower == following:
                 return JsonResponse({'MESSAGE': " NO SELF FOLLOW ALLOWED!"}, status=404)
             

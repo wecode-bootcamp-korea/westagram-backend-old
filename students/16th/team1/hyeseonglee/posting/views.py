@@ -19,15 +19,15 @@ class PostCreateView(View):
             title      = data['title']
             content    = data['content']
             image_url  = data.get('image_url')
-
-            if not Post.objects.filter(title=title).exists():
+            
+            if not Post.objects.filter(title=title).exists():                
                 Post.objects.create(
                                     user      = user, 
                                     title     = title,
                                     content   = content,
                                     image_url = image_url,
                                     )
-                return JsonResponse({'MESSAGE': 'POST REQUEST SUCCEEDED!'}, status=200)
+                return JsonResponse({'MESSAGE': '게시물 생성 완료' }, status=200)
             return JsonResponse({'MESSAGE': 'TITLE ALREADY EXISTS!'}, status=400)
 
         except KeyError:
@@ -70,51 +70,52 @@ class PostReadView(View):
 
 class PostDeleteView(View):
     @LoginConfirm
-    def delete(self, request, pk):
+    def delete(self, request, post_id):
         try:
             user  = request.user
-            print(user,type(user),'==================')
-            post = Post.objects.get(id=pk, user=user.id)
+            post = Post.objects.get(id=post_id) # 삭제하려는 게시물 조회
+            if user.id != post.user.id:
+                return JsonResponse({'MESSAGE': '게시물 삭제 권한 없음.'}, status=200)
 
-            if post.exists():
+            if post:
                 post.delete()
-                return JsonResponse({'MESSAGE': 'SUCCEEDED TO DELETE REQUIRED POST!'}, status=200)
-
+                return JsonResponse({'MESSAGE': '게시물 삭제 완료.'}, status=200)
+        
         except Post.DoesNotExist:
-            return JsonResponse({'MESSAGE':'POST DOES NOT EXISTS!'},status=400)
+            return JsonResponse({'MESSAGE':'게시물이 없습니다.'},status=400)
 
 
-class PostCommentView(View):
+class CommentCreateView(View):
     @LoginConfirm
-    def post(self, request,*args, **kwargs):
+    def post(self, request, post_id, *args, **kwargs):
         try:
             data    = json.loads(request.body)
-
-            user    = User.objects.get(email=data['email'])
-            post    = Post.objects.get(title=data['post'])
-
+            user    = request.user
             content = data['content']
             title   = data['title']
+            post    = Post.objects.get(pk=post_id)
+
             
-            if  not Comment.objects.filter(title=title) and content :
+            if  not Comment.objects.filter(title=title,post_id=post_id, user_id=user.id).exists() :
                 Comment.objects.create(
                     user    = user,
                     post    = post,
-                    author  = email,
                     title   = title,
                     content = content,
                 )
-                return JsonResponse({'MESSAGE': 'SUCCESS'}, status=200)
-            return JsonResponse({'MESSAGE': '동일 제목No! 내용 입력 해주세요!'}, status=400)
+                return JsonResponse({'MESSAGE': '댓글 생성 완료.'}, status=200)
+            return JsonResponse({'MESSAGE': '제목과 내용을 확인해주세요.'}, status=400)
 
         except KeyError:
-            return JsonResponse({'MESSAGE': 'KEY ERROR OCCURED!'},status=400)
+            return JsonResponse({'MESSAGE': 'KEY 에러 발생!'},status=400)
         except ValueError:
-            return JsonResponse({'MESSAGE': 'VALUE ERROR OCCURED!'},status=400)   
+            return JsonResponse({'MESSAGE': 'VALUE 에러!'},status=400)   
         except User.DoesNotExist:
             return JsonResponse({'MESSAGE':'USER DOES NOT EXISTS!'},status=400)
         except Post.DoesNotExist:
             return JsonResponse({'MESSAGE':'POST DOES NOT EXISTS!'},status=400)
+
+class CommentReadView(View):
     @LoginConfirm
     def get(self, request, pk,*args, **kwargs):
         try:
@@ -148,6 +149,28 @@ class PostCommentView(View):
         except Post.DoesNotExist:
             return JsonResponse({'MESSAGE':'POST DOES NOT EXISTS!'},status=400)
 
+class CommentDeleteView(View):
+    @LoginConfirm
+    def delete(self, request, post_id,comment_id):
+        try:
+            user    = request.user
+
+            post    = Post.objects.get(id=post_id)
+            comment = Comment.objects.get(id=comment_id) # 삭제하려는 댓글 조회
+
+            if not post:
+                return JsonResponse({'MESSAGE': '게시글이 존재하지 않아요.'}, status=200)
+
+            if user.id != comment.user.id:
+                return JsonResponse({'MESSAGE': '댓글 삭제 권한 없음.'}, status=403)
+
+            comment.delete()
+            return JsonResponse({'MESSAGE': f'{comment.title} 삭제 완료.'}, status=200)
+        
+        except Comment.DoesNotExist:
+            return JsonResponse({'MESSAGE':'댓글이 없습니다.'},status=400)
+        except Post.DoesNotExist:
+            return JsonResponse({'MESSAGE':'댓글이 없습니다.'},status=400)
 
 class PostLikeView(View):
     @LoginConfirm
