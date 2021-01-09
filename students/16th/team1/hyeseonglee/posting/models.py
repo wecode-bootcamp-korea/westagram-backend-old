@@ -6,7 +6,7 @@ class Post(models.Model):
     title       = models.CharField(max_length=100,unique=True, default='')
     content     = models.TextField(default='')
     created_dt  = models.DateTimeField(auto_now_add=True)
-    image_url   = models.URLField(max_length=2800, default='')
+    image_url   = models.URLField(max_length=2800, default='',null=True)
     like_num    = models.IntegerField(default=0)
     
     def __str__(self):

@@ -9,14 +9,10 @@ from django.db.models        import Q
 from django.core.validators  import validate_email, ValidationError
 from django.utils.decorators import method_decorator
 
-
-# from decorator.utils         import login_decorator
 from user.models             import User,Follow
 from westagram.my_settings   import SECRET, ALGORITHM
-
 from decorator.utils         import LoginConfirm
 
-auth = [LoginConfirm,]
 
 class SignUpView(View):
     def post(self, request):
@@ -78,12 +74,10 @@ class FollowView(View):
     @LoginConfirm
     def post(self, request, pk, *args, **kwargs):
         try:
-            print()
             follower  = request.user
-            print(follower)
             following = User.objects.get(id=pk)
             if follower == following:
-                return JsonResponse({'MESSAGE': " CAN\'T FOLLOW TO HIM OR HSERSELF!"}, status=404)
+                return JsonResponse({'MESSAGE': " NO SELF FOLLOW ALLOWED!"}, status=404)
             
             follow    = Follow.objects.filter(following=following, follower=follower)
             if follow.exists(): 

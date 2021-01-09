@@ -7,28 +7,19 @@ from django.utils.decorators import method_decorator
 
 from posting.models          import Post, Comment, Like
 from user.models             import User
-# from decorator.utils         import login_decorator,
 from decorator.utils         import LoginConfirm
 
-auth = [LoginConfirm,]
 
-# @method_decorator(auth, name='dispatch')
-class PostView(View):       
+class PostCreateView(View):       
     @LoginConfirm
     def post(self, request):
         try:
             data       = json.loads(request.body)
             user       = request.user
-            
             title      = data['title']
             content    = data['content']
-            image_url  = data['image_url']
+            image_url  = data.get('image_url')
 
-            p = re.compile('^([12]\\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01]))$')
-
-            if not title and content and image_url:
-                return JsonResponse({'MESSAGE': "YOUR REQUEST IS NOT ADEQUATE!"},status=400)
-            
             if not Post.objects.filter(title=title).exists():
                 Post.objects.create(
                                     user      = user, 
@@ -41,16 +32,14 @@ class PostView(View):
 
         except KeyError:
             return JsonResponse({'MESSAGE': 'KEY ERROR OCCURED!'},status=400)
-
         except ValueError:
             return JsonResponse({'MESSAGE': 'VALUE ERROR OCCURED!'},status=400)
-        
         except User.DoesNotExist:
             return JsonResponse({'MESSAGE':'USER DOES NOT EXISTS!'},status=400)
-
         except Post.DoesNotExist:
             return JsonResponse({'MESSAGE':'POST DOES NOT EXISTS!'},status=400)
 
+class PostReadView(View):  
     @LoginConfirm
     def get(self, request):
         try:
@@ -78,6 +67,22 @@ class PostView(View):
 
         except Post.DoesNotExist:
             return JsonResponse({'MESSAGE':'POST DOES NOT EXISTS!'},status=400)
+
+class PostDeleteView(View):
+    @LoginConfirm
+    def delete(self, request, pk):
+        try:
+            user  = request.user
+            print(user,type(user),'==================')
+            post = Post.objects.get(id=pk, user=user.id)
+
+            if post.exists():
+                post.delete()
+                return JsonResponse({'MESSAGE': 'SUCCEEDED TO DELETE REQUIRED POST!'}, status=200)
+
+        except Post.DoesNotExist:
+            return JsonResponse({'MESSAGE':'POST DOES NOT EXISTS!'},status=400)
+
 
 class PostCommentView(View):
     @LoginConfirm
@@ -171,7 +176,7 @@ class PostLikeView(View):
             return JsonResponse({'MESSAGE':'USER DOES NOT EXISTS'}, status=400)   
         except Post.DoesNotExist:
             return JsonResponse({'MESSAGE':'USER DOES NOT EXISTS'}, status=400)
-            
+
     @LoginConfirm
     def get(self,request,pk): 
         try:
