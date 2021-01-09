@@ -68,6 +68,34 @@ class PostReadView(View):
         except Post.DoesNotExist:
             return JsonResponse({'MESSAGE':'POST DOES NOT EXISTS!'},status=400)
 
+class PostUpdateView(View):  
+    @LoginConfirm
+    def put(self, request, post_id):
+        try:
+            data      = json.loads(request.body)
+            user      = request.user
+            title     = data['title']     
+            content   = data['content']     
+            image_url = data.get('image_url','None')
+
+            post      = Post.objects.get(id=post_id)
+            
+            if not post.user.id == user.id:
+                return JsonResponse({'MESSAGE': '게시물 수정 권한이 없습니다.'}, status=403)
+
+            post.title     = title
+            post.content   = content
+            post.image_url = image_url
+            post.save()
+            return JsonResponse({'MESSAGE': '게시글 수정 완료.'}, status=200) 
+        
+        except KeyError:
+            return JsonResponse({'MESSAGE': 'KEY ERROR OCCURED!'},status=400)
+        except ValueError:
+            return JsonResponse({'MESSAGE': 'VALUE ERROR OCCURED!'},status=400)
+        except Post.DoesNotExist:
+            return JsonResponse({'MESSAGE':'POST DOES NOT EXISTS!'},status=400)
+
 class PostDeleteView(View):
     @LoginConfirm
     def delete(self, request, post_id):
@@ -148,6 +176,37 @@ class CommentReadView(View):
 
         except Post.DoesNotExist:
             return JsonResponse({'MESSAGE':'POST DOES NOT EXISTS!'},status=400)
+
+class CommentUpdateView(View):  
+    @LoginConfirm
+    def put(self, request, post_id, comment_id):
+        try:
+            print('0번 튀나온나')
+            data      = json.loads(request.body)
+            print('1번 튀나온나')
+            
+            user      = request.user
+            title     = data['title']     
+            content   = data['content']     
+            post_id   = Post.objects.get(id=post_id)
+            comment   = Comment.objects.get(post_id=post_id,id=comment_id)
+            
+            if not comment.user.id == user.id:
+                return JsonResponse({'MESSAGE': '댓글 수정 권한이 없습니다.'}, status=403)
+
+            comment.title     = title
+            comment.content   = content
+            comment.save()
+            return JsonResponse({'MESSAGE': '댓글 수정 완료.'}, status=200) 
+        
+        except KeyError:
+            return JsonResponse({'MESSAGE': 'KEY ERROR OCCURED!'},status=400)
+        except ValueError:
+            return JsonResponse({'MESSAGE': 'VALUE ERROR OCCURED!'},status=400)
+        except Post.DoesNotExist:
+            return JsonResponse({'MESSAGE':'해당 게시글은 없습니다!'},status=400)
+        except Comment.DoesNotExist:
+            return JsonResponse({'MESSAGE':'해당 댓글은 없습니다!'},status=400)
 
 class CommentDeleteView(View):
     @LoginConfirm
