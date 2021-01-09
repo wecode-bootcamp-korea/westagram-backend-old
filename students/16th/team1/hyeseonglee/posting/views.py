@@ -1,17 +1,25 @@
 import json
 import re
-from django.http      import JsonResponse
-from django.views     import View
-
-from posting.models   import Post, Comment, Like
-from user.models      import User
+from django.http             import JsonResponse
+from django.views            import View
+from django.utils.decorators import method_decorator
 
 
-class PostView(View):
+from posting.models          import Post, Comment, Like
+from user.models             import User
+# from decorator.utils         import login_decorator,
+from decorator.utils         import LoginConfirm
+
+auth = [LoginConfirm,]
+
+# @method_decorator(auth, name='dispatch')
+class PostView(View):       
+    @LoginConfirm
     def post(self, request):
         try:
             data       = json.loads(request.body)
-            user       = User.objects.get(email=data['email'])
+            user       = request.user
+            
             title      = data['title']
             content    = data['content']
             image_url  = data['image_url']
@@ -23,7 +31,7 @@ class PostView(View):
             
             if not Post.objects.filter(title=title).exists():
                 Post.objects.create(
-                                    user      = user, # 객체로 지정해야함 다른 속성값으로 하면 오류 발생함!
+                                    user      = user, 
                                     title     = title,
                                     content   = content,
                                     image_url = image_url,
@@ -42,7 +50,8 @@ class PostView(View):
 
         except Post.DoesNotExist:
             return JsonResponse({'MESSAGE':'POST DOES NOT EXISTS!'},status=400)
-       
+
+    @LoginConfirm
     def get(self, request):
         try:
             posts  = Post.objects.all()
@@ -71,7 +80,8 @@ class PostView(View):
             return JsonResponse({'MESSAGE':'POST DOES NOT EXISTS!'},status=400)
 
 class PostCommentView(View):
-    def post(self, request):
+    @LoginConfirm
+    def post(self, request,*args, **kwargs):
         try:
             data    = json.loads(request.body)
 
@@ -94,17 +104,14 @@ class PostCommentView(View):
 
         except KeyError:
             return JsonResponse({'MESSAGE': 'KEY ERROR OCCURED!'},status=400)
-
         except ValueError:
-            return JsonResponse({'MESSAGE': 'VALUE ERROR OCCURED!'},status=400)
-        
+            return JsonResponse({'MESSAGE': 'VALUE ERROR OCCURED!'},status=400)   
         except User.DoesNotExist:
             return JsonResponse({'MESSAGE':'USER DOES NOT EXISTS!'},status=400)
-
         except Post.DoesNotExist:
             return JsonResponse({'MESSAGE':'POST DOES NOT EXISTS!'},status=400)
-
-    def get(self, request, pk):
+    @LoginConfirm
+    def get(self, request, pk,*args, **kwargs):
         try:
             post     = Post.objects.get(pk=pk)
             comments = post.comment_set.all()
@@ -138,7 +145,8 @@ class PostCommentView(View):
 
 
 class PostLikeView(View):
-    def post(self,request,pk):
+    @LoginConfirm
+    def post(self,request,pk,*args, **kwargs):
         try:
             data = json.loads(request.body)
             user = User.objects.get(email=data['email'])
@@ -157,16 +165,14 @@ class PostLikeView(View):
 
         except KeyError:
             return JsonResponse({'MESSAGE': '이메일을 입력해주세요.'},status=400)
-
         except ValueError:
             return JsonResponse({'MESSAGE': '이메일과 찾으려는 게시글 정보를 올바르게 입력해주세요.'},status=400)
-            
         except User.DoesNotExist:
-            return JsonResponse({'MESSAGE':'USER DOES NOT EXISTS'}, status=400)
-            
+            return JsonResponse({'MESSAGE':'USER DOES NOT EXISTS'}, status=400)   
         except Post.DoesNotExist:
             return JsonResponse({'MESSAGE':'USER DOES NOT EXISTS'}, status=400)
-
+            
+    @LoginConfirm
     def get(self,request,pk): 
         try:
             like    = Like.objects.get(pk=pk)
@@ -180,12 +186,6 @@ class PostLikeView(View):
                 }
             ]
             return JsonResponse({'MESSAGE':LIKE}, status=200)
-        
-        except KeyError:
-            return JsonResponse({'MESSAGE': '이메일을 입력해주세요.'},status=400)
-
-        except ValueError:
-            return JsonResponse({'MESSAGE': '이메일과 찾으려는 게시글 정보를 올바르게 입력해주세요.'},status=400)
             
         except Like.DoesNotExist:
             return JsonResponse({'MESSAGE':'해당 게시물의 좋아요 정보가 아직 존재하지 않아요.'}, status=400)

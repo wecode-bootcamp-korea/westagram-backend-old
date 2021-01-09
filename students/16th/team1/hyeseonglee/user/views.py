@@ -9,12 +9,14 @@ from django.db.models        import Q
 from django.core.validators  import validate_email, ValidationError
 from django.utils.decorators import method_decorator
 
-from user.models             import User
+
+# from decorator.utils         import login_decorator
+from user.models             import User,Follow
 from westagram.my_settings   import SECRET, ALGORITHM
-from user.decorator          import login_decorator
 
-auth = [login_decorator,]
+from decorator.utils         import LoginConfirm
 
+auth = [LoginConfirm,]
 
 class SignUpView(View):
     def post(self, request):
@@ -48,17 +50,22 @@ class SignUpView(View):
 
         except ValueError:
             return JsonResponse({'MESSAGE': 'VALUE 에러 발생!'},status=400)
-                    
+
+
 class LoginView(View):
     def post(self, request):
         try:
             data     = json.loads(request.body)
             password = data['password']
-            user = User.objects.get(email=data['email'])
+            user     = User.objects.get(email=data['email'])
 
             if bcrypt.checkpw(password.encode('utf-8'), user.password.encode('utf-8')): 
-                user_token = jwt.encode({'user_id': user.id}, SECRET, algorithm=ALGORITHM)
-                return JsonResponse({'MESSAGE':'액세스 토큰 생성 성공!','엑세스 토큰': user_token}, status=200)
+                user_token = jwt.encode({'id': user.id}, SECRET, algorithm=ALGORITHM)
+                return JsonResponse({
+                                     'id'           : user.id,
+                                     'email'        : user.email,
+                                     'Authorization': user_token
+                                     }, status=200)
             return JsonResponse({'MESSAGE':'비밀번호를 다시 확인해주세요'}, STATUS=400)
             
         except KeyError:
@@ -66,3 +73,42 @@ class LoginView(View):
 
         except ValueError:
             return JsonResponse({'MESSAGE': 'VALUE 에러 발생!'},status=400)
+
+class FollowView(View):
+    @LoginConfirm
+    def post(self, request, pk, *args, **kwargs):
+        try:
+            print()
+            follower  = request.user
+            print(follower)
+            following = User.objects.get(id=pk)
+            if follower == following:
+                return JsonResponse({'MESSAGE': " CAN\'T FOLLOW TO HIM OR HSERSELF!"}, status=404)
+            
+            follow    = Follow.objects.filter(following=following, follower=follower)
+            if follow.exists(): 
+                follow.delete() 
+                return JsonResponse({'MESSAGE':f"SUCCEDED TO UNFOLLOW {following.email}!"}, status=200)
+            
+            Follow.objects.create(following=following,follower=follower)
+            return JsonResponse({'MESSAGE': f"SUCCEDED TO FOLLOW {following.email}!"}, status=201)
+
+        except Follow.DoesNotExist as e:
+            return JsonResponse({'MESSAGE':'NOT EXIST USER'}, status=401) 
+
+    @LoginConfirm
+    def get(self, request, *args, **kwargs):
+        try:
+            follows = Follow.objects.filter(follower=request.user)
+            follower_list=[]
+            for follow in follows:
+                follower_list.append({
+                        'id'           : follow.id,
+                        'follower'     : follow.follower.email,
+                        'following'    : follow.following.email,
+                        'date_of_follo': follow.created_dt
+                    })
+            return JsonResponse({'RESULT':follower_list }, status=200)
+            
+        except Follow.DoesNotExist:
+            return JsonResponse({'MESSAGE':'FOLLOW 상태가 아닙니다.'}, status=400)
