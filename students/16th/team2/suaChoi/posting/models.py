@@ -21,9 +21,9 @@ class Comment(models.Model):
         db_table = "comments"
 
 class Like(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    post = models.ForeignKey('Post', on_delete=models.CASCADE)
-    is_deleted = models.BooleanField(default=False) # is deleted 가 true 였다가 false 였다가
+    user       = models.ForeignKey(User, on_delete=models.CASCADE)
+    post       = models.ForeignKey('Post', on_delete=models.CASCADE)
+    is_deleted = models.BooleanField(default=False)
 
     class Meta:
         db_table = "likes"

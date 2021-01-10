@@ -86,7 +86,12 @@ class LikeView(View):
             like = Like.objects.filter(user_id=user, post_id=post)
 
             if like.first() is not None:
-                like.update(is_deleted=True)
+                if like.first().is_deleted == False:
+                    like.update(is_deleted=True)
+                    return JsonResponse({"message": "SUCCESS1"}, status=200)
+                else:
+                    like.update(is_deleted=False)
+                    return JsonResponse({"message": "SUCCESS2"})
 
             elif like.first() is None:
                 Like.objects.create(
