@@ -1,5 +1,5 @@
 from django.db import models
-
+from django.views.generic.edit import CreateView
 
 class Post(models.Model):
     user        = models.ForeignKey('user.User', on_delete=models.CASCADE) 
@@ -8,9 +8,6 @@ class Post(models.Model):
     created_dt  = models.DateTimeField(auto_now_add=True)
     image_url   = models.URLField(max_length=2800, default='',null=True)
     like_num    = models.IntegerField(default=0)
-    
-    # def __str__(self):
-    #     return self.user
     
     class Meta:
         db_table            = 'postings'
@@ -21,13 +18,13 @@ class Post(models.Model):
 
 class Comment(models.Model):
     user        = models.ForeignKey('user.User', on_delete=models.CASCADE) 
-    post        = models.ForeignKey('posting.Post', on_delete=models.CASCADE)
+    post        = models.ForeignKey('posting.Post', on_delete=models.CASCADE, related_name='comments')
+    parent      = models.ForeignKey('posting.Comment', on_delete=models.CASCADE, related_name='parent_comment', null=True)
     title       = models.CharField(max_length=100)
     content     = models.TextField()
     created_dt  = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return self.title
+    updated_at  = models.DateTimeField(auto_now=True)
+    depth       = models.IntegerField(default=0)
     
     class Meta:
         db_table            = 'comments'
@@ -40,10 +37,7 @@ class Like(models.Model):
     user        = models.ForeignKey('user.User', on_delete=models.CASCADE)
     post        = models.ForeignKey('posting.Post', on_delete=models.CASCADE)
     created_dt  = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f'{self.user.email}가 {self.post.title}을 Like!'
-    
+  
     class Meta:
         db_table = 'likes'
         verbose_name        = 'like'

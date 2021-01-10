@@ -181,10 +181,7 @@ class CommentUpdateView(View):
     @LoginConfirm
     def put(self, request, post_id, comment_id):
         try:
-            print('0번 튀나온나')
             data      = json.loads(request.body)
-            print('1번 튀나온나')
-            
             user      = request.user
             title     = data['title']     
             content   = data['content']     

@@ -4,10 +4,7 @@ class User(models.Model):
     password = models.CharField(max_length=255, verbose_name='비밀번호')
     email    = models.CharField(max_length=30, verbose_name='이메일',unique=True)
     follows = models.ManyToManyField('self', through='Follow', symmetrical=False)
-    
-    def __str__(self):     
-        return self.email 
-    
+        
     class Meta:
         db_table            = 'users'
         verbose_name        = 'user'
