@@ -2,6 +2,7 @@ import json
 import bcrypt
 import re
 import jwt
+
 from django.http    import JsonResponse
 from django.views   import View
 from user.models    import User
@@ -13,29 +14,31 @@ class SignupView(View):
         try:
             data = json.loads(request.body)
 
-            account     = data.get('account', None)
-            email       = data.get('email', None)
-            phone     = data.get('phone', None)
-            password    = data['password']
+            user=User(
+                account     = data.get('account'),
+                email       = data.get('email'),
+                phone       = data.get('phone'),
+                password    = data['password'],
+            )
 
             p = re.compile('^[a-zA-Z0-9+-_.]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$')
             
-            if len(email)==0:
+            if len(user.email) == 0:
                 return JsonResponse({'MESSAGE':"DIDN'T INPUT EMAIL"},status = 400)
             
-            if len(password)==0:
+            if len(user.password) == 0:
                 return JsonResponse({'MESSAGE':"DIDN'T INPUT PASSWORD"},status = 400)
 
-            if email and p.match(email) == None:
-                return JsonResponse({'MESSAGE':"INVAILD_EMAIL_ADDRESS!"},status = 400)
+            if user.email and p.match(user.email) == None:
+                return JsonResponse({'MESSAGE':'INVAILD_EMAIL_ADDRESS'},status = 400)
             
-            if account and User.objects.filter(account = account).exists():
+            if user.account and User.objects.filter(account = user.account).exists():
                 return JsonResponse({'MESSAGE':'EXISTING ID'}, status=400)  
             
-            if email and User.objects.filter(email = email).exists():
+            if user.email and User.objects.filter(email = user.email).exists():
                 return  JsonResponse({'MESSAGE':'EXISTING MAIL'}, status=400)
             
-            if phone and User.objects.filter(phone = phone).exists():
+            if user.phone and User.objects.filter(phone = user.phone).exists():
                 return  JsonResponse({'MESSAGE':'EXISTING NUMBER'}, status=400)
             
             if len(data['password']) < 8:
@@ -44,15 +47,21 @@ class SignupView(View):
             if not '@' and '.' in data['email']:
                 return JsonResponse({'MESSAGE':'INVALID EMAIL'}, status=400)
             
-            hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+            hashed_password = bcrypt.hashpw(user.password.encode('utf-8'), bcrypt.gensalt())
 
-            User.objects.create(
-                account = account, 
-                email = email, 
-                phone = phone, 
-                password = hashed_password.decode('utf-8')
-            )    
-
+            # user=User(
+            # account     = data.get('account', None),
+            # email       = data.get('email', None),
+            # phone     = data.get('phone', None),
+            # password    = data['password'],
+            #  )
+            user.save()
+            # User.objects.create(
+            #     account = account, 
+            #     email = email, 
+            #     phone = phone, 
+            #     password = hashed_password.decode('utf-8')
+            # )    
             return JsonResponse({'MESSAGE':'SUCCESS'}, status=200)
     
         except KeyError :
