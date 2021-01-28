@@ -32,9 +32,3 @@ class SignupView(View):
         except KeyError:
             return JsonResponse({'MESSAGE': 'KEY_ERROR'}, status=400)
 
-   # def get(self, request):
-   #     try:
-   #         data = json.loads(request.body)
-#
-#        except: KeyError:
-#            return JsonResponse({'MESSAGE': ' KEY_ERROR'}, status=400)
