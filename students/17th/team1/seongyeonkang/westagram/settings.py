@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 
 from pathlib import Path
+
 import my_settings
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -39,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'corsheaders',
+    'user',
 ]
 
 MIDDLEWARE = [
@@ -117,6 +119,7 @@ USE_TZ = False
 
 STATIC_URL = '/static/'
 
+APPEND_SLASH = False
 
 ##CORS
 CORS_ORIGIN_ALLOW_ALL=True
