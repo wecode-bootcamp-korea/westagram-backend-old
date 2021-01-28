@@ -13,7 +13,7 @@ SECRET_KEY = my_settings.SECRET_KEY
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
@@ -22,7 +22,8 @@ ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
     'corsheaders',
-    'sign',
+    'user',
+    'post',
     #'django.contrib.admin',
     #'django.contrib.auth',
     'django.contrib.contenttypes',
