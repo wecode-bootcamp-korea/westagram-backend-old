@@ -1,13 +1,11 @@
 import json
 
 from django.http  import JsonResponse
-
 from django.views import View
 
-from user.models  import Id, Password
+from user.models  import User
 
-class SignupView(View):
-
+class UserView(View):
     def post(self, request):
         try:
             data             = json.loads(request.body)
@@ -16,16 +14,15 @@ class SignupView(View):
             if '@' not in data['email'] or '.' not in data['email']:
                 return JsonResponse({'MESSAGE': 'INVALID__EMAIL'}, status=401)
 
-            if Id.objects.filter(email=data['email']).exists():
+            if User.objects.filter(email=data['email']).exists():
                 return JsonResponse({'MESSAGE': 'ALREADY_SIGNUP'}, status=401)
 
             if passwordvalidity < 8:
                 return JsonResponse({'MESSAGE': 'INVALID_PASSWORD'}, status=401)
 
-            email            = Id.objects.create(email=data['email'])
-            password         = Password.objects.create(
-                                password=data['password'],
-                                ids=email
+            user = User.objects.create(
+                    email=data['email'], 
+                    password=data['password']
                     )
             return JsonResponse({'MESSAGE': 'SUCCESS'}, status=200)
 
