@@ -12,7 +12,11 @@ class AccountView(View):
 
         # 필수사항 미입력시
         try:
-            email, password = data['email'], data['password']
+            email        = data['email']
+            password     = data['password']
+            name         = data['name']
+            nickname     = data['nickname']
+            phone_number = data['phone_number']
         except KeyError:
             return JsonResponse({'message': 'KEY_ERROR'}, status=400)
         
@@ -21,10 +25,6 @@ class AccountView(View):
             return JsonResponse({'message': 'email validation'}, status=400)
         if len(password) < 8:
             return JsonResponse({'message': 'password validation'}, status=400)
-        
-        name         = data['name']
-        nickname     = data['nickname']
-        phone_number = data['phone_number']
 
         # duplicate check
         if Accounts.objects.filter(nickname=nickname) or Accounts.objects.filter(email=email) or Accounts.objects.filter(phone_number=phone_number):
