@@ -1,9 +1,7 @@
 import json
-from json.decoder import JSONDecodeError
 
 from django.http        import JsonResponse
 from django.views       import View
-from django.db.utils    import DataError
 
 from user.models    import User
 
@@ -19,7 +17,7 @@ class UserView(View):
                 return JsonResponse({'MESSAGE' : 'INVALID_EMAIL'}, status=400)
 
             if User.objects.filter(email=data['email']).exists():
-                return JsonResponse({'MESSAGE' : 'EMAIL_ALREADY_EXIST'}, status=400)
+                return JsonResponse({'MESSAGE' : 'EMAIL_ALREADY_EXIST'}, status=409)
 
             if len(data['password']) < 8:
                 return JsonResponse({'MESSAGE' : 'INVALID_PASSWORD'}, status=400)
