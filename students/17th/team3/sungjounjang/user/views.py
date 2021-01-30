@@ -27,7 +27,7 @@ class AccountView(View):
         phone_number = data['phone_number']
 
         # duplicate check
-        if not Accounts.objects.get(nickname=nickname) or not Accounts.objects.get(email=email) or not Accounts.objects.get(phone_number=phone_number):
+        if Accounts.objects.filter(nickname=nickname) or Accounts.objects.filter(email=email) or Accounts.objects.filter(phone_number=phone_number):
             return JsonResponse({'message': 'input data duplicate'}, status=400)
         
         Accounts.objects.create(
