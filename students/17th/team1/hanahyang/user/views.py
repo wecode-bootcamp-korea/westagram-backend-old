@@ -8,8 +8,8 @@ from django.core.exceptions import ValidationError
 from .models                import User
 
 def validate_email(email):
-    p = re.compile('^.+@+.+\.+.+$')
-    if not p.match(email):
+    pattern = re.compile('^.+@+.+\.+.+$')
+    if not pattern.match(email):
         raise ValidationError('Invalid Email Format')
 
 def validate_password(password):
@@ -28,22 +28,18 @@ class SignupView(View):
             if email: 
                 validate_email(email)
 
-            if password:
+            if password and name and phone:
                 validate_password(password)
-                if email or name or phone:
-                    has_email = User.objects.filter(Q(email=email) & Q(email__isnull=False))
-                    has_name  = User.objects.filter(Q(name=name)   & Q(name__isnull=False))
-                    has_phone = User.objects.filter(Q(phone=phone) & Q(phone__isnull=False))
-                    
-                    if not (has_email or has_name or has_phone):
-                        User.objects.create(
-                            email    = email,
-                            name     = name,
-                            phone    = phone,
-                            password = password
-                        )
-                        return JsonResponse({'message': 'SUCCESS'}, status=200)
-                    return JsonResponse({'message': 'USER_ALREADY_EXISTS'}, status=409)
+                user = User.objects.filter(Q(email=email) | Q(name=name) | Q(phone=phone)) 
+                if not user:
+                    User.objects.create(
+                        email    = email,
+                        name     = name,
+                        phone    = phone,
+                        password = password
+                    )
+                    return JsonResponse({'message': 'SUCCESS'}, status=200)
+                return JsonResponse({'message': 'USER_ALREADY_EXISTS'}, status=409)
 
             return JsonResponse({'message': 'KEY_ERROR'}, status=400)
 
