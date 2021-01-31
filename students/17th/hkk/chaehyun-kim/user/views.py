@@ -33,7 +33,7 @@ class UserView(View):
             name            = data['name']
             phone_number    = data['phone_number']
 
-            if User.objects.filter(email=email).exists():
+            if User.objects.filter(email=email).exists() or User.objects.filter(name=name).exists() or User.objects.filter(phone_number=phone_number).exists():
                 return JsonResponse({'message' : 'EXISTING_USER'}, status=409)
             elif not re.search(email_valid, email):
                 return JsonResponse({'message' : 'INVALID_EMAIL'}, status=409)
