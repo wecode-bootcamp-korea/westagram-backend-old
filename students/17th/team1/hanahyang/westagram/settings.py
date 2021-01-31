@@ -28,6 +28,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'corsheaders',
+    'user',
 ]
 
 MIDDLEWARE = [
@@ -105,6 +106,9 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
+
+# REMOVE_APPEND_SLASH_WARNING
+APPEND_SLASH = False
 
 ##CORS
 CORS_ORIGIN_ALLOW_ALL=True
