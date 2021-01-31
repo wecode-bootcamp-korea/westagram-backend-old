@@ -32,7 +32,7 @@ class SignupView(View):
                 validate_password(password)
                 if email or name or phone:
                     has_email = User.objects.filter(Q(email=email) & Q(email__isnull=False))
-                    has_name  = User.objects.filter(Q(name=name) & Q(name__isnull=False))
+                    has_name  = User.objects.filter(Q(name=name)   & Q(name__isnull=False))
                     has_phone = User.objects.filter(Q(phone=phone) & Q(phone__isnull=False))
                     
                     if not (has_email or has_name or has_phone):
@@ -43,12 +43,12 @@ class SignupView(View):
                             password = password
                         )
                         return JsonResponse({'message': 'SUCCESS'}, status=200)
-                    return JsonResponse({'message': 'ALREADY_EXISTS'}, status=409)
+                    return JsonResponse({'message': 'USER_ALREADY_EXISTS'}, status=409)
 
             return JsonResponse({'message': 'KEY_ERROR'}, status=400)
 
         except ValidationError as e:    
             trace_back = traceback.format_exc()
             print(f'{e}: {trace_back}')
-            return JsonResponse({'message': 'ValidationError'}, status=422)
+            return JsonResponse({'message': 'VALIDATION_ERROR'}, status=422)
         
