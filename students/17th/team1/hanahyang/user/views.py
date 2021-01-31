@@ -52,3 +52,8 @@ class SignupView(View):
             print(f'{e}: {trace_back}')
             return JsonResponse({'message': 'VALIDATION_ERROR'}, status=422)
         
+    def get(self, request):
+        users = list(User.objects.values())
+
+        return JsonResponse({'data': users}, status=200)
+
