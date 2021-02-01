@@ -41,9 +41,6 @@ class SignInView(View):
             if User.objects.filter(username=username).exists():
                 return JsonResponse({"MESSAGE" : "USERNAME_EXISTS"}, status=400)
 
-            if '@' and '.' not in email:
-                return JsonResponse({"MESSAGE" : "INVALID_EMAIL_SYNTAX"}, status=400)
-
             if (email_regex.search(str(email)) != None) == False:
                 return JsonResponse({"MESSAGE" : "EMAIL_VALIDATION"}, status=400)
 
