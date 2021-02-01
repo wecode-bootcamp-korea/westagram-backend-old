@@ -350,3 +350,4 @@ zsdoc/data
 
 my_settings.py
 *.csv
+hash.py
