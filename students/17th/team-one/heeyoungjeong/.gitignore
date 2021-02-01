@@ -397,6 +397,6 @@ tags
 
 
 # DATABASE and SECRET KEY ignore
-/my_setting.py
+/my_settings.py
 *.csv
 
