@@ -7,6 +7,8 @@ from django.views import View
 
 from user.models import User
 
+MINIMUM_PASSWORD_LENGTH = 8
+
 class SignUpView(View):
     def post(self, request):
 
@@ -22,7 +24,6 @@ class SignUpView(View):
             if not '@' in data['email'] or not '.' in data['email']:
                 return JsonResponse({'message':'The email is not valid'}, status=400)
 
-            MINIMUM_PASSWORD_LENGTH = 8
             if not MINIMUM_PASSWORD_LENGTH <= len(data['password']):
                 return JsonResponse({'message': 'The password is not valid'}, status=400)
 
