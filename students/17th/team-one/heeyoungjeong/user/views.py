@@ -1,10 +1,13 @@
 import json
+from json.decoder import JSONDecodeError
+import re
+
 from django.http import JsonResponse, HttpResponse
 from django.views import View
-from json.decoder import  JSONDecodeError
+
 from user.models import User
 
-class SignUp(View):
+class SignUpView(View):
     def post(self, request):
 
         try:
@@ -15,10 +18,12 @@ class SignUp(View):
                 if key not in data.keys():
                     return JsonResponse({'message':'KEY_ERROR'}, status=400)
 
+
             if not '@' in data['email'] or not '.' in data['email']:
                 return JsonResponse({'message':'The email is not valid'}, status=400)
 
-            if not 8 <= len(data['password']):
+            MINIMUM_PASSWORD_LENGTH = 8
+            if not MINIMUM_PASSWORD_LENGTH <= len(data['password']):
                 return JsonResponse({'message': 'The password is not valid'}, status=400)
 
             user = User.objects.filter(email=data['email'])
@@ -33,9 +38,9 @@ class SignUp(View):
                 return JsonResponse({'message':'SUCCESS'}, status=200)
 
             else:
-                return JsonResponse({'message':'KEY_ERROR'}, status=400)
+                return JsonResponse({'message':'USER_ALREADY_EXIST'}, status=409)
 
         except JSONDecodeError:
-            return JsonResponse({'message': 'KEY_ERROR'}, status=400)
+            return JsonResponse({'message':'The request is not valid'}, status=400)
 
 
