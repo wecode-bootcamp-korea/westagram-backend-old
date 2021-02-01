@@ -1,15 +1,16 @@
 import json
+import bcrypt
 
 from django.http  import JsonResponse
 from django.views import View
 
 from user.models  import User
+MINIMUM_PASSWORD_LENGTH = 8
 
 class UserView(View):
     def post(self, request):
         try:
             data             = json.loads(request.body)
-            passwordvalidity = len(data['password'])
 
             if '@' not in data['email'] or '.' not in data['email']:
                 return JsonResponse({'MESSAGE': 'INVALID__EMAIL'}, status=401)
@@ -23,14 +24,14 @@ class UserView(View):
             if User.objects.filter(email=data['account']).exists():
                 return JsonResponse({'MESSAGE': 'ALREADY_SIGNUP'}, status=409)
 
-            if passwordvalidity < 8:
+            if len(data['password']) < MINIMUM_PASSWORD_LENGTH:
                 return JsonResponse({'MESSAGE': 'INVALID_PASSWORD'}, status=401)
 
             User.objects.create(
-                    email      =data['email'], 
-                    password   =data['password'],
-                    phonenumber=data['phone_number'],
-                    account    =data['account'],
+                    email      = data['email'], 
+                    password   = bcrypt.hashpw(data['password'].encode('utf-8'), bcrypt.gensalt()),
+                    phonenumber= data['phone_number'],
+                    account    = data['account'],
                     )
             return JsonResponse({'MESSAGE': 'SUCCESS'}, status=200)
 
