@@ -7,18 +7,18 @@ from .models      import Userinfo
 
 # 회원가입
 class UserSignUpView(View):
-    MINIMUM_PASSWORD_LENGTH = 8
     
     def post(self, request):
         data = json.loads(request.body)
-        
-        password_validity = data['password']
-        
+        MINIMUM_PASSWORD_LENGTH = 8
+                
         try:
+            password_validity = data['password']
+
             if Userinfo.objects.filter(name = data['name']).exists():
                 return JsonResponse({"MESSAGE" : "USER_ALREADY_EXIST"}, status = 403)
         
-            if Userinfo.objects.filter(Phone_number = data['phone_number']).exists():
+            if Userinfo.objects.filter(phone_number = data['phone_number']).exists():
                 return JsonResponse({"MESSAGE": "Inavailed_Number_Syntax"}, status= 403)
         
             if Userinfo.objects.filter(email = data['email']).exists():
@@ -32,7 +32,7 @@ class UserSignUpView(View):
 
             Userinfo.objects.create(
                     name         = data['name'],
-                    Phone_number = data['phone_number'],
+                    phone_number = data['phone_number'],
                     email        = data['email'],
                     password     = data['password']
                     )
