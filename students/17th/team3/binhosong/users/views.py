@@ -1,40 +1,59 @@
 import json
-import string
 
 from django.http        import JsonResponse
 from django.views       import View
 
 from .models            import Account
 
+MINIMUM_PASSWORD_LENGTH = 8
+
 class SignUp(View):
     def post(self, request):
         data = json.loads(request.body)
 
-        #for user in data:
-        #   if data not in data['user']:
-        #       return JsonResponse({'message' : 'data[user]를 입력해주십시오'})
+        try : 
+            if '@' not in data['email'] or '.' not in data['email']:
+                return JsonResponse({'message':'INVALID_EMAIL'}, status=400)
 
-        if '@' not in data['email'] or '.' not in data['email']:
-            return JsonResponse({'message' : '이메일 주소에 \'@\'가 들어가야 합니다.'}, status=400)
+            if Account.objects.filter(email = data['email']).exists():
+                return JsonResponse({'message':'USER_ALREADY_EXISTS'}, status=400)
 
-        if Account.objects.filter(email = data['email']).exists():
-            return JsonResponse({'message' : '이미 존재하는 이메일 입니다.'}, status=400)
+            if len(data['password']) < MINIMUM_PASSWORD_LENGTH:
+                return JsonResponse({'message':'SHORT_PASSWORD'}, status=400)
+        
+            else :
+                signup = Account.objects.get_or_create(
+                    email     = data['email'],
+                    name      = data['name'],
+                    nickname  = data['nickname'],
+                    password  = data['password'],
+                    phone     = data['phone']
+            )
+            return JsonResponse({'message' : 'SUCCESS'}, status=201)
 
-        if len(data['password']) < 8:
-#            if string.punctuation not in data['password']:
-#                return JsonResponse({'message':'특수문자, 영어, 숫자가 포함되야 합니다.'}, status=400)
-#            elif string.digits not in data['password']:
-#                return JsonResponse({'message':'특수문자, 영어, 숫자가 포함되야 합니다.'}, status=400)
-#            elif string.ascii_letters not in data['password']:
-#                return JsonResponse({'message':'특수문자, 영어, 숫자가 포함되야 합니다.'}, status=400)
-            return JsonResponse({'message' : '비밀번호는 8자 이상으로 설정해주시기 바랍니다.'}, status=400)
+        except KeyError:
+            return JsonResponse({"message": "KEY_ERROR"}, status=400)
 
-        else :
-            signup = Account.objects.get_or_create(
-                email    = data['email'],
-                name     = data['name'],
-                nicname  = data['nicname'],
-                password = data['password']
-        )
+class Login(View):
+    def post(self, request):
+        data = json.loads(request.body)
+        
+        try :
+            email    = data.get('email')
+            phone    = data.get('phone')
+            nickname = data.get('nickname')
+            password = data.get('password')
 
-        return JsonResponse({'message' : '회원가입 완료'}, status=201)
+            if Account.objects.filter(email=email).exists() or\
+                Account.objects.filter(phone=phone).exists() or\
+                Account.objects.filter(nickname=nickname).exists():
+                if Account.objects.filter(password=password):
+                    return JsonResponse({'message' : 'SUCCESS'}, status=200)
+                else :
+                    return JsonResponse({"message": "INVALID_PASSWORD"}, status=401)
+            else :
+                return JsonResponse({"message": "INVALID_USER"}, status=401)
+
+        except KeyError: 
+            return JsonResponse({"message": "KEY_ERROR"}, status=400)
+

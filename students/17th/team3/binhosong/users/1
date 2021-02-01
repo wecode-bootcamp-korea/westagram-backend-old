@@ -1,4 +1,4 @@
-from django.db   import models
+from django.db                     import models
 from phone_field import PhoneField
 
 class Account(models.Model):
