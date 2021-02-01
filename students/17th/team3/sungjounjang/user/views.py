@@ -53,7 +53,13 @@ class AccountView(View):
 class LoginView(View):
     def post(self, request):
         data = json.loads(request.body)
-        access_token = ''
+        access_token = data.get('token')
+
+        if access_token:
+            payload = jwt.decode(access_token, my_settings.SECRET, my_settings.ALGORITHM)
+            if Accounts.objects.filter(email=payload['email']):
+                # print('-------------------------- token!!')
+                return JsonResponse({'message': 'SUCCESS', 'token': access_token}, status=200)
 
         try:
             email        = data.get('email')
