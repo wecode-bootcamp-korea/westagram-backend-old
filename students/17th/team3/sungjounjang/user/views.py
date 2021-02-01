@@ -74,13 +74,13 @@ class LoginView(View):
             if id_type == 'email':
                 account = Accounts.objects.get(email=login_id)
             elif id_type == 'phone_number':
-                account = Accounts.objects.get(phon_number=login_id)
+                account = Accounts.objects.get(phone_number=login_id)
             elif id_type == 'nickname':
                 account = Accounts.objects.get(nickname=login_id)
 
             if account.password != password:
                 return JsonResponse({'message': 'INVALID_USER'}, status=401)
-        except:
+        except KeyError:
             return JsonResponse({'message': 'INVALID_USER'}, status=401)
 
         return JsonResponse({'message': 'SUCCESS'}, status=200)
