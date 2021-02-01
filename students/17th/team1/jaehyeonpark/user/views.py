@@ -1,4 +1,4 @@
-import json, bcrypt, jwt
+import json, bcrypt, jwt, re
 
 from django.http     import JsonResponse
 from django.views    import View
@@ -18,7 +18,9 @@ class SignUpView(View):
             if "" in (email, password):
                 return JsonResponse({'message':'NO_VALUE_ERROR'}, status=400)
             
-            if '@' and '.' not in email:
+            email_regex = re.compile("^.+@+.+\.+.+$")
+            
+            if not email_regex.match(email):
                 return JsonResponse({'message':'EMAIL_VALIDATION_ERROR'}, status=400)
 
             if len(password) < PASSWORD_MINIMUM_LENGTH:
@@ -26,11 +28,11 @@ class SignUpView(View):
 
             user = User.objects.create(email=email, password=password)
 
-        except KeyError:
-            return JsonResponse({'message':'KEY_ERROR'}, status=400)
-        
         except json.decoder.JSONDecodeError:
             return JsonResponse({'message':'JSON_DECODE_ERROR'}, status=400)
+        
+        except KeyError:
+            return JsonResponse({'message':'KEY_ERROR'}, status=400)
         
         except DataError:
             return JsonResponse({'message':'DATA_ERROR'}, status=400)
