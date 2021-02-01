@@ -26,7 +26,12 @@ class SignUpView(View):
             if len(password) < PASSWORD_MINIMUM_LENGTH:
                 return JsonResponse({'message':'PASSWORD_VALIDATION_ERROR'}, status=400)
 
-            user = User.objects.create(email=email, password=password)
+            encoded_password = password.encode('utf-8')
+            salt = bcrypt.gensalt()
+            hashed_password = bcrypt.hashpw(encoded_password, salt)
+            encrypted_password = hashed_password.decode('utf-8')
+            
+            user = User.objects.create(email=email, password=encrypted_password)
 
         except json.decoder.JSONDecodeError:
             return JsonResponse({'message':'JSON_DECODE_ERROR'}, status=400)
