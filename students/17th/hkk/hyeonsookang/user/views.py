@@ -20,9 +20,11 @@ class UserView(View):
             if passwordvalidity < 8:
                 return JsonResponse({'MESSAGE': 'INVALID_PASSWORD'}, status=401)
 
-            user = User.objects.create(
-                    email=data['email'], 
-                    password=data['password']
+            User.objects.create(
+                    email      =data['email'], 
+                    password   =data['password'],
+                    phonenumber=data['phone_number'],
+                    account    =data['account'],
                     )
             return JsonResponse({'MESSAGE': 'SUCCESS'}, status=200)
 
