@@ -20,6 +20,9 @@ class UserView(View):
             if User.objects.filter(email=data['phone_number']).exists():
                 return JsonResponse({'MESSAGE': 'ALREADY_SIGNUP'}, status=409)
 
+            if User.objects.filter(email=data['account']).exists():
+                return JsonResponse({'MESSAGE': 'ALREADY_SIGNUP'}, status=409)
+
             if passwordvalidity < 8:
                 return JsonResponse({'MESSAGE': 'INVALID_PASSWORD'}, status=401)
 
