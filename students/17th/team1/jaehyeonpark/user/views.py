@@ -1,10 +1,10 @@
 import json
 
-from django.http  import JsonResponse
-from django.views import View
+from django.http     import JsonResponse
+from django.views    import View
 from django.db.utils import DataError, IntegrityError
 
-from user.models  import User
+from user.models     import User
 
 PASSWORD_MINIMUN_LENGTH = 8
 
