@@ -2,6 +2,7 @@ import json
 
 from django.views import View
 from django.http  import JsonResponse
+import bcrypt
 
 from .models import Accounts
 
@@ -13,10 +14,13 @@ class AccountView(View):
         # 필수사항 미입력시
         try:
             email        = data['email']
-            password     = data['password']
+            password     = bcrypt.hashpw(data['password'].encode('utf-8'), bcrypt.gensalt())
             name         = data['name']
             nickname     = data['nickname']
             phone_number = data['phone_number']
+
+            print('-----------------------------------')
+            print(password)
 
             # email, password check
             if email.find('@') == -1 or email.find('.') == -1:
@@ -43,44 +47,27 @@ class AccountView(View):
 
 
 class LoginView(View):
-    def get(self, request):
+    def post(self, request):
         data = json.loads(request.body)
-        
-        login_id = ''
-        id_type  = ''
-        password = ''
-
-        # 3가지중 하나는 있어여 함
-        if 'email' in data:
-            login_id = data['email']
-            id_type  = 'email'
-        elif 'nickname' in data:
-            login_id = data['data']
-            id_type  = 'nickname'
-        elif 'phone_number' in data:
-            login_id = data['phone_number']
-            id_type  = 'phone_number'
-        else:
-            return JsonResponse({'message': 'KEY_ERROR'}, status=400)
-
-        # password 있는지 확인
-        if 'password' in data:
-            password = data['password']
-        else:
-            return JsonResponse({'message': 'KEY_ERROR'}, status=400)
 
         try:
-            # password, login_id check
-            if id_type == 'email':
-                account = Accounts.objects.get(email=login_id)
-            elif id_type == 'phone_number':
-                account = Accounts.objects.get(phone_number=login_id)
-            elif id_type == 'nickname':
-                account = Accounts.objects.get(nickname=login_id)
+            email        = data.get('email')
+            nickname     = data.get('nickname')
+            phone_number = data.get('phone_number')
+            password     = data['password']
 
-            if account.password != password:
+            # password, login_id check
+            if email:
+                account = Accounts.objects.get(email=email)
+            if nickname:
+                account = Accounts.objects.get(nickname=nickname)
+            if phone_number:
+                account = Accounts.objects.get(phone_number=phone_number)
+
+            if not bcrypt.checkpw(password.encode('utf-8'), account.password):
                 return JsonResponse({'message': 'INVALID_USER'}, status=401)
-        except DoesNotExist:
-            return JsonResponse({'message': 'INVALID_USER'}, status=401)
+
+        except KeyError:
+            return JsonResponse({'message': 'KEY_ERROR'}, status=400)
 
         return JsonResponse({'message': 'SUCCESS'}, status=200)
