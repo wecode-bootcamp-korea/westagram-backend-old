@@ -23,7 +23,7 @@ class SignUpView(View):
             if len(password) < PASSWORD_MINIMUM_LENGTH:
                 return JsonResponse({'message':'PASSWORD_VALIDATION_ERROR'}, status=400)
 
-            user = User.objects.create(email=email, password=hashed_password)
+            user = User.objects.create(email=email, password=password)
 
         except KeyError:
             return JsonResponse({'message':'KEY_ERROR'}, status=400)
