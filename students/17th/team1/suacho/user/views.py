@@ -6,6 +6,9 @@ from django.db.models import Q
 
 from user.models import User
 
+
+PASSWORD_MINIMUM_LENGTH = 8
+
 class SingUpView(View):
     def post(self, request):
         data = json.loads(request.body)
@@ -16,8 +19,7 @@ class SingUpView(View):
         username      = data.get('username', None)
         password      = data.get('password', None)
 
-        email_pattern           = re.compile('[^@]+@[^@]+\.[^@]+')
-        PASSWORD_MINIMUM_LENGTH = 8
+        email_pattern = re.compile('[^@]+@[^@]+\.[^@]+')
 
         if not (
             (email or mobile_number) 
