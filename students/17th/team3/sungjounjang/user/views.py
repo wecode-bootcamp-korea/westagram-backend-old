@@ -80,7 +80,7 @@ class LoginView(View):
 
             if account.password != password:
                 return JsonResponse({'message': 'INVALID_USER'}, status=401)
-        except KeyError:
+        except DoesNotExist:
             return JsonResponse({'message': 'INVALID_USER'}, status=401)
 
         return JsonResponse({'message': 'SUCCESS'}, status=200)
