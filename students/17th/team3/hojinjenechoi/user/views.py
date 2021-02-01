@@ -6,6 +6,9 @@ from django.http            import JsonResponse
 from user.models  import User
 
 class SignUpView(View):
+
+    MINIMUM_PASSWORD_LENGTH = 8
+
     def post(self, request):
         signup_data = json.loads(request.body)
 
@@ -19,7 +22,7 @@ class SignUpView(View):
             if User.objects.filter(nickname=signup_data['nickname']).exists():
                 return JsonResponse({'message':'NICKNAME_ALREADY_EXISTS'}, status=409)
 
-            if len(signup_data['password']) < 8:
+            if len(signup_data['password']) < MINIMUM_PASSWORD_LENGTH :
                 return JsonResponse({'message':'SHORT_PASSWORD'}, status=400)
 
             User.objects.create(
