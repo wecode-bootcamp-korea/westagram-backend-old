@@ -1,5 +1,6 @@
-import json
-import re
+import json, re
+
+from json.decoder       import JSONDecodeError
 
 from django.http        import JsonResponse
 from django.views       import View
@@ -9,16 +10,17 @@ from .models            import User
 
 class UserView(View):
     def post(self, request):
-        data            = json.loads(request.body)
-        email_valid     = "([0-9a-zA-Z_-]+)[@]{1}([0-9a-zA-Z_-]+)[.]{1}[a-zA-Z]{3}"
-        password_valid  = ".{8,}"
-        name_valid      = "[a-zA-z]"
-
         try:
+            data            = json.loads(request.body)
+            email_valid     = "([0-9a-zA-Z_-]+)[@]{1}([0-9a-zA-Z_-]+)[.]{1}[a-zA-Z]{3}"
+            password_valid  = ".{8,}"
+            name_valid      = "[a-zA-z]"
+            
             email           = data['email']
             password        = data['password']
             name            = data['name']
             phone_number    = data['phone_number']
+            
             if User.objects.filter(Q(email=email)|Q(name=name)|Q(phone_number=phone_number)).exists():
                 return JsonResponse({'message' : 'EXISTING_USER'}, status=409)
             if not re.search(email_valid, email):
@@ -39,3 +41,5 @@ class UserView(View):
 
         except KeyError:
             return JsonResponse({'message' : 'KEY_ERROR'}, status=400)
+        except JSONDecodeError:
+            return JsonResponse({'message' : 'NOTHING_INPUT'}, status=400)
