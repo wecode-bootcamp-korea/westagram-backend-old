@@ -12,8 +12,9 @@ class SignUpView(View):
     def post(self, request):
         try:
             data     = json.loads(request.body)
-            email, password = str(data['email']), str(data['password'])
-                
+            email    = str(data['email'])
+            password = str(data['password'])
+
             if "" in (email, password):
                 return JsonResponse({'message':'NO_VALUE_ERROR'}, status=400)
             
