@@ -10,12 +10,11 @@ from .models            import User
 
 class UserView(View):
     def post(self, request):
+        email_valid     = "([0-9a-zA-Z_-]+)[@]{1}([0-9a-zA-Z_-]+)[.]{1}[a-zA-Z]{3}"
+        password_valid  = ".{8,}"
+        name_valid      = "[a-zA-z]"
         try:
             data            = json.loads(request.body)
-            email_valid     = "([0-9a-zA-Z_-]+)[@]{1}([0-9a-zA-Z_-]+)[.]{1}[a-zA-Z]{3}"
-            password_valid  = ".{8,}"
-            name_valid      = "[a-zA-z]"
-            
             email           = data['email']
             password        = data['password']
             name            = data['name']
@@ -39,6 +38,25 @@ class UserView(View):
                     )
             return JsonResponse({'meassage' : 'SUCCESS'}, status=200)
 
+        except KeyError:
+            return JsonResponse({'message' : 'KEY_ERROR'}, status=400)
+        except JSONDecodeError:
+            return JsonResponse({'message' : 'NOTHING_INPUT'}, status=400)
+
+class SignInView(View):
+    def post(self, request):
+        try:
+            data        = json.loads(request.body)
+            email       = data['email']
+            password    = data['password']
+            users = User.objects.all()
+            
+            if User.objects.filter(email=email).exists():
+                user = User.objects.get(email=email)
+                if user.password == password:
+                    return JsonResponse({'message' : 'SUCCESS'}, status=200)
+            return JsonResponse({'message' : 'INVALID_USER'}, status=401)
+        
         except KeyError:
             return JsonResponse({'message' : 'KEY_ERROR'}, status=400)
         except JSONDecodeError:
