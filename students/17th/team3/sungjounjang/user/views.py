@@ -9,16 +9,6 @@ from .models import Accounts
 class AccountView(View):
     def post(self, request):
         data = json.loads(request.body)
-
-        # 필수사항 미입력시
-        try:
-            email        = data['email']
-            password     = data['password']
-            name         = data['name']
-            nickname     = data['nickname']
-            phone_number = data['phone_number']
-        except KeyError:
-            return JsonResponse({'message': 'KEY_ERROR'}, status=400)
         
         # email, password check
         if email.find('@') == -1 or email.find('.') == -1:
@@ -37,6 +27,16 @@ class AccountView(View):
             password     = password,
             phone_number = phone_number
         )
+
+        # 필수사항 미입력시
+        try:
+            email        = data['email']
+            password     = data['password']
+            name         = data['name']
+            nickname     = data['nickname']
+            phone_number = data['phone_number']
+        except KeyError:
+            return JsonResponse({'message': 'KEY_ERROR'}, status=400)
 
         return JsonResponse({'message': 'SUCCESS'}, status=200)
 
