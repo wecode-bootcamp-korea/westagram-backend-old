@@ -270,5 +270,5 @@ tags
 
 # End of https://www.toptal.com/developers/gitignore/api/macos,python,django,vscode,vim
 
-my_settings.py
+mysettings.py
 *.csv
