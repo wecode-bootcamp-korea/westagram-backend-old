@@ -22,10 +22,13 @@ class SignUpView(View):
             
             if not email_regex.match(email):
                 return JsonResponse({'message':'EMAIL_VALIDATION_ERROR'}, status=400)
-
+            
+            if User.objects.filter(email=email).exists():
+                return JsonResponse({'message':'EMAIL_EXISTS'}, status=400)
+            
             if len(password) < PASSWORD_MINIMUM_LENGTH:
                 return JsonResponse({'message':'PASSWORD_VALIDATION_ERROR'}, status=400)
-
+     
             encoded_password = password.encode('utf-8')
             salt = bcrypt.gensalt()
             hashed_password = bcrypt.hashpw(encoded_password, salt)
