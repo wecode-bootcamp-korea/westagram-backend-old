@@ -5,7 +5,7 @@ class User(models.Model):
     mobile_number = models.CharField(max_length=100, unique=True, null=True)
     full_name     = models.CharField(max_length=100)
     username      = models.CharField(max_length=100, unique=True)
-    password      = models.CharField(max_length=100)
+    password      = models.CharField(max_length=300)
 
     class Meta:
         db_table = 'users'
