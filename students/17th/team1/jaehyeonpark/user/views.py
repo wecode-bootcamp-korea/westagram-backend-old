@@ -11,9 +11,11 @@ PASSWORD_MINIMUM_LENGTH = 8
 class SignUpView(View):
     def post(self, request):
         try:
-            data     = json.loads(request.body)
-            email    = str(data['email'])
-            password = str(data['password'])
+            data         = json.loads(request.body)
+            email        = str(data['email'])
+            password     = str(data['password'])
+            phone_number = data['phone_number']
+            account      = data['account']
 
             if "" in (email, password):
                 return JsonResponse({'message':'NO_VALUE_ERROR'}, status=400)
@@ -29,12 +31,10 @@ class SignUpView(View):
             if len(password) < PASSWORD_MINIMUM_LENGTH:
                 return JsonResponse({'message':'PASSWORD_VALIDATION_ERROR'}, status=400)
      
-            encoded_password = password.encode('utf-8')
-            salt = bcrypt.gensalt()
-            hashed_password = bcrypt.hashpw(encoded_password, salt)
+            hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
             encrypted_password = hashed_password.decode('utf-8')
             
-            User.objects.create(email=email, password=encrypted_password)
+            User.objects.create(email=email, password=encrypted_password, phone_number=phone_number, account=account)
 
         except json.decoder.JSONDecodeError:
             return JsonResponse({'message':'JSON_DECODE_ERROR'}, status=400)
