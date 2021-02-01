@@ -25,11 +25,16 @@ class SignupView(View):
             phone    = data.get('phone', None)
             password = data.get('password', None)
 
+            # validation check
             if email: 
                 validate_email(email)
 
-            if password and name and phone:
+            if password:
                 validate_password(password)
+            
+            # KEY_ERROR check
+            if password and email and name and phone:
+                # unique check
                 user = User.objects.filter(Q(email=email) | Q(name=name) | Q(phone=phone)) 
                 if not user:
                     User.objects.create(
