@@ -31,7 +31,7 @@ class SignUpView(View):
             hashed_password = bcrypt.hashpw(encoded_password, salt)
             encrypted_password = hashed_password.decode('utf-8')
             
-            user = User.objects.create(email=email, password=encrypted_password)
+            User.objects.create(email=email, password=encrypted_password)
 
         except json.decoder.JSONDecodeError:
             return JsonResponse({'message':'JSON_DECODE_ERROR'}, status=400)
