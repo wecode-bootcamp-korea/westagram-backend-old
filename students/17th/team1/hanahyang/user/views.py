@@ -19,6 +19,11 @@ def validate_password(password):
     if len(password) < MINIMUM_PASSWORD_LENGTH:
         raise ValidationError('Password is too short')
 
+def validate_phone(phone):
+    pattern = re.compile('^[0]\d{2}-?\d{3,4}-?\d{4}$')
+    if not pattern.match(phone):
+        raise ValidationError('Invalid Phone number Format')
+
 class SignupView(View):
     def post(self, request):
         try:
