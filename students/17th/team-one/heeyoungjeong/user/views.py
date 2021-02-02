@@ -2,6 +2,7 @@ import json
 from json.decoder import JSONDecodeError
 import re
 
+from django.db.models import Q
 from django.http import JsonResponse, HttpResponse
 from django.views import View
 
@@ -54,17 +55,11 @@ class SignInView(View):
         try:
             data = json.loads(request.body)
 
-            check_lst_id = ['user_name', 'email', 'phone_number']
-            check = check_lst_id[:]
-            login_id = ''
-            for key in check_lst_id:
-                if key in data.keys():
-                    login_id = key
-                    break
-                elif not check:
-                    return JsonResponse({'message': 'KEY_ERROR'}, status=400)
-                else:
-                    check.remove(key)
+            name = data.get('name', None)
+            user_name = data.get('user_name', None)
+            email = data.get('email', None)
+            password = data.get('password', None)
+            phone_number = data.get('phone_number', None)
 
             check_lst_pw = 'password'
             if check_lst_pw not in data.keys():
@@ -74,10 +69,10 @@ class SignInView(View):
                 if not value:
                     return JsonResponse({'message': 'KEY_ERROR'}, status=400)
 
-            user = User.objects.filter(user_name=data[login_id]) | User.objects.filter(email=data[login_id]) | User.objects.filter(phone_number=data[login_id])
+            user = User.objects.filter(Q(user_name=user_name) | Q(email=email) | Q(phone_number=phone_number))
             user = user.first()
             if user:
-                if (data[login_id] == user.user_name or data[login_id] == user.email or data[login_id] == user.phone_number) and data['password'] == user.password:
+                if (user_name == user.user_name or email == user.email or phone_number == user.phone_number) and password == user.password:
                     return JsonResponse({'message': 'SUCCESS'}, status=200)
 
                 else:
@@ -88,3 +83,4 @@ class SignInView(View):
 
         except JSONDecodeError:
             return JsonResponse({'message':'The request is not valid'}, status=400)
+
