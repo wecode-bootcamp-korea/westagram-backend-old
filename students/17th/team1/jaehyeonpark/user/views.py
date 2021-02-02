@@ -13,10 +13,10 @@ class SignUpView(View):
     def post(self, request):
         try:
             data         = json.loads(request.body)
-            email        = str(data['email'])
-            phone_number = str(data['phone_number'])
-            account      = str(data['account'])
-            password     = str(data['password'])
+            email        = data['email']
+            phone_number = data['phone_number']
+            account      = data['account']
+            password     = data['password']
 
             if "" in (email, password):
                 return JsonResponse({'message':'NO_VALUE_ERROR'}, status=400)
@@ -61,19 +61,19 @@ class SignInView(View):
     def post(self, request):
         try:
             data         = json.loads(request.body)
-            email        = str(data.get('email'))
-            phone_number = str(data.get('phone_number'))
-            account      = str(data.get('account'))
+            email        = data.get('email')
+            phone_number = data.get('phone_number')
+            account      = data.get('account')
+            password     = data['password']
             user_account = [email, phone_number, account]
             
-            valid_user_account_number = len(list(filter(lambda x:x != "None", user_account)))
+            valid_user_account_number = len(list(filter(lambda x:x, user_account)))
 
             if valid_user_account_number > 1:
                 return JsonResponse({'message':'TOO_MANY_USER_INFO'}, status=400)
-            if valid_user_account_number == 0:
-                return JsonResponse({'message':'KEY_ERROR'}, status=400)
 
-            password     = str(data['password'])
+            if email and account and phone == None:
+                return JsonResponse({'message':'KEY_ERROR'}, status=400)
             
             filtered_user_object = User.objects.filter(Q(email=email)|Q(phone_number=phone_number)|Q(account=account))
 
