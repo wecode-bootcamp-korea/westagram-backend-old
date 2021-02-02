@@ -12,7 +12,7 @@ email_regex              = re.compile(r'.*[a-zA-Z0-9+-_.]+@[a-zA-Z0-9-]+\.[a-zA-
 password_regex           = re.compile(r'^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$')
 phone_regex              = re.compile(r'[0-9]{3}-[0-9]{4}-[0-9]{4}')
 
-class SignInView(View):
+class SignUpView(View):
     def post(self, request):
         data = json.loads(request.body)
 
