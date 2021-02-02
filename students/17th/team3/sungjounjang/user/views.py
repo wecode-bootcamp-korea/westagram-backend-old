@@ -44,11 +44,10 @@ class AccountView(View):
                 phone_number = phone_number
             )
 
+            return JsonResponse({'message': 'SUCCESS'}, status=200)
+
         except KeyError:
             return JsonResponse({'message': 'KEY_ERROR'}, status=400)
-
-        return JsonResponse({'message': 'SUCCESS'}, status=200)
-
 
 class LoginView(View):
     def post(self, request):
@@ -80,7 +79,7 @@ class LoginView(View):
             
             access_token = jwt.encode({'email' : account.email}, my_settings.SECRET, algorithm = my_settings.ALGORITHM)
 
+            return JsonResponse({'message': 'SUCCESS', 'token': access_token}, status=200)
+            
         except KeyError:
             return JsonResponse({'message': 'KEY_ERROR'}, status=400)
-
-        return JsonResponse({'message': 'SUCCESS', 'token': access_token}, status=200)
