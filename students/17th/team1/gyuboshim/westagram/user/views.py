@@ -14,7 +14,7 @@ class UserView(View):
 
             if user_data['email_adress'] and user_data['password']:
                 
-                if '@' and '.' not in user_data['email_adress']:
+                if '@' or '.' not in user_data['email_adress']:
                     return JsonResponse({'message':'@ OR . IS MISSING IN E-MAIL ADRESS'})
 
                 if len(user_data['password']) < 8:
@@ -35,3 +35,4 @@ class UserView(View):
         
         except:
             return JsonResponse({'message': 'INVALID_KEYS'}, status = 400)
+
