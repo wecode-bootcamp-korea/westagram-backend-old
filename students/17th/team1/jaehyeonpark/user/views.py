@@ -65,9 +65,13 @@ class SignInView(View):
             phone_number = str(data.get('phone_number'))
             account      = str(data.get('account'))
             user_account = [email, phone_number, account]
+            
+            valid_user_account_number = len(list(filter(lambda x:x != "None", user_account)))
 
-            if len(list(filter(lambda x:x != "None", user_account))) > 1:
-                return JsonResponse({'message':'TOO_MANY_USER_INFO'}, status=200)
+            if valid_user_account_number > 1:
+                return JsonResponse({'message':'TOO_MANY_USER_INFO'}, status=400)
+            if valid_user_account_number == 0:
+                return JsonResponse({'message':'KEY_ERROR'}, status=400)
 
             password     = str(data['password'])
             
@@ -77,7 +81,7 @@ class SignInView(View):
                 if bcrypt.checkpw(password.encode('utf-8'), filtered_user_object[0].password.encode('utf-8')):
                     return JsonResponse({'message':'SUCCESS'}, status=200)
                 else:
-                    return JsonResponse({'message':'INVALID_PASSWORD'}, status=200)
+                    return JsonResponse({'message':'INVALID_PASSWORD'}, status=400)
 
             return JsonResponse({'message':'INVALID_USER'}, status=401)
 
