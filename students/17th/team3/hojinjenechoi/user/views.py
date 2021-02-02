@@ -53,6 +53,21 @@ class SignUpView(View):
 class SignInView(View):
     def post(self, request):
         data = json.loads(request.body)
+
+        email    = data.get('email', None)
+        phone    = data.get('phone', None)
+        nickname = data.get('nickname', None)
+        password = data.get('password', None)
+
+        try: 
+            if User.objects.filter(Q(email=email) | Q(phone=phone)).exists():
+                user = User.objects.get(Q(email=email) | Q(phone=phone))
+
+                if bcrypt.checkpw(password.encode('utf-8'), user.password.encode('utf-8')):
+                    token = jwt.encode({'email' : data['email']}, my_settings.SECRET_KEY, algorithm = 'HS256')                     
+                    return JsonResponse({'message': 'SUCCESS','token' : token }, status=200)    
+                    
+                return JsonResponse({'MESSAGE':'INVALID_USER'},status=401)    
             
-        # except KeyError: 
-        #     return JsonResponse({'message':'KEY_ERROR'}, status=400)
+        except KeyError: 
+            return JsonResponse({'message':'KEY_ERROR'}, status=400)
