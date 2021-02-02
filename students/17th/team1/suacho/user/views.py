@@ -92,7 +92,7 @@ class LogInView(View):
             )
 
             if user.password != password:
-                return JsonResponse({'message': 'INVALID_USER'}, status=401)
+                return JsonResponse({'message': 'INVALID_PASSWORD'}, status=401)
 
             return JsonResponse({'message': 'SUCCESS'}, status=200)
 
