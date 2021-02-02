@@ -38,18 +38,18 @@ class UserView(View):
                     status=400
                 )
             
-            if mobile_number is not None and User.objects.filter(mobile_number=data['mobile_number']).exists():
+            if mobile_number is not None and User.objects.filter(mobile_number=mobile_number).exists():
                 return JsonResponse(
                     {'message': 'NUMBER_ALREADY_EXISTS'},
                     status=400
                 )
 
-            if email is not None and User.objects.filter(email=data['email']).exists():
+            if email is not None and User.objects.filter(email=email).exists():
                 return JsonResponse(
                     {'message': 'EMAIL_ALREADY_EXISTS'},
                     status=400
         
-            if User.objects.filter(username=data['username']).exists():
+            if User.objects.filter(username=username).exists():
                 return JsonResponse(
                     {'message': 'USERNAME_ALREADY_EXISTS'},
                     status=400
