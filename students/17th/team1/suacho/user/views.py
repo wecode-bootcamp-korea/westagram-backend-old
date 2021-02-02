@@ -21,7 +21,9 @@ class SingUpView(View):
             username      = data.get('username', None)
             password      = data.get('password', None)
 
-            email_pattern = re.compile('[^@]+@[^@]+\.[^@]+')
+            email_pattern         = re.compile('[^@]+@[^@]+\.[^@]+')
+            mobile_number_pattern = re.compile('^[0-9]{1,15}$')
+            username_pattern      = re.compile('^(?=.*[a-z])[a-z0-9_.]+$')
 
             if not (
                 (email or mobile_number) 
@@ -35,24 +37,32 @@ class SingUpView(View):
             if email:
                 if not re.match(email_pattern, email):
                     return JsonResponse({'message':'EMAIL_VALIDATION_ERROR'}, status=400)
+            
+            if mobile_number:
+                if not re.match(mobile_number_pattern, mobile_number):
+                    return JsonResponse({'message':'MOBILE_NUMBER_VALIDATION_ERROR'}, status=400)
+
+            if not re.match(username_pattern, username):
+                return JsonResponse({'message':'USERNAME_VALIDATION_ERROR'}, status=400)
 
             if len(data['password']) < PASSWORD_MINIMUM_LENGTH:
                 return JsonResponse({'message':'PASSWORD_VALIDATION_ERROR'}, status=400)
 
             if User.objects.filter(
-                Q(email         = data.get('email', None)) |
-                Q(mobile_number = data.get('mobile_number', None)) |
+                Q(email         = data.get('email', 1)) |
+                Q(mobile_number = data.get('mobile_number', 1)) |
                 Q(username      = data['username'])
             ).exists():
                 return JsonResponse({'message':'ALREADY_EXISTS'}, status=409)
-
+            
             User.objects.create(
-                email         = data.get('email', None),
-                mobile_number = data.get('mobile_number', None),
-                full_name     = data['full_name'],
-                username      = data['username'],
-                password      = data['password']
+                email         = email,
+                mobile_number = mobile_number,
+                full_name     = full_name,
+                username      = username,
+                password      = password
             )
+            return JsonResponse({'message':'SUCCESS'}, status=201)
+        
         except JSONDecodeError:
             return JsonResponse({'message':'JSON_DECODE_ERROR'}, status=400)
-        return JsonResponse({'message':'SUCCESS'}, status=201)
