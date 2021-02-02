@@ -1,4 +1,4 @@
-import json, re, traceback, bcrypt
+import json, re, traceback, bcrypt, jwt
 
 from django.views           import View
 from django.http            import JsonResponse
@@ -6,6 +6,7 @@ from django.db.models       import Q
 from django.core.exceptions import ValidationError
 
 from .models                import User
+from my_settings            import SECRET
 
 MINIMUM_PASSWORD_LENGTH = 8
 
@@ -57,4 +58,29 @@ class SignupView(View):
         users = list(User.objects.values())
 
         return JsonResponse({'data': users}, status=200)
+
+class LoginView(View):
+    def post(self, request):
+        data     = json.loads(request.body)
+        email    = data.get('email', None)
+        name     = data.get('name', None)
+        phone    = data.get('phone', None)
+        password = data.get('password', None)
+        
+        # key error check
+        if password and (email or name or phone):
+            
+            # valid user check  
+            if User.objects.filter(Q(email=email) | Q(name=name) | Q(phone=phone)).exists():
+                user = User.objects.get(Q(email=email) | Q(name=name) | Q(phone=phone))
+
+                # password check
+                if bcrypt.checkpw(password.encode('utf-8'), user.password.encode('utf-8')):
+                    # JSON Web Token
+                    token = jwt.encode({'user_id': user.id}, SECRET['secret'], algorithm='HS256')
+                    return JsonResponse({'message': 'SUCCESS', 'access_token': token}, status=200) 
+                
+            return JsonResponse({'message': 'INVALID_ERROR'}, status=401)
+
+        return JsonResponse({'message': 'KEY_ERROR'}, status=400)        
 
