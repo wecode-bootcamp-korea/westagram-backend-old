@@ -10,7 +10,8 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 
-from pathlib import Path
+from pathlib    import Path
+from .          import my_settings
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,6 +21,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
+SECRET_KEY = my_settings.SECRET
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -74,7 +76,7 @@ WSGI_APPLICATION = 'westagram.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
-
+DATABASES = my_settings.DATABASES
 
 # Password validation
 # https://docs.djangoproject.com/
@@ -144,6 +146,3 @@ CORS_ALLOW_HEADERS = (
 		#만약 허용해야할 추가적인 헤더키가 있다면?(사용자정의 키) 여기에 추가하면 됩니다.
 )
 
-from . import my_settings
-DATABASES = my_settings.DATABASES
-SECRET_KEY = my_settings.SECRET
