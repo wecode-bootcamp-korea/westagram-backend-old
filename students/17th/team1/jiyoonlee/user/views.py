@@ -48,8 +48,7 @@ class UserView(View):
                 return JsonResponse(
                     {'message': 'EMAIL_ALREADY_EXISTS'},
                     status=400
-                )
-
+        
             if User.objects.filter(username=data['username']).exists():
                 return JsonResponse(
                     {'message': 'USERNAME_ALREADY_EXISTS'},
@@ -58,11 +57,11 @@ class UserView(View):
 
 
             User.objects.create(
-                mobile_number = data['mobile_number'],
-                email = data['email'],
-                password = data['password'],
-                full_name= data['full_name'],
-                username= data['username']
+                mobile_number = mobile_number,
+                email = email,
+                password = password,
+                full_name= full_name,
+                username= username
             )
 
 
@@ -77,3 +76,5 @@ class UserView(View):
                 {'message': 'KEY_ERROR'},
                 status=400
             )
+
+
