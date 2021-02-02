@@ -11,6 +11,7 @@ import jwt
 from .models     import Accounts
 import my_settings
 
+MINIMUM_PASSWORD_LEN = 8
 
 class AccountView(View):
     def post(self, request):
@@ -27,7 +28,7 @@ class AccountView(View):
             # email, password check
             if email.find('@') == -1 or email.find('.') == -1:
                 return JsonResponse({'message': 'EMAIL_VALIDATION'}, status=400)
-            if len(password) < 8:
+            if len(password) < MINIMUM_PASSWORD_LEN:
                 return JsonResponse({'message': 'PASSWORD_VALIDATION'}, status=400)
             else:
                 password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
@@ -55,16 +56,18 @@ class LoginView(View):
         access_token = data.get('token')
 
         if access_token:
-            payload = jwt.decode(access_token, my_settings.SECRET, my_settings.ALGORITHM)
+            payload = jwt.decode(access_token, my_settings.SECRET, algorithms=my_settings.ALGORITHM)
             if Accounts.objects.filter(email=payload['email']):
                 # print('-------------------------- token!!')
-                return JsonResponse({'message': 'SUCCESS', 'token': access_token}, status=200)
+                return JsonResponse({'message': 'SUCCESS', 'token': access_token, 'info': payload}, status=200)
 
         try:
             email        = data.get('email')
             nickname     = data.get('nickname')
             phone_number = data.get('phone_number')
-            password     = data['password']
+            password    = data['password']
+
+            # password     = data['password']
 
             # password, login_id check
             if email:
@@ -77,9 +80,9 @@ class LoginView(View):
             if not bcrypt.checkpw(password.encode('utf-8'), account.password):
                 return JsonResponse({'message': 'INVALID_USER'}, status=401)
             
-            access_token = jwt.encode({'email' : account.email}, my_settings.SECRET, algorithm = my_settings.ALGORITHM)
+            access_token = jwt.encode({'email' : account.email}, my_settings.SECRET, algorithm=my_settings.ALGORITHM)
 
             return JsonResponse({'message': 'SUCCESS', 'token': access_token}, status=200)
-            
+
         except KeyError:
             return JsonResponse({'message': 'KEY_ERROR'}, status=400)
