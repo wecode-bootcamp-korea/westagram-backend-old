@@ -12,6 +12,7 @@ class PostingView(View):
 
         response_posting = [
             {
+                # 'account'  : postings[i].account,
                 'account'  : postings[i].account.nickname,
                 # 'account'  : 'ㅋㅋㅋ',
                 'image_url': postings[i].image_url,
