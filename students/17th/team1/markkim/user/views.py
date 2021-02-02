@@ -15,7 +15,7 @@ class UserView(View):
         phone_number = data['phone_number']
         username     = data['username']
 
-        if 'email' not in data.keys() or 'password' not in data.keys():
+        if email == '' or password == '':
             return JsonResponse({'message': 'KEY_ERROR'}, status=400)
 
         if '@' not in email or '.' not in email:
