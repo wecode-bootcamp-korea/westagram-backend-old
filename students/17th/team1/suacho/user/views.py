@@ -79,16 +79,16 @@ class LogInView(View):
                 return JsonResponse({'message': 'KEY_ERROR'}, status=400)
 
             if not User.objects.filter(
-                    Q(email=login_id) |
-                    Q(mobile_number=login_id) |
-                    Q(username=login_id)
+                    Q(email         = login_id) |
+                    Q(mobile_number = login_id) |
+                    Q(username      = login_id)
             ).exists():
                 return JsonResponse({'message': 'INVALID_USER'}, status=401)
 
             user = User.objects.get(
-                    Q(email=login_id) |
-                    Q(mobile_number=login_id) |
-                    Q(username=login_id)
+                    Q(email         = login_id) |
+                    Q(mobile_number = login_id) |
+                    Q(username      = login_id)
             )
 
             if user.password != password:
