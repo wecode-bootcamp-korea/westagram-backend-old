@@ -1,11 +1,12 @@
 import json, bcrypt, jwt, re
 
-from django.http     import JsonResponse
-from django.views    import View
-from django.db.utils import DataError, IntegrityError
+from django.http      import JsonResponse
+from django.views     import View
+from django.db.utils  import DataError, IntegrityError
 from django.db.models import Q
 
-from user.models     import User
+from user.models      import User
+from my_settings      import SECRET
 
 PASSWORD_MINIMUM_LENGTH = 8
 
@@ -75,11 +76,13 @@ class SignInView(View):
             if email and account and phone == None:
                 return JsonResponse({'message':'KEY_ERROR'}, status=400)
             
-            filtered_user_object = User.objects.filter(Q(email=email)|Q(phone_number=phone_number)|Q(account=account))
+            if User.objects.filter(Q(email=email)|Q(phone_number=phone_number)|Q(account=account)).exists():
+                user = User.objects.get(Q(email=email)|Q(phone_number=phone_number)|Q(account=account))
 
-            if filtered_user_object.exists():
-                if bcrypt.checkpw(password.encode('utf-8'), filtered_user_object[0].password.encode('utf-8')):
-                    return JsonResponse({'message':'SUCCESS'}, status=200)
+                if bcrypt.checkpw(password.encode('utf-8'), user.password.encode('utf-8')):
+                    user_id = user.id
+                    access_token = jwt.encode({'user_id': user_id}, SECRET, algorithm='HS256')
+                    return JsonResponse({'message':'SUCCESS', 'access_token':access_token}, status=200)
                 else:
                     return JsonResponse({'message':'INVALID_PASSWORD'}, status=400)
 
