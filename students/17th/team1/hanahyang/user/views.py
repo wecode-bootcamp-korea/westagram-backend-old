@@ -81,6 +81,7 @@ class LoginView(View):
                 token = jwt.encode({'user_id': user.id}, SECRET['secret'], algorithm='HS256')
                 return JsonResponse({'message': 'SUCCESS', 'access_token': token}, status=200) 
             
-        return JsonResponse({'message': 'INVALID_ERROR'}, status=401)
+            return JsonResponse({'message': 'INVALID_PASSWORD'}, status=401)
+        return JsonResponse({'message': 'INVALID_USER'}, status=401)
 
 
