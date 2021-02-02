@@ -78,8 +78,7 @@ WSGI_APPLICATION = 'westagram.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 
-DATABASES = {
-}
+DATABASES = my_settings.DATABASES
 
 
 # Password validation
