@@ -5,6 +5,8 @@ from django.views import View
 
 from .models import User
 
+MININUM_PASSWORD_LENGTH = 8
+
 
 class UserView(View):
     def post(self, request):
@@ -19,38 +21,38 @@ class UserView(View):
 
             if mobile_number is None and email is None:
                 return JsonResponse(
-                    {'message': '휴대폰 번호나 이메일을 입력하세요.'}, 
+                    {'message': 'INVALID_INPUT'}, 
                     status=400
                 )
 
             if email is not None:
                 if '@' not in email or '.' not in email:
                     return JsonResponse(
-                        {'message': '이메일 형식을 확인하세요.'}, 
+                        {'message': 'INVALID_EMAIL'}, 
                         status=400
                     )
             
-            if len(password) < 8:
+            if len(password) < MININUM_PASSWORD_LENGTH:
                 return JsonResponse(
-                    {'message': '최소 8자 이상으로 구성된 비밀번호를 생성해주세요.'},
+                    {'message': 'INVALID_PASSWORD'},
                     status=400
                 )
             
             if mobile_number is not None and User.objects.filter(mobile_number=data['mobile_number']).exists():
                 return JsonResponse(
-                    {'message': '이미 등록된 번호입니다.'},
+                    {'message': 'NUMBER_ALREADY_EXISTS'},
                     status=400
                 )
 
             if email is not None and User.objects.filter(email=data['email']).exists():
                 return JsonResponse(
-                    {'message': '이미 등록된 이메일입니다.'},
+                    {'message': 'EMAIL_ALREADY_EXISTS'},
                     status=400
                 )
 
             if User.objects.filter(username=data['username']).exists():
                 return JsonResponse(
-                    {'message': '이미 사용중인 username입니다.'},
+                    {'message': 'USERNAME_ALREADY_EXISTS'},
                     status=400
                 )
 
@@ -65,7 +67,7 @@ class UserView(View):
 
 
             return JsonResponse(
-                {'message': '회원가입에 성공하였습니다'},
+                {'message': 'SUCCESS'},
                 status=200
             )
 
