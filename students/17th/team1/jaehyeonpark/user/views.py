@@ -27,6 +27,12 @@ class SignUpView(View):
             
             if User.objects.filter(email=email).exists():
                 return JsonResponse({'message':'EMAIL_EXISTS'}, status=400)
+
+            if User.objects.filter(phone_number=phone_number).exists():
+                return JsonResponse({'message':'PHONE_NUMBER_EXISTS'}, status=400)
+
+            if User.objects.filter(account=account).exists():
+                return JsonResponse({'message':'ACCOUNT_EXISTS'}, status=400)
             
             if len(password) < PASSWORD_MINIMUM_LENGTH:
                 return JsonResponse({'message':'PASSWORD_VALIDATION_ERROR'}, status=400)
