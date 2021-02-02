@@ -24,7 +24,7 @@ class SignUpView(View):
             if '@' not in email or '.' not in email:
               return JsonResponse({'message':'INVALID_EMAIL'}, status=400)
 
-            if User.objects.filter(email=email).exists() or User.objects.filter(phone=phone).exists():
+            if User.objects.filter(Q(email=email) | Q(phone=phone)).exists():
                 return JsonResponse({'message':'USER_ALREADY_EXISTS'}, status=409)
             
             if User.objects.filter(nickname=nickname).exists():
