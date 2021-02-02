@@ -1,4 +1,5 @@
 import json
+import bcrypt, jwt
 
 from django.http  import HttpResponse, JsonResponse
 from django.views import View
@@ -6,8 +7,9 @@ from django.views import View
 from .models      import Userinfo
 
 # 회원가입
+MINIMUM_PASSWORD_LENGTH = 8
 class UserSignUpView(View):
-    MINIMUM_PASSWORD_LENGTH = 8
+    #MINIMUM_PASSWORD_LENGTH = 8
     def post(self, request):
         data = json.loads(request.body)
                 
@@ -33,7 +35,7 @@ class UserSignUpView(View):
                     name         = data['name'],
                     phone_number = data['phone_number'],
                     email        = data['email'],
-                    password     = data['password']
+                    password     = bcrypt.hashpw( data['password'].encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
                     )
             return JsonResponse({'MESSAGE': 'SUCCESS'}, status = 200)
             
@@ -44,23 +46,21 @@ class UserSignUpView(View):
 class UserlonginView(View):
     def post(self, request):
         data = json.loads(request.body)
+        try:
 
-        name         = data.get('name', None),
-        phone_number = data.get('phone_number', None),
-        email        = data.get('email', None),
-        password     = data.get('password', None)
+            name         = data.get('name', None),
+            phone_number = data.get('phone_number', None),
+            email        = data.get('email', None),
+            password     = bcrypt.hashpw(data.get('password', None).encode('utf-8'), bcrypt.gensalt()).encode('utf-8')
      
-        if Userinfo.objects.filter(name=name | Q(email = email) | Q(phone_number = phone_number)).exists():
-            if Userinfo.objects.filter(password = password):
-                return JsonResponse({"MESSAGE" : "SUCCESS"}, status = 200)
+            if Userinfo.objects.filter(name=name | Q(email = email) | Q(phone_number = phone_number)).exists():
+                user = Userinfo.objects.get(name = name)
+                if Userinfo.objects.filter(user.password == password):
+                    return JsonResponse({"MESSAGE" : "SUCCESS"}, status = 200)
+                else:
+                    return JsonResponse({"MESSAGE" : "CHECK_PASSWORD"})
             else:
-                return JsonResponse({"MESSAGE" : "CHECK_PASSWORD"})
-        else:
-            return JsonResponse({"MESSAGE" : "INVALID_USER"}, status = 401)
-
-
-
-
-
-
+                return JsonResponse({"MESSAGE" : "INVALID_USER"}, status = 401)
+        except KeyError:
+            return JsonResponse({"MESSAGE": "SUCCESS"}, status = 401)
 
