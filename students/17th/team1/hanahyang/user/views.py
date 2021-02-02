@@ -29,25 +29,25 @@ class SignupView(View):
             password = data.get('password', None)
 
             # KEY_ERROR check
-            if password and email and name and phone:
+            if not(password and email and name and phone):
+                return JsonResponse({'message': 'KEY_ERROR'}, status=400)
 
-                # validation check
-                validate_email(email)
-                validate_password(password)
-                
-                # unique check
-                user = User.objects.filter(Q(email=email) | Q(name=name) | Q(phone=phone)) 
-                if not user:
-                    User.objects.create(
-                        email    = email,
-                        name     = name,
-                        phone    = phone,
-                        password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
-                    )
-                    return JsonResponse({'message': 'SUCCESS'}, status=200)
-                return JsonResponse({'message': 'USER_ALREADY_EXISTS'}, status=409)
+            # validation check
+            validate_email(email)
+            validate_password(password)
+            
+            # unique check
+            user = User.objects.filter(Q(email=email) | Q(name=name) | Q(phone=phone)) 
+            if not user:
+                User.objects.create(
+                    email    = email,
+                    name     = name,
+                    phone    = phone,
+                    password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+                )
+                return JsonResponse({'message': 'SUCCESS'}, status=200)
+            return JsonResponse({'message': 'USER_ALREADY_EXISTS'}, status=409)
 
-            return JsonResponse({'message': 'KEY_ERROR'}, status=400)
 
         except ValidationError as e:    
             trace_back = traceback.format_exc()
@@ -68,19 +68,19 @@ class LoginView(View):
         password = data.get('password', None)
         
         # key error check
-        if password and (email or name or phone):
+        if not (password and (email or name or phone)):
+            return JsonResponse({'message': 'KEY_ERROR'}, status=400)        
             
-            # valid user check  
-            if User.objects.filter(Q(email=email) | Q(name=name) | Q(phone=phone)).exists():
-                user = User.objects.get(Q(email=email) | Q(name=name) | Q(phone=phone))
+        # valid user check  
+        if User.objects.filter(Q(email=email) | Q(name=name) | Q(phone=phone)).exists():
+            user = User.objects.get(Q(email=email) | Q(name=name) | Q(phone=phone))
 
-                # password check
-                if bcrypt.checkpw(password.encode('utf-8'), user.password.encode('utf-8')):
-                    # JSON Web Token
-                    token = jwt.encode({'user_id': user.id}, SECRET['secret'], algorithm='HS256')
-                    return JsonResponse({'message': 'SUCCESS', 'access_token': token}, status=200) 
-                
-            return JsonResponse({'message': 'INVALID_ERROR'}, status=401)
+            # password check
+            if bcrypt.checkpw(password.encode('utf-8'), user.password.encode('utf-8')):
+                # JSON Web Token
+                token = jwt.encode({'user_id': user.id}, SECRET['secret'], algorithm='HS256')
+                return JsonResponse({'message': 'SUCCESS', 'access_token': token}, status=200) 
+            
+        return JsonResponse({'message': 'INVALID_ERROR'}, status=401)
 
-        return JsonResponse({'message': 'KEY_ERROR'}, status=400)        
 
