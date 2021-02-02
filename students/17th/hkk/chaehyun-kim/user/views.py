@@ -10,9 +10,9 @@ from .models            import User
 
 class UserView(View):
     def post(self, request):
-        email_valid     = "([0-9a-zA-Z_-]+)[@]{1}([0-9a-zA-Z_-]+)[.]{1}[a-zA-Z]{3}"
+        email_valid     = "[0-9a-zA-Z_-]+[@]{1}[0-9a-zA-Z_-]+[.]{1}[a-zA-Z]+"
         password_valid  = ".{8,}"
-        name_valid      = "[a-zA-z]"
+        name_valid      = "^(?=.*[a-z])[0-9a-zA-Z]+"
         try:
             data            = json.loads(request.body)
             email           = data['email']
