@@ -3,6 +3,7 @@ import bcrypt, jwt
 
 from django.http  import HttpResponse, JsonResponse
 from django.views import View
+from django.db.models  import Q
 
 from .models      import Userinfo
 
@@ -51,16 +52,17 @@ class UserlonginView(View):
             name         = data.get('name', None),
             phone_number = data.get('phone_number', None),
             email        = data.get('email', None),
-            password     = bcrypt.hashpw(data.get('password', None).encode('utf-8'), bcrypt.gensalt()).encode('utf-8')
      
-            if Userinfo.objects.filter(name=name | Q(email = email) | Q(phone_number = phone_number)).exists():
-                user = Userinfo.objects.get(name = name)
-                if Userinfo.objects.filter(user.password == password):
-                    return JsonResponse({"MESSAGE" : "SUCCESS"}, status = 200)
+            if Userinfo.objects.filter(Q(name = name) | Q(email = email) | Q(phone_number = phone_number)).exists():
+                user = Userinfo.objects.get(Q(name = name)|Q(email = email) | Q(phone_number = phone_number))
+                if bcrypt.checkpw(data['password'].encode('utf-8'), user.password.encode('utf-8')) ==True:
+                    access_token = jwt.encode({'id' : user.id}, 'secret', algorithm='HS256')
+                    return JsonResponse({"TOKEN" : access_token.decode('utf-8')}, status = 200)
                 else:
-                    return JsonResponse({"MESSAGE" : "CHECK_PASSWORD"})
+                    return JsonResponse({"MESSAGE" : "CHECK_PASSWORD"}, status = 401)
             else:
-                return JsonResponse({"MESSAGE" : "INVALID_USER"}, status = 401)
+                return JsonResponse({"MESSAGE" : "DON'T_EXIST_ID"}, status = 401)
+            return JsonResponse({"MESSAGE": "SUCCESS"}, status = 200)
         except KeyError:
-            return JsonResponse({"MESSAGE": "SUCCESS"}, status = 401)
+            return JsonResponse({"MESSAGE": "INVALID_USER"}, status = 401)
 
