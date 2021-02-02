@@ -73,7 +73,7 @@ class SignInView(View):
             if valid_user_account_number > 1:
                 return JsonResponse({'message':'TOO_MANY_USER_INFO'}, status=400)
 
-            if email and account and phone == None:
+            if (email and account and phone_number) == None:
                 return JsonResponse({'message':'KEY_ERROR'}, status=400)
             
             if User.objects.filter(Q(email=email)|Q(phone_number=phone_number)|Q(account=account)).exists():
