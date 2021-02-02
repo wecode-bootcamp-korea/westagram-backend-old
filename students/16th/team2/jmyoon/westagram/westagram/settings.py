@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'corsheaders',
     'user',
+    'post',
 ]
 
 MIDDLEWARE = [
@@ -86,7 +87,7 @@ WSGI_APPLICATION = 'westagram.wsgi.application'
 # }
 
 DATABASES  = my_settings.DATABASES
-SECRET_KEY = my_settings.SECRET
+SECRET_KEY = my_settings.SECRET_KEY
     
 
 
