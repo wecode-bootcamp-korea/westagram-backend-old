@@ -7,10 +7,9 @@ from .models      import Userinfo
 
 # 회원가입
 class UserSignUpView(View):
-    
+    MINIMUM_PASSWORD_LENGTH = 8
     def post(self, request):
         data = json.loads(request.body)
-        MINIMUM_PASSWORD_LENGTH = 8
                 
         try:
             password_validity = data['password']
@@ -19,7 +18,7 @@ class UserSignUpView(View):
                 return JsonResponse({"MESSAGE" : "USER_ALREADY_EXIST"}, status = 403)
         
             if Userinfo.objects.filter(phone_number = data['phone_number']).exists():
-                return JsonResponse({"MESSAGE": "Inavailed_Number_Syntax"}, status= 403)
+                return JsonResponse({"MESSAGE": "INVALID_PHONE_NUMBER"}, status= 403)
         
             if Userinfo.objects.filter(email = data['email']).exists():
                 return JsonResponse({"MESSAGE":"INVALID_EMAIL"}, status = 403)
@@ -36,10 +35,32 @@ class UserSignUpView(View):
                     email        = data['email'],
                     password     = data['password']
                     )
+            return JsonResponse({'MESSAGE': 'SUCCESS'}, status = 200)
+            
         except KeyError:
             return JsonResponse({"MESSAGE" : "KEY_ERROR"}, status = 400)
 
-        return JsonResponse({'MESSAGE': 'SUCCESS'}, status = 200)
+
+class UserlonginView(View):
+    def post(self, request):
+        data = json.loads(request.body)
+
+        name         = data.get['name'],
+        phone_number = data.get['phone_number'],
+        email        = data.get['email'],
+        password     = data.get['password']
+     
+        if Userinfo.objects.filter(name=name | Q(email = email) | Q(phone_number = phone_number)).exists():
+            if Userinfo.objects.filter(password = password):
+                return JsonResponse({"MESSAGE" : "SUCCESS"}, status = 200)
+            else:
+                return JsonResponse({"MESSAGE" : "CHECK_PASSWORD"})
+        else:
+            return JsonResponse({"MESSAGE" : "INVALID_USER"}, status = 401)
+
+
+
+
 
 
 
