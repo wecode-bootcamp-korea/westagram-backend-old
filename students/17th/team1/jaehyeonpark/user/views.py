@@ -41,7 +41,7 @@ class SignUpView(View):
             hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
             encrypted_password = hashed_password.decode('utf-8')
             
-            User.objects.create(email=email, password=password, phone_number=phone_number, account=account)
+            User.objects.create(email=email, password=encrypted_password, phone_number=phone_number, account=account)
 
         except json.decoder.JSONDecodeError:
             return JsonResponse({'message':'JSON_DECODE_ERROR'}, status=400)
@@ -70,13 +70,11 @@ class SignInView(View):
                 return JsonResponse({'message':'TOO_MANY_USER_INFO'}, status=200)
 
             password     = str(data['password'])
-            hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
-            encrypted_password = hashed_password.decode('utf-8')
             
             filtered_user_object = User.objects.filter(Q(email=email)|Q(phone_number=phone_number)|Q(account=account))
 
             if filtered_user_object.exists():
-                if password == filtered_user_object[0].password:
+                if bcrypt.checkpw(password.encode('utf-8'), filtered_user_object[0].password.encode('utf-8')):
                     return JsonResponse({'message':'SUCCESS'}, status=200)
                 else:
                     return JsonResponse({'message':'INVALID_PASSWORD'}, status=200)
