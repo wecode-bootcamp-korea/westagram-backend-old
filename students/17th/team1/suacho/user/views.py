@@ -26,10 +26,9 @@ class SingUpView(View):
             username_pattern      = re.compile('^(?=.*[a-z])[a-z0-9_.]+$')
 
             if not (
-                (email or mobile_number) 
-                and password 
+                (email or mobile_number)
                 and full_name 
-                and username 
+                and username
                 and password
             ):
                 return JsonResponse({'message':'KEY_ERROR'}, status=400)
@@ -37,7 +36,7 @@ class SingUpView(View):
             if email:
                 if not re.match(email_pattern, email):
                     return JsonResponse({'message':'EMAIL_VALIDATION_ERROR'}, status=400)
-            
+
             if mobile_number:
                 if not re.match(mobile_number_pattern, mobile_number):
                     return JsonResponse({'message':'MOBILE_NUMBER_VALIDATION_ERROR'}, status=400)
@@ -66,3 +65,36 @@ class SingUpView(View):
         
         except JSONDecodeError:
             return JsonResponse({'message':'JSON_DECODE_ERROR'}, status=400)
+
+
+class LogInView(View):
+    def post(self, request):
+        try:
+            data = json.loads(request.body)
+
+            login_id = data.get('id', None)
+            password = data.get('password', None)
+
+            if not (login_id and password):
+                return JsonResponse({'message': 'KEY_ERROR'}, status=400)
+
+            if not User.objects.filter(
+                    Q(email=login_id) |
+                    Q(mobile_number=login_id) |
+                    Q(username=login_id)
+            ).exists():
+                return JsonResponse({'message': 'INVALID_USER'}, status=401)
+
+            user = User.objects.get(
+                    Q(email=login_id) |
+                    Q(mobile_number=login_id) |
+                    Q(username=login_id)
+            )
+
+            if user.password != password:
+                return JsonResponse({'message': 'INVALID_USER'}, status=401)
+
+            return JsonResponse({'message': 'SUCCESS'}, status=200)
+
+        except JSONDecodeError:
+            return JsonResponse({'message': 'JSON_DECODE_ERROR'}, status=400)
