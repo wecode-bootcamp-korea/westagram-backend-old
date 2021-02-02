@@ -13,15 +13,9 @@ class UserView(View):
             data             = json.loads(request.body)
 
             if '@' not in data['email'] or '.' not in data['email']:
-                return JsonResponse({'MESSAGE': 'INVALID__EMAIL'}, status=401)
+                return JsonResponse({'MESSAGE': 'INVALID_EMAIL'}, status=401)
 
-            if User.objects.filter(email=data['email']).exists():
-                return JsonResponse({'MESSAGE': 'ALREADY_SIGNUP'}, status=409)
-
-            if User.objects.filter(email=data['phone_number']).exists():
-                return JsonResponse({'MESSAGE': 'ALREADY_SIGNUP'}, status=409)
-
-            if User.objects.filter(email=data['account']).exists():
+            if User.objects.filter(email=data['email']).exists() or User.objects.filter(email=data['phone_number']).exists() or User.objects.filter(email=data['account']).exists():
                 return JsonResponse({'MESSAGE': 'ALREADY_SIGNUP'}, status=409)
 
             if len(data['password']) < MINIMUM_PASSWORD_LENGTH:
