@@ -17,10 +17,9 @@ phone_regex = re.compile(r'^\d{3}-\d{4}-\d{4}$')
 password_regex = re.compile(r'[A-Za-z0-9@#$%^&+=]{8,}')
 
 class SignUpView(View):
-    # def get
     def post(self, request):
         try:
-            data = json.loads(request.body) ## changes jv data into dictionary? list? 
+            data = json.loads(request.body) 
 
             email    = data['email']
             phone    = data['phone']
