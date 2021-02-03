@@ -3,7 +3,7 @@ import json
 from django.views import View
 from django.http  import JsonResponse
 
-from .models     import Posting, Comment
+from .models     import Posting, Comment, LikePosting
 from user.models import Accounts
 
 class PostingView(View):
@@ -72,5 +72,26 @@ class CommentView(View):
 
             return JsonResponse({'message':'SUCCESS'}, status=200)
         
+        except KeyError:
+            return JsonResponse({'message':'KEY_ERROR'}, status=400)
+
+class LikePostingView(View):
+    def post(self, request):
+        data = json.loads(request.body)
+
+        try:
+            account = Accounts.objects.filter(nickname=data['account'])
+            posting = Posting.objects.filter(id=data['posting'])
+
+            if not account or not posting:
+                return JsonResponse({'message':'KEY_ERROR'}, status=400)
+
+            LikePosting.objects.create(
+                account = account[0],
+                posting = posting[0]
+            )
+
+            return JsonResponse({'message':'SUCCESS'}, status=400)
+
         except KeyError:
             return JsonResponse({'message':'KEY_ERROR'}, status=400)

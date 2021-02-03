@@ -10,7 +10,7 @@ from django.db.models import Q
 import bcrypt
 import jwt
 
-from .models     import Accounts
+from .models     import Accounts, Follow
 import my_settings
 
 MINIMUM_PASSWORD_LEN = 8
@@ -52,6 +52,8 @@ class AccountView(View):
 
         except KeyError:
             return JsonResponse({'message': 'KEY_ERROR'}, status=400)
+        except Accounts.DoesNotExist:
+            return JsonResponse({'message': 'DOES_NOT_EXIST'}, status=400)
 
 class LoginView(View):
     def post(self, request):
@@ -61,7 +63,6 @@ class LoginView(View):
         if access_token:
             payload = jwt.decode(access_token, my_settings.SECRET, algorithms=my_settings.ALGORITHM)
             if Accounts.objects.filter(email=payload['email']):
-                # print('-------------------------- token!!')
                 return JsonResponse({'message': 'SUCCESS', 'token': access_token, 'info': payload}, status=200)
 
         try:
@@ -89,3 +90,20 @@ class LoginView(View):
 
         except KeyError:
             return JsonResponse({'message': 'KEY_ERROR'}, status=400)
+
+class FollowView(View):
+    def post(self, request):
+        data = json.loads(request.body)
+
+        try:
+            follower  = Accounts.objects.get(nickname=data['follower'])
+            following = Accounts.objects.get(nickname=data['following'])
+
+            Follow(
+                following = following,
+                follower  = follower
+            ).save()
+
+            return JsonResponse({'message':'SUCCESS'}, status=200)
+        except KeyError:
+            return JsonResponse({'message':'KEY_ERROR'}, status=400)

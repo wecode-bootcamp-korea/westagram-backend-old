@@ -15,3 +15,9 @@ class Accounts(models.Model):
     class Meta:
         db_table = "accounts" 
 
+class Follow(models.Model):
+    following = models.ForeignKey('accounts', related_name='following', on_delete=models.CASCADE)
+    follower  = models.ForeignKey('accounts', related_name='follower', on_delete=models.CASCADE)
+
+    class Meta:
+        db_table = "follow"
