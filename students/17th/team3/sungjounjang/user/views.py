@@ -99,6 +99,11 @@ class FollowView(View):
             follower  = Accounts.objects.get(nickname=data['follower'])
             following = Accounts.objects.get(nickname=data['following'])
 
+            followExist = Follow.objects.filter(follower=follower, following=following)
+            if followExist.exists():
+                followExist.delete()
+                return JsonResponse({'message':'SUCCESS'}, status=200)
+                
             Follow(
                 following = following,
                 follower  = follower

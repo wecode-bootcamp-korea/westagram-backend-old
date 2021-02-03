@@ -41,6 +41,21 @@ class PostingView(View):
         except KeyError:
             return JsonResponse({'message':'KEY_ERROR'}, status=400)
 
+    def delete(self, request, account, posting):
+        account = Accounts.objects.filter(nickname=account)
+        posting = Posting.objects.filter(id=posting)
+
+        try:
+            postingExist = Posting.objects.filter(account=account[0], id=posting[0].id)
+            if postingExist.exists():
+                postingExist.delete()
+                return JsonResponse({'message':'SUCCESS'}, status=200)
+
+            return JsonResponse({'message':'DOES_NOT_EXIST'}, status=400)
+        except IndexError:
+            return JsonResponse({'message':'INDEX_ERROR'}, status=400)
+
+
 class CommentView(View):
     def get(self, request):
         comments = Comment.objects.filter(posting=1)
@@ -75,6 +90,16 @@ class CommentView(View):
         except KeyError:
             return JsonResponse({'message':'KEY_ERROR'}, status=400)
 
+    def delete(self, request, account, posting, comment):
+        account = Accounts.objects.filter(nickname=account)[0]
+        
+        commentExist = Comment.objects.filter(account=account, posting=posting, id=comment)
+        if commentExist.exists():
+            commentExist.delete()
+            return JsonResponse({'message':'SUCCESS'}, status=200)
+
+        return JsonResponse({'message':'DOES_NOT_EXIST'}, status=400)
+
 class LikePostingView(View):
     def post(self, request):
         data = json.loads(request.body)
@@ -82,6 +107,11 @@ class LikePostingView(View):
         try:
             account = Accounts.objects.filter(nickname=data['account'])
             posting = Posting.objects.filter(id=data['posting'])
+            
+            postingExist = LikePosting.objects.filter(account=account[0], posting=posting[0])
+            if postingExist.exists():
+                postingExist.delete()
+                return JsonResponse({'message':'SUCCESS'}, status=400)
 
             if not account or not posting:
                 return JsonResponse({'message':'KEY_ERROR'}, status=400)
