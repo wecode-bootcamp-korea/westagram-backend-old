@@ -4,6 +4,8 @@ miniconda with python 3.8
 django==3.1.5
 django-cors-headers==3.7.0
 mysqlclient==2.0.3
+bcrypt==3.2.0
+pyjwt==2.0.1
 
 admin, auth는 구현 예정. django 내장은 주석 처리했습니다.
 
