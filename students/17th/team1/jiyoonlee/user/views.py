@@ -85,19 +85,21 @@ class LoginView(View):
             data = json.loads(request.body)
 
             try:
-                    username = data.get('username', None)
-                    password = data['password']
+                    username      = data.get('username', None)
+                    password      = data['password']
                     mobile_number = data.get('mobile_number', None)
-                    email = data.get('email', None)
+                    email         = data.get('email', None)
 
                     if User.objects.filter(Q(username=username) | Q(mobile_number=mobile_number) | Q(email=email)).exists():
-                        if User.objects.get(Q(username=username) | Q(mobile_number=mobile_number) | Q(email=email)).password == password:
+                       
+                       if User.objects.get(Q(username=username) | Q(mobile_number=mobile_number) | Q(email=email)).password == password:
                             return JsonResponse({'message': 'LOGIN_SUCCESS'}, status=200)
-                        else:
-                            return JsonResponse({'message': 'KEY_ERROR'}, status=400)
+                       
+                       else:
+                            return JsonResponse({'message': 'INVALID_USER'}, status=401)
 
                     else:
-                        return JsonResponse({"message": "USER_NOT_FOUND"}, status=400)
+                        return JsonResponse({"message": "INVALID_USER"}, status=401)
 
             except:
                     return JsonResponse({"message": "KEY_ERROR"}, status=400)
