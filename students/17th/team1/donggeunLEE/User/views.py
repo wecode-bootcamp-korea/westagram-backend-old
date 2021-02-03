@@ -1,9 +1,11 @@
 import json
-import bcrypt, jwt
+import bcrypt
+import jwt
 
-from django.http  import HttpResponse, JsonResponse
-from django.views import View
-from django.db.models  import Q
+from django.http              import HttpResponse, JsonResponse
+from django.views             import View
+from django.db.models         import Q
+from django.core.validators   import validate_email, ValidationError
 
 from .models      import Userinfo
 
@@ -49,20 +51,18 @@ class UserlonginView(View):
         data = json.loads(request.body)
         try:
 
-            name         = data.get('name', None),
-            phone_number = data.get('phone_number', None),
-            email        = data.get('email', None),
+            name         = data.get('name', None)
+            phone_number = data.get('phone_number', None)
+            email        = data.get('email', None)
      
-            if Userinfo.objects.filter(Q(name = name) | Q(email = email) | Q(phone_number = phone_number)).exists():
-                user = Userinfo.objects.get(Q(name = name)|Q(email = email) | Q(phone_number = phone_number))
-                return JsonResponse({"MESSAGE" : "INVALID_USER"}, status = 401)
+            if Userinfo.objects.filter(name = name).exists():
+                user = Userinfo.objects.get(name = name)
                 
-                if bcrypt.checkpw(data['password'].encode('utf-8'), user.password.encode('utf-8')) ==True:
+                if bcrypt.checkpw(data['password'].encode('utf-8'), user.password.encode('utf-8')):
                     access_token = jwt.encode({'id' : user.id}, 'secret', algorithm='HS256')
-                    return JsonResponse({"TOKEN" : access_token.decode('utf-8')}, status = 200)
+                    return JsonResponse({"TOKEN" : access_token, "MESSAGE":"SUCCESS"}, status = 200)
                 return JsonResponse({"MESSAGE" : "INVALID_PASSWORD"}, status = 401)
-            
-            return JsonResponse({"MESSAGE": "SUCCESS"}, status = 200)
+            return JsonResponse({"MESSAGE": "INVALID_USER"}, status = 401)
         except KeyError:
             return JsonResponse({"MESSAGE": "INVALID_KEYS"}, status = 400)
 
