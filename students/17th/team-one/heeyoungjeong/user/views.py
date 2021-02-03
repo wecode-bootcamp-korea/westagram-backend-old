@@ -16,7 +16,7 @@ class SignUpView(View):
         try:
             data = json.loads(request.body)
 
-            check_lst = ['name', 'user_name', 'email', 'password', 'phone_number']
+            check_lst = ['name', 'user_name', 'phone_number', 'email', 'password']
             for key in check_lst:
                 if key not in data.keys():
                     return JsonResponse({'message':'KEY_ERROR'}, status=400)
@@ -47,7 +47,20 @@ class SignUpView(View):
         except JSONDecodeError:
             return JsonResponse({'message':'The request is not valid'}, status=400)
 
+"""
+체크사항
+# 1. 앱 이름
+# 2. 사용자 계정 필수로 필요(선택)
+# 3. 비밀번호 필수
+# 4. 계정이나 패스워드 키가 전달되지 않으면 keyeroor 400
+# 5. 계정없으면 혹은 비밀번호 맞지 않으면 invalid_user 401
+# 6. 로그인 성공시 success 200
+7. 블로깅
+8. 암호, 토큰, 정규식 사용
 
+
+
+"""
 class SignInView(View):
     def post(self, request):
 
@@ -62,16 +75,16 @@ class SignInView(View):
             if not (user_name or email or phone_number) and not password:
                 return JsonResponse({'message': 'KEY_ERROR'}, status=400)
 
-            if User.objects.filter(Q(user_name=user_name) | Q(email=email) | Q(phone_number=phone_number)).exists():
-
-                if User.objects.filter(password=password):
+            if User.objects.filter(Q(user_name=user_name) | Q(email=email) | Q(phone_number=phone_number)).exsist():
+                user = User.objects.get(Q(user_name=user_name) | Q(email=email) | Q(phone_number=phone_number))
+                if user.password == password:
                     return JsonResponse({'message': 'SUCCESS'}, status=200)
 
                 else:
-                    return JsonResponse({'message': 'INVALID_ACCOUNT'}, status=401)
+                    return JsonResponse({'message': 'INVALID_USER'}, status=401)
 
             else:
-                return JsonResponse({'message': 'INVALID_ACCOUNT'}, status=401)
+                return JsonResponse({'message': 'INVALID_USER'}, status=401)
 
         except JSONDecodeError:
             return JsonResponse({'message': 'BAD_REQUEST'}, status=400)
