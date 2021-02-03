@@ -105,6 +105,6 @@ class SignInView(View):
             return JsonResponse({"MESSAGE" : "INVALID_USER"}, status=401)
         
         except KeyError:
-        return JsonResponse({"MESSAGE" : "KEY_ERROR"}, status=400).decode("UTF-8")
+            return JsonResponse({"MESSAGE" : "KEY_ERROR"}, status=400).decode("UTF-8")
 
 JsonResponse({"MESSAGE" : "SUCCESS"}, status=200)
