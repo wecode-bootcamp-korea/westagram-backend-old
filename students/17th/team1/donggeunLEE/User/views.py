@@ -55,14 +55,14 @@ class UserlonginView(View):
      
             if Userinfo.objects.filter(Q(name = name) | Q(email = email) | Q(phone_number = phone_number)).exists():
                 user = Userinfo.objects.get(Q(name = name)|Q(email = email) | Q(phone_number = phone_number))
+                return JsonResponse({"MESSAGE" : "INVALID_USER"}, status = 401)
+                
                 if bcrypt.checkpw(data['password'].encode('utf-8'), user.password.encode('utf-8')) ==True:
                     access_token = jwt.encode({'id' : user.id}, 'secret', algorithm='HS256')
                     return JsonResponse({"TOKEN" : access_token.decode('utf-8')}, status = 200)
-                else:
-                    return JsonResponse({"MESSAGE" : "CHECK_PASSWORD"}, status = 401)
-            else:
-                return JsonResponse({"MESSAGE" : "DON'T_EXIST_ID"}, status = 401)
+                return JsonResponse({"MESSAGE" : "INVALID_PASSWORD"}, status = 401)
+            
             return JsonResponse({"MESSAGE": "SUCCESS"}, status = 200)
         except KeyError:
-            return JsonResponse({"MESSAGE": "INVALID_USER"}, status = 401)
+            return JsonResponse({"MESSAGE": "INVALID_KEYS"}, status = 400)
 
