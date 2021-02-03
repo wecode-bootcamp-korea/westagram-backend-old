@@ -41,6 +41,29 @@ class PostingView(View):
         except KeyError:
             return JsonResponse({'message':'KEY_ERROR'}, status=400)
 
+    def patch(self, request):
+        data = json.loads(request.body)
+
+        try:
+            posting   = Posting.objects.get(id=data['posting'])
+            image_url = data.get('image_url')
+            contents  = data.get('contents')
+
+            if posting.account.nickname != data['account']:
+                return JsonResponse({'message':'NOT_WRRITER'}, status=400)
+            
+            updatePosting = Posting.objects.get(id=posting.id)
+            if image_url:
+                updatePosting.image_url = image_url
+            if contents:
+                updatePosting.contents  = contents
+            updatePosting.save()
+
+            return JsonResponse({'message':'SUCCESS'}, status=200)
+            
+        except KeyError:
+            return JsonResponse({'message':'KEY_ERROR'}, status=400)
+
     def delete(self, request, account, posting):
         account = Accounts.objects.filter(nickname=account)
         posting = Posting.objects.filter(id=posting)
