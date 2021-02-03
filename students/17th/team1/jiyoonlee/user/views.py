@@ -2,6 +2,7 @@ import json
 
 from django.http import JsonResponse
 from django.views import View
+from django.db.models import Q 
 
 from .models import User
 
@@ -89,20 +90,8 @@ class LoginView(View):
                     mobile_number = data.get('mobile_number', None)
                     email = data.get('email', None)
 
-                    if User.objects.filter(username=username).exists():
-                        if User.objects.get(username=username).password == password:
-                            return JsonResponse({'message': 'LOGIN_SUCCESS'}, status=200)
-                        else:
-                            return JsonResponse({'message': 'KEY_ERROR'}, status=400)
-
-                    elif User.objects.filter(mobile_number=mobile_number).exists():
-                        if User.objects.get(mobile_number=mobile_number).password == password:
-                            return JsonResponse({'message': 'LOGIN_SUCCESS'}, status=200)
-                        else:
-                            return JsonResponse({'message': 'KEY_ERROR'}, status=400)
-
-                    elif User.objects.filter(email=email).exists():
-                        if User.objects.get(email=email).password == password:
+                    if User.objects.filter(Q(username=username) | Q(mobile_number=mobile_number) | Q(email=email)).exists():
+                        if User.objects.get(Q(username=username) | Q(mobile_number=mobile_number) | Q(email=email)).password == password:
                             return JsonResponse({'message': 'LOGIN_SUCCESS'}, status=200)
                         else:
                             return JsonResponse({'message': 'KEY_ERROR'}, status=400)
