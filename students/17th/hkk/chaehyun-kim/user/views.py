@@ -21,15 +21,15 @@ class UserView(View):
             phone_number    = data['phone_number']
             
             if User.objects.filter(Q(email=email)|Q(name=name)|Q(phone_number=phone_number)).exists():
-                return JsonResponse({'message' : 'EXISTING_USER'}, status=409)
+                return JsonResponse({'message' : 'EXISTING_USER'}, status=400)
             if not re.search(email_valid, email):
-                return JsonResponse({'message' : 'INVALID_EMAIL'}, status=409)
+                return JsonResponse({'message' : 'INVALID_EMAIL'}, status=400)
             if ' 'in (email and password):
-                return JsonResponse({'message' : 'MEANINLESS_SPACE'}, status=409)
+                return JsonResponse({'message' : 'MEANINLESS_SPACE'}, status=400)
             if not re.search(password_valid, password):
-                return JsonResponse({'message' : 'SHORT_PASSWORD'}, status=409)
+                return JsonResponse({'message' : 'SHORT_PASSWORD'}, status=400)
             if not re.search(name_valid, name):
-                return JsonResponse({'message' : 'INVALID_NAME'}, status=409)
+                return JsonResponse({'message' : 'INVALID_NAME'}, status=400)
             User.objects.create(
                     email=email,
                     password=password,
@@ -48,7 +48,7 @@ class SignInView(View):
         try:
             data            = json.loads(request.body)
             password        = data.get('password', None)
-            login_id        = data.get('id', None)
+            login_id        = data.get('login_id', None)
 
             if not (login_id and password):
                 return JsonResponse({'message' : 'KEY_ERROR'}, status=401)
