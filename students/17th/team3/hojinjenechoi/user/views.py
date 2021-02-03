@@ -17,9 +17,10 @@ phone_regex = re.compile(r'^\d{3}-\d{4}-\d{4}$')
 password_regex = re.compile(r'[A-Za-z0-9@#$%^&+=]{8,}')
 
 class SignUpView(View):
+    # def get
     def post(self, request):
         try:
-            data = json.loads(request.body)
+            data = json.loads(request.body) ## changes jv data into dictionary? list? 
 
             email    = data['email']
             phone    = data['phone']
@@ -41,29 +42,28 @@ class SignUpView(View):
             if User.objects.filter(nickname=nickname).exists():
                 return JsonResponse({'message':'NICKNAME_ALREADY_EXISTS'}, status=409)
 
-            hashed_pw = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+            hashed_pw = bcrypt.hashpw(
+                password.encode('utf-8'),
+                 bcrypt.gensalt()
+            ).decode('utf-8')
 
             User.objects.create(
                 email    = email,
                 password = hashed_pw,
                 nickname = nickname,
-                phone    = phone
+                phone    = phone,
             )
             return JsonResponse({'message':'SUCCESS'}, status=201)
 
         except KeyError: 
             return JsonResponse({'message':'KEY_ERROR'}, status=400)
-
-    def get(self, request):
-        user = User.objects.values()
-        return JsonResponse({'message':list(user)}, status=200)
  
 class SignInView(View):
     def post(self, request):
         try: 
             data = json.loads(request.body)
 
-            email    = data.get('email', None)
+            email    = data['email']
             phone    = data.get('phone', None)
             nickname = data.get('nickname', None)
             password = data['password']
@@ -72,7 +72,7 @@ class SignInView(View):
                 user = User.objects.get(Q(email=email) | Q(phone=phone)| Q(nickname=nickname))
 
                 if bcrypt.checkpw(password.encode('utf-8'), user.password.encode('utf-8')):
-                    token = jwt.encode({'email' : user.email}, my_settings.SECRET_KEY, algorithms=my_settings.ALGORITHM)               
+                    token = jwt.encode({'email' : user.email}, my_settings.SECRET_KEY, algorithm=my_settings.ALGORITHM)               
                     return JsonResponse({'message': 'SUCCESS','token' : token}, status=200)    
                     
             return JsonResponse({'message':'INVALID_USER'},status=401)    
