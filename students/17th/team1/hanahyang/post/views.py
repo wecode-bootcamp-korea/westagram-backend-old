@@ -3,7 +3,7 @@ import json
 from django.views import View
 from django.http  import JsonResponse
 
-from .models      import Post
+from .models      import Post, Comment
 from user.models  import User
 from utils        import login_decorator
 
@@ -38,4 +38,57 @@ class PostView(View):
         ]
 
         return JsonResponse({'data': post_list}, status=200)
+
+class CommentView(View):
+    @login_decorator
+    def post(self, request):
+        data    = json.loads(request.body)
+        user    = request.user
+        post_id = data.get('post', None)
+        content = data.get('content', None)
+        
+        # KEY_ERROR check
+        if not (post_id and content):
+            return JsonResponse({'message': 'KEY_ERROR'}, status=400)
+        
+        # valid post check
+        if Post.objects.filter(id=post_id).exists():
+            Comment.objects.create(
+                user    = user,
+                post    = Post.objects.get(id=post_id),
+                content = content
+            )
+            return JsonResponse({'message': 'SUCCESS'}, status=200)
+
+        return JsonResponse({'message': 'POST_DOES_NOT_EXISTS'}, status=400)
+
+class PostDetailView(View):
+    def get(self, request, post_id):
+        # valid post check
+        if not Post.objects.filter(id=post_id):
+            return JsonResponse({'message': 'POST_DOES_NOT_EXISTS'}, status=404)
+        
+        context = {}
+
+        # post 정보
+        post = Post.objects.get(id=post_id)
+        
+        context['user']       = post.user.name
+        context['image_url']  = post.image_url
+        context['content']    = post.content
+        context['created_at'] = post.created_at
+
+        # comment 정보
+        comments = Comment.objects.filter(post=post)
+        if comments:
+            comment_list = [{
+                'user'      : comment.user.name,
+                'content'   : comment.content,
+                'created_at': comment.created_at
+                } for comment in comments
+            ]
+            context['comment_list'] = comment_list
+
+        return JsonResponse({'data': context}, status=200)
+
 
