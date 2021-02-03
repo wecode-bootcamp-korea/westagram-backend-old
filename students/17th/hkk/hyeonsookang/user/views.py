@@ -1,10 +1,12 @@
 import json
 import bcrypt
+import jwt
 
 from django.http  import JsonResponse
 from django.views import View
 from django.db.models import Q
 
+from my_settings import SECRET
 from user.models  import User
 MINIMUM_PASSWORD_LENGTH = 8
 
@@ -48,7 +50,8 @@ class LogInView(View):
             id = User.objects.get(Q(email=email) | Q(account=account) | Q(phonenumber=phonenumber))
 
             if bcrypt.checkpw(password.encode('utf-8'),(id.password).encode('utf-8')):
-                return JsonResponse({'MESSAGE': 'SUCCESS'}, status=200)
+                token = jwt.encode({'user_id': id.id}, SECRET, algorithm='HS256')
+                return JsonResponse({'TOKEN': token}, status=200)
             return JsonResponse({'MESSAGE': 'CHECK_PASSWORD'}, status=404)
         return JsonResponse({'MESSAGE': 'CHECK_ID'}, status=404)
 
