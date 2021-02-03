@@ -101,6 +101,16 @@ class CommentView(View):
             account  = Accounts.objects.get(nickname=data['nickname'])
             posting  = Posting.objects.get(id=data['posting'])
             contents = data['contents']
+            
+            if 'comment' in data:
+                Comment.objects.create(
+                    account        = account,
+                    contents       = contents,
+                    posting        = posting,
+                    level          = 2,
+                    parent_comment = data['comment']
+                )
+                return JsonResponse({'message':'SUCCESS'}, status=200)
 
             Comment.objects.create(
                 account  = account,

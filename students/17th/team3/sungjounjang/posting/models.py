@@ -13,10 +13,12 @@ class Posting(models.Model):
         db_table = 'posting'
 
 class Comment(models.Model):
-    account   = models.ForeignKey('user.accounts', on_delete=models.CASCADE)
-    posting   = models.ForeignKey('posting', on_delete=models.CASCADE)
-    contents  = models.CharField(max_length=300)
-    create_at = models.DateTimeField(auto_now_add=True)
+    account          = models.ForeignKey('user.accounts', on_delete=models.CASCADE)
+    posting          = models.ForeignKey('posting', on_delete=models.CASCADE)
+    contents         = models.CharField(max_length=300)
+    create_at        = models.DateTimeField(auto_now_add=True)
+    level            = models.IntegerField(default=1)
+    parent_comment   = models.IntegerField(null=True, default=None)
 
     class Meta:
         db_table = 'comments'
