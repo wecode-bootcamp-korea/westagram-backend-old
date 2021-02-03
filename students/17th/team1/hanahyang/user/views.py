@@ -20,7 +20,7 @@ def validate_password(password):
         raise ValidationError('Password is too short')
 
 def validate_phone(phone):
-    pattern = re.compile('^[0]\d{2}-?\d{3,4}-?\d{4}$')
+    pattern = re.compile('^[0]\d{2}\d{3,4}\d{4}$')
     if not pattern.match(phone):
         raise ValidationError('Invalid Phone number Format')
 
@@ -40,6 +40,7 @@ class SignupView(View):
             # validation check
             validate_email(email)
             validate_password(password)
+            validate_phone(phone)
             
             # unique check
             user = User.objects.filter(Q(email=email) | Q(name=name) | Q(phone=phone)) 
@@ -88,5 +89,4 @@ class LoginView(View):
             
             return JsonResponse({'message': 'INVALID_PASSWORD'}, status=401)
         return JsonResponse({'message': 'INVALID_USER'}, status=401)
-
 
