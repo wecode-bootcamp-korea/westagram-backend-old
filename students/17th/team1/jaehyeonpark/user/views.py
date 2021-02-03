@@ -44,6 +44,8 @@ class SignUpView(View):
             
             User.objects.create(email=email, password=encrypted_password, phone_number=phone_number, account=account)
 
+            return JsonResponse({'message':'SUCCESS'}, status=200)
+
         except json.decoder.JSONDecodeError:
             return JsonResponse({'message':'JSON_DECODE_ERROR'}, status=400)
         
@@ -54,9 +56,7 @@ class SignUpView(View):
             return JsonResponse({'message':'DATA_ERROR'}, status=400)
 
         except IntegrityError:
-            return JsonResponse({'message':'INTEGRITY_ERROR'}, status=400)
-        
-        return JsonResponse({'message':'SUCCESS'}, status=200)
+            return JsonResponse({'message':'INTEGRITY_ERROR'}, status=400)        
 
 class SignInView(View):
     def post(self, request):
