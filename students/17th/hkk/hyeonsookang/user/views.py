@@ -18,7 +18,7 @@ class SignUpView(View):
             if '@' not in data['email'] or '.' not in data['email']:
                 return JsonResponse({'MESSAGE': 'INVALID_EMAIL'}, status=401)
 
-            if User.objects.filter(email=data['email']).exists() or User.objects.filter(phonenumber=data['phonenumber']).exists() or User.objects.filter(account=data['account']).exists():
+            if User.objects.filter(Q(email=data['email']) | Q(account=data['account']) | Q(phonenumber=data['phonenumber'])).exists():
                 return JsonResponse({'MESSAGE': 'ALREADY_SIGNUP'}, status=409)
 
             if len(data['password']) < MINIMUM_PASSWORD_LENGTH:
@@ -51,7 +51,7 @@ class LogInView(View):
 
             if bcrypt.checkpw(password.encode('utf-8'),(id.password).encode('utf-8')):
                 token = jwt.encode({'user_id': id.id}, SECRET, algorithm='HS256')
-                return JsonResponse({'TOKEN': token}, status=200)
+                return JsonResponse({'MESSAGE': 'SUCCESS', 'TOKEN': token}, status=200)
             return JsonResponse({'MESSAGE': 'CHECK_PASSWORD'}, status=404)
         return JsonResponse({'MESSAGE': 'CHECK_ID'}, status=404)
 
