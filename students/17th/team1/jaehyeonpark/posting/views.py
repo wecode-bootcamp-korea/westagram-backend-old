@@ -78,3 +78,24 @@ class CommentView(View):
         
         except DataError:
             return JsonResponse({'message':'DATA_ERROR'}, status=400)
+
+class CommentShowView(View):
+    def get(self, request):
+        try:
+            comments   = Comment.objects.all()
+            results = []
+            
+            for comment in comments:
+                results.append(
+                    {
+                    "post":comment.post.id,
+                    "user":comment.post.user.account,
+                    "created_at":comment.created_at,
+                    "comment_body":comment.comment_body
+                    }
+                )
+
+            return JsonResponse({'results':results}, status=200)
+        
+        except KeyError:
+            return JsonResponse({'message':'KEY_ERROR'}, status=400)
