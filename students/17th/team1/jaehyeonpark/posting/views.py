@@ -5,7 +5,7 @@ from django.views     import View
 from django.db.utils  import DataError
 from django.db.models import Q
 
-from posting.models   import Post, Comment
+from posting.models   import Post, Comment, PostLike
 from user.models      import User
 
 class PostView(View):
@@ -58,16 +58,16 @@ class CommentView(View):
             post_id = data['post_id']
             comment_body = data['comment_body']
                 
-            if  {
-                User.objects.filter(id=user_id).exists()
-                and Post.objects.filter(id=post_id).exists()
-                }:
-                user = User.objects.get(id=user_id)
-                post = Post.objects.get(id=post_id)
+            if User.objects.filter(id=user_id).exists():
+                if Post.objects.filter(id=post_id).exists():
 
-                Comment.objects.create(post=post, user=user, comment_body=comment_body)
-                return JsonResponse({'message':'SUCCESS'}, status=200)
+                    user = User.objects.get(id=user_id)
+                    post = Post.objects.get(id=post_id)
+
+                    Comment.objects.create(post=post, user=user, comment_body=comment_body)
+                    return JsonResponse({'message':'SUCCESS'}, status=200)
             
+                return JsonResponse({'message':'INVALID_POST'}, status=400)
             return JsonResponse({'message':'INVALID_USER'}, status=400)
 
         except json.decoder.JSONDecodeError:
@@ -99,3 +99,38 @@ class CommentShowView(View):
         
         except KeyError:
             return JsonResponse({'message':'KEY_ERROR'}, status=400)
+
+class PostLikeView(View):
+    def post(self, request):
+        try:
+            data    = json.loads(request.body)
+            user_id = data['user_id']
+            post_id = data['post_id']
+            like    = data['like']
+                
+            if User.objects.filter(id=user_id).exists():
+                if Post.objects.filter(id=post_id).exists():
+
+                    user = User.objects.get(id=user_id)
+                    post = Post.objects.get(id=post_id)
+
+                    postlike = PostLike.objects.update_or_create(post=post, user=user)[0]
+                    postlike.like = like
+                    postlike.save()
+
+                    a = len(list(PostLike.objects.filter(post=post_id, like=True)))
+                    post.like = a
+                    post.save()
+                    return JsonResponse({'message':'SUCCESS'}, status=200)
+                    
+                return JsonResponse({'message':'INVALID_POST'}, status=400)
+            return JsonResponse({'message':'INVALID_USER'}, status=400)
+            
+        except json.decoder.JSONDecodeError:
+            return JsonResponse({'message':'JSON_DECODE_ERROR'}, status=400)
+        
+        except KeyError:
+            return JsonResponse({'message':'KEY_ERROR'}, status=400)
+        
+        except DataError:
+            return JsonResponse({'message':'DATA_ERROR'}, status=400)
