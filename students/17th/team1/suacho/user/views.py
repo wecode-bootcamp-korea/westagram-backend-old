@@ -1,7 +1,10 @@
-import json, re, bcrypt, jwt
+import json
+import re
+import bcrypt
+import jwt
 from json.decoder import JSONDecodeError
 
-from django.http      import JsonResponse, HttpResponse
+from django.http      import JsonResponse
 from django.views     import View
 from django.db.models import Q
 from my_settings      import SECRET, ALGORITHM
@@ -95,9 +98,9 @@ class LogInView(View):
             if not bcrypt.checkpw(password.encode('utf-8'), user.password.encode('utf-8')):
                 return JsonResponse({'message': 'INVALID_PASSWORD'}, status=401)
 
-            access_token = jwt.encode({"user_id":user.id}, SECRET['secret'], algorithm=ALGORITHM)
+            access_token = jwt.encode({"id":user.id}, SECRET['secret'], algorithm=ALGORITHM)
 
-            return JsonResponse({'message': 'SUCCESS', 'token':access_token}, status=200)
+            return JsonResponse({'message': 'SUCCESS', 'Authorization':access_token}, status=200)
 
         except JSONDecodeError:
             return JsonResponse({'message': 'JSON_DECODE_ERROR'}, status=400)
