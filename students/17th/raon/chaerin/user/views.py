@@ -17,18 +17,18 @@ class UserSignUpView(View):
             phone_num = data.get('phone_num', None)
 
             if email and password:
-                p = re.compile('^[a-zA-Z0-9+-_.]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$')
+                email_form = re.compile('^[a-zA-Z0-9+-_.]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$')
                 
-                if p.match(str(email)):
+                if email_form.match(str(email)):
                     email = email
                 else:
                     return JsonResponse({'MESSSAGE': 'INVALID_EMAIL'}, status=400)
 
                 if len(password) < MINIMUN_PASSWORD_LENGTH:
-                    return JsonResponse({'MESSSAGE': 'PASSWORD_IS_SHORT!'}, status=400)
+                    return JsonResponse({'MESSSAGE': 'PASSWORD_IS_SHORT'}, status=400)
 
                 if Account.objects.filter(email=data['email']).exists():
-                    return JsonResponse({'MESSSAGE': 'ALREADY_USE_EMAIL'})
+                    return JsonResponse({'MESSSAGE': 'ALREADY_USE_EMAIL'}, status=400)
 
                 user_data = Account.objects.create(
                         username = username,
