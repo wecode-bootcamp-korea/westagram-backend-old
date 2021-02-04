@@ -1,12 +1,11 @@
 from django.db   import models
-from phone_field import PhoneField
 
 class Account(models.Model):
     email     = models.EmailField()
     name      = models.CharField(max_length=20)
     nickname  = models.CharField(max_length=30)
     password  = models.CharField(max_length=128)
-    phone     = PhoneField(blank=True, help_text='Contact phone number')
+    phone     = models.CharField(max_length=20)
     create_at = models.DateTimeField(auto_now_add=True)
     update_at = models.DateTimeField(auto_now=True)
 
