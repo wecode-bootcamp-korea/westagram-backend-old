@@ -11,16 +11,13 @@ from . models              import User
 
 class UserView(View):
     def post(self, request):
-
         try:
             data         = json.loads(request.body)
-            print(data)
             email        = data['email']
             password     = data['password']
             full_name    = data['full_name']
             phone_number = data['phone_number']
             username     = data['username']
-            salt         = bcrypt.gensalt()
  
             if not email or not password:
                 return JsonResponse({'message': 'KEY_ERROR'}, status=400)
@@ -45,7 +42,7 @@ class UserView(View):
                     email        = email,
                     phone_number = phone_number,
                     username     = username,
-                    password     = bcrypt.hashpw(password.encode('utf-8'), salt).decode('utf-8')
+                    password     = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
                     )
         
             return JsonResponse({'message': 'SUCCESS'}, status=200)
@@ -57,7 +54,6 @@ class UserView(View):
 class LoginView(View):
     def post(self, request):
         try:
-
             data     = json.loads(request.body)
             email    = data['email']
             password = data['password']
