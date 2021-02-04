@@ -106,7 +106,6 @@ class PostLikeView(View):
             data    = json.loads(request.body)
             user_id = data['user_id']
             post_id = data['post_id']
-            like    = data['like']
                 
             if User.objects.filter(id=user_id).exists():
                 if Post.objects.filter(id=post_id).exists():
@@ -115,7 +114,7 @@ class PostLikeView(View):
                     post = Post.objects.get(id=post_id)
 
                     postlike = PostLike.objects.update_or_create(post=post, user=user)[0]
-                    postlike.like = like
+                    postlike.like = not postlike.like
                     postlike.save()
 
                     post.like = len(list(PostLike.objects.filter(post=post_id, like=True)))
