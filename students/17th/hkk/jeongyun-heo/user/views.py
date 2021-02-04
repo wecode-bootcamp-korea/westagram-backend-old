@@ -8,10 +8,9 @@ from user.models import User
 
 class SignUpView(View):
 
-MINIMUM_PASSWORD_LENGTH = 8
-
+    MINIMUM_PASSWORD_LENGTH = 8
+    
     def post(self, request):
-        
         try:
             data     = json.loads(request.body)
             name     = data['name']
