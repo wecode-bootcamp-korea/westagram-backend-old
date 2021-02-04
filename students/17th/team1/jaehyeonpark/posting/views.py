@@ -11,9 +11,9 @@ from user.models      import User
 class PostView(View):
     def post(self, request):
         try:
-            data         = json.loads(request.body)
-            user_id      = data['user_id']
-            image_url    = data['image_url']
+            data      = json.loads(request.body)
+            user_id   = data['user_id']
+            image_url = data['image_url']
                 
             if User.objects.filter(id=user_id).exists():
                 user = User.objects.get(id=user_id)
@@ -53,9 +53,9 @@ class PostShowView(View):
 class CommentView(View):
     def post(self, request):
         try:
-            data    = json.loads(request.body)
-            user_id = data['user_id']
-            post_id = data['post_id']
+            data         = json.loads(request.body)
+            user_id      = data['user_id']
+            post_id      = data['post_id']
             comment_body = data['comment_body']
                 
             if User.objects.filter(id=user_id).exists():
@@ -82,8 +82,8 @@ class CommentView(View):
 class CommentShowView(View):
     def get(self, request):
         try:
-            comments   = Comment.objects.all()
-            results = []
+            comments = Comment.objects.all()
+            results  = []
             
             for comment in comments:
                 results.append(
@@ -118,8 +118,7 @@ class PostLikeView(View):
                     postlike.like = like
                     postlike.save()
 
-                    a = len(list(PostLike.objects.filter(post=post_id, like=True)))
-                    post.like = a
+                    post.like = len(list(PostLike.objects.filter(post=post_id, like=True)))
                     post.save()
                     return JsonResponse({'message':'SUCCESS'}, status=200)
                     
