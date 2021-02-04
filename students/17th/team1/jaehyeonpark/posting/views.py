@@ -33,34 +33,23 @@ class PostView(View):
         
         except DataError:
             return JsonResponse({'message':'DATA_ERROR'}, status=400)
-
-        except IntegrityError:
-            return JsonResponse({'message':'INTEGRITY_ERROR'}, status=400)        
+    
 
 class ShowView(View):
     def get(self, request):
         try:
-            data         = json.loads(request.body)
-            email        = data.get('email')
-            phone_number = data.get('phone_number')
-            account      = data.get('account')
-            password     = data['password']
-            user_account = [email, phone_number, account]
-
-            if not (email or account or phone_number):
-                return JsonResponse({'message':'KEY_ERROR'}, status=400)
+            posts   = Post.objects.all()
             
-            if User.objects.filter(Q(email=email)|Q(phone_number=phone_number)|Q(account=account)).exists():
-                user = User.objects.get(Q(email=email)|Q(phone_number=phone_number)|Q(account=account))
+            results = []
+            for post in posts:
+                results.append(
+                    {
+                    "account":post.user.account,
+                    "image_url":post.image_url
+                    }
+                )
 
-                if bcrypt.checkpw(password.encode('utf-8'), user.password.encode('utf-8')):
-                    user_id = user.id
-                    access_token = jwt.encode({'user_id': user_id}, SECRET, algorithm='HS256')
-                    return JsonResponse({'message':'SUCCESS', 'access_token':access_token}, status=200)
-                else:
-                    return JsonResponse({'message':'INVALID_PASSWORD'}, status=400)
-
-            return JsonResponse({'message':'INVALID_USER'}, status=401)
+            return JsonResponse({'results':results}, status=200)
 
         except json.decoder.JSONDecodeError:
             return JsonResponse({'message':'JSON_DECODE_ERROR'}, status=400)
