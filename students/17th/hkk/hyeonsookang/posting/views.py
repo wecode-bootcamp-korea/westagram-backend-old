@@ -5,7 +5,7 @@ from django.http  import JsonResponse
 from django.views import View
 
 from user.models import User
-from posting.models import Post
+from posting.models import Post, Comment
 
 class PostView(View):
     def post(self, request):
@@ -44,3 +44,29 @@ class PostView(View):
             return JsonResponse({"RESULT": results}, status=200)
         except KeyError:
             return JsonResponse({'MESSAGE': 'KEYERROR'}, status=400)
+
+class CommentView(View):
+    def post(self, request):
+        try:
+            data = json.loads(request.body)
+            Comment.objects.create(
+                    user_id=User.objects.get(account=data['account']).id,
+                    post_id=Post.objects.get(title=data['title']).id,
+                    content=data['content']
+                    )
+            return JsonResponse({'MESSAGE': 'SUCCESS'}, status=200)
+        except KeyError:
+            return JsonResponse({'MESSAGE': 'KEY_ERROR'}, status=400)
+
+    def get(self, request):
+        data = json.loads(request.body)
+        results = []
+        post = Post.objects.get(title=data['title'])
+        comments = Comment.objects.filter(post_id=post.id)
+        for comment in comments:
+            results.append({
+                "content":comment.content,
+                "created_at":comment.created_at,
+                "Useraccount":User.objects.get(id=comment.user_id).account,
+                })
+        return JsonResponse({'RESULT': results}, status=200)

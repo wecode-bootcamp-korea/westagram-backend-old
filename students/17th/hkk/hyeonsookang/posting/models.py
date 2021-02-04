@@ -8,3 +8,12 @@ class Post(models.Model):
 
     class Meta:
         db_table = 'post'
+
+class Comment(models.Model):
+    user = models.ForeignKey('user.User', on_delete=models.CASCADE)
+    post = models.ForeignKey('Post', on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    content = models.CharField(max_length=200)
+
+    class Meta:
+        db_table = 'comment'
