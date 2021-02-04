@@ -112,7 +112,7 @@ class PostLikeView(View):
 
                     user = User.objects.get(id=user_id)
                     post = Post.objects.get(id=post_id)
-
+                    
                     postlike = PostLike.objects.update_or_create(post=post, user=user)[0]
                     postlike.like = not postlike.like
                     postlike.save()
