@@ -57,7 +57,7 @@ class SignUpView(View):
         except KeyError: 
             return JsonResponse({'message':'KEY_ERROR'}, status=400)
  
-class SignInView(View):
+class LogInView(View):
     def post(self, request):
         try: 
             data = json.loads(request.body)

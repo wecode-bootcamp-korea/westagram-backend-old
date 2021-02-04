@@ -33,13 +33,14 @@ ALLOWED_HOSTS = ['*'] # 빈칸이면 localhost, 127.0.0.1 이 들어오는데 * 
 INSTALLED_APPS = [
     # 'django.contrib.admin',
     # 'django.contrib.auth',
+    # 'django.contrib.auth.mixins',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'corsheaders',
     'user',
-    'posting',
+    'post',
 ]
 
 MIDDLEWARE = [
