@@ -6,7 +6,7 @@ from django.core.exceptions import ValidationError
 
 from .models import Account
 
-min_length = 8
+PASSWORD_MIN_LENGTH = 8
 class UserSignUpView(View):
     def post(self, request):
         data         = json.loads(request.body)
@@ -25,13 +25,11 @@ class UserSignUpView(View):
             if Account.objects.filter(phone_number = phone_number).exists():
                 return JsonResponse({"MESSAGE":"INVALID_PHONE_NUMBER"}, status = 400)
         
-            if len(password) < min_length:
+            if len(password) < PASSWORD_MIN_LENGTH:
                 return JsonResponse({"MESSAGE":"INVALID_PASSWORD"}, status = 400)
         
             if '@' not in email or '.' not in email:
                 return JsonResponse({"MESSAGE":"INVALID_EMAIL"}, status = 400)
-        
-
 
             Account.objects.create(
                 name         = name,
