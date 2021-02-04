@@ -79,7 +79,7 @@ class SignInView(View):
                     print(encoded_jwt)
                     print(type(encoded_jwt))
 
-                    return JsonResponse({'message': 'SUCCESS', 'ac': encoded_jwt}, status=200)
+                    return JsonResponse({'message': 'SUCCESS', 'ACCESS_TOKEN': encoded_jwt}, status=200)
 
                 else:
                     return JsonResponse({'message': 'INVALID_USER'}, status=401)
