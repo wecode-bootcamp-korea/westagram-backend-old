@@ -3,7 +3,7 @@ import json
 from django.views import View
 from django.http  import JsonResponse
 
-from .models      import Post, Comment
+from .models      import Post, Comment, Like
 from user.models  import User
 from utils        import login_decorator
 
@@ -91,4 +91,30 @@ class PostDetailView(View):
 
         return JsonResponse({'data': context}, status=200)
 
+class LikeView(View):
+    @login_decorator
+    def post(self, request):
+        data    = json.loads(request.body)
+        user    = request.user
+        post_id = data.get('post', None)
 
+        # KEY_ERROR check
+        if not post_id:
+            return JsonResponse({'message': 'KEY_ERROR'}, status=400)
+
+        # valid post check
+        if Post.objects.filter(id=post_id).exists():
+            post = Post.objects.get(id=post_id)
+
+            # like 안 했을 때만 추가, 이미 했으면 삭제
+            if post.liked_users.filter(id=user.id).exists():
+                post.liked_users.remove(user)
+                message = 'Cancle'
+            else:
+                post.liked_users.add(user)
+                message = 'Like'
+
+            like_count = post.liked_users.count()
+            return JsonResponse({'message': message, 'like_count': like_count}, status=200)
+
+        return JsonResponse({'message': 'POST_DOES_NOT_EXISTS'}, status=400)
