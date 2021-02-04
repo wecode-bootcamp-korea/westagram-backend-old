@@ -16,13 +16,14 @@ class PostView(View):
             phone_number = data.get('phone_number')
             account      = data.get('account')
             image_url = data['image_url']
+            
+            if User.objects.filter(Q(email=email)|Q(phone_number=phone_number)|Q(account=account)).exists():
+                user = User.objects.get(Q(email=email)|Q(phone_number=phone_number)|Q(account=account))
+                Post.objects.create(user=user, image_url=image_url)
 
-            user = User.objects.get(email=email)
-            Post.objects.create(user=user, image_url=image_url)
-            # if User.objects.filter(Q(email=email)|Q(phone_number=phone_number)|Q(account=account)).exists():
-            #     User.objects.create(email=email, password=encrypted_password, phone_number=phone_number, account=account)
-
-            return JsonResponse({'message':'SUCCESS'}, status=200)
+                return JsonResponse({'message':'SUCCESS'}, status=200)
+            
+            return JsonResponse({'message':'INVALID_USER'}, status=400)
 
         except json.decoder.JSONDecodeError:
             return JsonResponse({'message':'JSON_DECODE_ERROR'}, status=400)
