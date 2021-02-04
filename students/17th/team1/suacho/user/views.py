@@ -1,9 +1,10 @@
-import json, re
+import json, re, bcrypt, jwt
 from json.decoder import JSONDecodeError
 
 from django.http      import JsonResponse, HttpResponse
 from django.views     import View
 from django.db.models import Q
+from my_settings      import SECRET, ALGORITHM
 
 from user.models import User
 
@@ -59,7 +60,7 @@ class SingUpView(View):
                 mobile_number = mobile_number,
                 full_name     = full_name,
                 username      = username,
-                password      = password
+                password      = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
             )
             return JsonResponse({'message':'SUCCESS'}, status=201)
         
@@ -91,10 +92,12 @@ class LogInView(View):
                     Q(username      = login_id)
             )
 
-            if user.password != password:
+            if not bcrypt.checkpw(password.encode('utf-8'), user.password.encode('utf-8')):
                 return JsonResponse({'message': 'INVALID_PASSWORD'}, status=401)
 
-            return JsonResponse({'message': 'SUCCESS'}, status=200)
+            access_token = jwt.encode({"user_id":user.id}, SECRET['secret'], algorithm=ALGORITHM)
+
+            return JsonResponse({'message': 'SUCCESS', 'token':access_token}, status=200)
 
         except JSONDecodeError:
             return JsonResponse({'message': 'JSON_DECODE_ERROR'}, status=400)
