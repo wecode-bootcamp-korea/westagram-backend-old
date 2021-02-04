@@ -35,7 +35,7 @@ class PostView(View):
         
         except DataError:
             return JsonResponse({'message':'DATA_ERROR'}, status=400)
-    
+
 class ShowView(View):
     def get(self, request):
         try:
