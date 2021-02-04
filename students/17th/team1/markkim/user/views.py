@@ -2,10 +2,11 @@ import json
 import bcrypt
 import jwt
 
-from django.views import View
-from django.http  import JsonResponse, HttpResponse
+from django.views          import View
+from django.http           import JsonResponse, HttpResponse
 
-from . models     import User
+from westagram.my_settings import SECRET
+from . models              import User
 
 
 class UserView(View):
@@ -57,18 +58,18 @@ class LoginView(View):
     def post(self, request):
         try:
 
-            data  = json.loads(request.body)
-            email = data['email']
-            pw    = data['password']
+            data     = json.loads(request.body)
+            email    = data['email']
+            password = data['password']
 
-            if not pw or not email:
-                return JsonResponse({'message': 'KEY_ERROR'}, status=400)
+            if not password or not email:
+                return JsonResponse({'message': 'MISSING_FIELD'}, status=400)
 
             if User.objects.filter(email=email).exists():
-                hashed_pw = User.objects.get(email=email).password.encode('utf-8')
+                hashed_password = User.objects.get(email=email).password.encode('utf-8')
 
-                if bcrypt.checkpw(pw.encode('utf-8'), hashed_pw):
-                    encoded_jwt = jwt.encode({'user-id': User.objects.get(email=email).id}, 'secret', algorithm='HS256')
+                if bcrypt.checkpw(password.encode('utf-8'), hashed_password):
+                    encoded_jwt = jwt.encode({'user-id': User.objects.get(email=email).id}, SECRET, algorithm='HS256')
                     return JsonResponse({'message': 'SUCCESS', 'token': encoded_jwt}, status=200)
 
                 else:
