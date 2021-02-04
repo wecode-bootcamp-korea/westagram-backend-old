@@ -4,6 +4,7 @@ import my_settings
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = my_settings.SECRET_KEY
+DATABASES = my_settings.DATABASES
 DEBUG = True
 ALLOWED_HOSTS = ['*']
 
@@ -49,16 +50,6 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'westagram.wsgi.application'
-
-
-# Database
-# https://docs.djangoproject.com/en/3.1/ref/settings/#databases
-
-DATABASES = my_settings.DATABASES
-
-
-# Password validation
-# https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
     {

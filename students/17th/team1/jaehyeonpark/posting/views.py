@@ -5,23 +5,18 @@ from django.views     import View
 from django.db.utils  import DataError
 from django.db.models import Q
 
-from posting.models   import Post
+from posting.models   import Post, Comment
 from user.models      import User
 
 class PostView(View):
     def post(self, request):
         try:
             data         = json.loads(request.body)
-            email        = data.get('email')
-            phone_number = data.get('phone_number')
-            account      = data.get('account')
+            user_id      = data['user_id']
             image_url    = data['image_url']
-
-            if not (email or phone_number or account):
-                return JsonResponse({'message':'NO_USER_VALUE'}, status=400)
                 
-            if User.objects.filter(Q(email=email)|Q(phone_number=phone_number)|Q(account=account)).exists():
-                user = User.objects.get(Q(email=email)|Q(phone_number=phone_number)|Q(account=account))
+            if User.objects.filter(id=user_id).exists():
+                user = User.objects.get(id=user_id)
                 Post.objects.create(user=user, image_url=image_url)
                 return JsonResponse({'message':'SUCCESS'}, status=200)
             
@@ -36,7 +31,7 @@ class PostView(View):
         except DataError:
             return JsonResponse({'message':'DATA_ERROR'}, status=400)
 
-class ShowView(View):
+class PostShowView(View):
     def get(self, request):
         try:
             posts   = Post.objects.all()
@@ -54,3 +49,32 @@ class ShowView(View):
         
         except KeyError:
             return JsonResponse({'message':'KEY_ERROR'}, status=400)
+
+class CommentView(View):
+    def post(self, request):
+        try:
+            data    = json.loads(request.body)
+            user_id = data['user_id']
+            post_id = data['post_id']
+            comment_body = data['comment_body']
+                
+            if  {
+                User.objects.filter(id=user_id).exists()
+                and Post.objects.filter(id=post_id).exists()
+                }:
+                user = User.objects.get(id=user_id)
+                post = Post.objects.get(id=post_id)
+
+                Comment.objects.create(post=post, user=user, comment_body=comment_body)
+                return JsonResponse({'message':'SUCCESS'}, status=200)
+            
+            return JsonResponse({'message':'INVALID_USER'}, status=400)
+
+        except json.decoder.JSONDecodeError:
+            return JsonResponse({'message':'JSON_DECODE_ERROR'}, status=400)
+        
+        except KeyError:
+            return JsonResponse({'message':'KEY_ERROR'}, status=400)
+        
+        except DataError:
+            return JsonResponse({'message':'DATA_ERROR'}, status=400)

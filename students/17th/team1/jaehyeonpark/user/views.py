@@ -6,7 +6,7 @@ from django.db.utils  import DataError, IntegrityError
 from django.db.models import Q
 
 from user.models      import User
-from my_settings      import SECRET
+from my_settings      import SECRET_KEY
 
 PASSWORD_MINIMUM_LENGTH = 8
 
@@ -76,7 +76,7 @@ class SignInView(View):
 
                 if bcrypt.checkpw(password.encode('utf-8'), user.password.encode('utf-8')):
                     user_id = user.id
-                    access_token = jwt.encode({'user_id': user_id}, SECRET, algorithm='HS256')
+                    access_token = jwt.encode({'user_id': user_id}, SECRET_KEY, algorithm='HS256')
                     return JsonResponse({'message':'SUCCESS', 'access_token':access_token}, status=200)
                 else:
                     return JsonResponse({'message':'INVALID_PASSWORD'}, status=400)
