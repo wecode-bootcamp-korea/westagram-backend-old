@@ -13,9 +13,9 @@ MINIMUM_PASSWORD_LENGTH = 8
     def post(self, request):
         
         try:
-            data = json.loads(request.body)
-            name = data['name']
-            email = data['email']
+            data     = json.loads(request.body)
+            name     = data['name']
+            email    = data['email']
             password = data['password']
             phone    = data['phone']
         
@@ -23,6 +23,7 @@ MINIMUM_PASSWORD_LENGTH = 8
                     
                 if User.objects.filter(name=name).exists():
                     return JsonResponse({'message': 'ID_ALREADY_EXISTS'}, status=400)
+                    return HttpResponse(status=400)
                     
                 if User.objects.filter(email=email).exists():
                     return JsonResponse({'message': 'EMAIL_ALREADY_EXISTS'}, status=400)
