@@ -16,7 +16,10 @@ class PostView(View):
             phone_number = data.get('phone_number')
             account      = data.get('account')
             image_url = data['image_url']
-            
+
+            if not (email or phone_number or account):
+                return JsonResponse({'message':'NO_USER_VALUE'}, status=400)
+                
             if User.objects.filter(Q(email=email)|Q(phone_number=phone_number)|Q(account=account)).exists():
                 user = User.objects.get(Q(email=email)|Q(phone_number=phone_number)|Q(account=account))
                 Post.objects.create(user=user, image_url=image_url)
@@ -34,7 +37,6 @@ class PostView(View):
         except DataError:
             return JsonResponse({'message':'DATA_ERROR'}, status=400)
     
-
 class ShowView(View):
     def get(self, request):
         try:
