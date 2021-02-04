@@ -37,3 +37,44 @@ class PostingView(View):
         
         except JSONDecodeError:
             return JsonResponse({'message':'JSON_DECODE_ERROR'}, status=400)
+    
+    def get(self, request):
+        posting_list = [{
+            "writer"    : posting.writer,
+            "content"   : posting.content,
+            "image_url" : [i.image_url for i in Image.objects.filter(posting_id=posting.id)],
+            "create_at" : posting.created_at
+            } for posting in Posting.objects.all()
+        ]
+
+        return JsonResponse({'data':posting_list}, status=200)
+
+
+class PostingSearchView(View):
+    def get(self, request):
+        try:
+            data = json.loads(request.body)
+
+            username = data.get('username', None)
+
+            if not username:
+                return JsonResponse({'message':'KEY_ERROR'}, status=400)
+
+            if not Posting.objects.filter(writer=username).exists():
+                return JsonResponse({'message':'USER_DOES_NOT_EXIST'}, status=404)
+
+            posting_list = [{
+                "writer"    : posting.writer,
+                "content"   : posting.content,
+                "image_url" : [i.image_url for i in Image.objects.filter(posting_id=posting.id)],
+                "create_at" : posting.created_at
+                } for posting in Posting.objects.filter(writer=username)
+            ]
+
+            return JsonResponse({'data':posting_list}, status=200)
+        
+        except JSONDecodeError:
+            return JsonResponse({'message':'JSON_DECODE_ERROR'}, status=400)
+
+
+
