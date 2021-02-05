@@ -50,7 +50,7 @@ class PostingView(View):
 
 
 class PostingSearchView(View):
-    def get(self, request):
+    def post(self, request):
         try:
             data = json.loads(request.body)
 
@@ -76,6 +76,7 @@ class PostingSearchView(View):
         
         except JSONDecodeError:
             return JsonResponse({'message':'JSON_DECODE_ERROR'}, status=400)
+
 
 class CommentView(View):
     @login_decorator
@@ -106,29 +107,20 @@ class CommentView(View):
         except JSONDecodeError:
             return JsonResponse({'message':'JSON_DECODE_ERROR'}, status=400)
 
-    def get(self, request):
-        try:
-            data = json.loads(request.body)
 
-            posting_id = data.get('posting_id', None)
+class CommentDetailView(View):
+    def get(self, request, posting_id):
+        if not Posting.objects.filter(id=posting_id).exists():
+            return JsonResponse({'message':'POSTING_DOES_NOT_EXIST'}, status=404)
 
-            if not posting_id:
-                return JsonResponse({'message':'KEY_ERROR'}, status=400)
+        comment_list = [{
+            "username"  : User.objects.get(id=comment.user.id).username,
+            "content"   : comment.content,
+            "create_at" : comment.created_at
+            } for comment in Comment.objects.filter(posting_id=posting_id)
+        ]
 
-            if not Posting.objects.filter(id=posting_id).exists():
-                return JsonResponse({'message':'POSTING_DOES_NOT_EXIST'}, status=404)
-
-            comment_list = [{
-                "username"  : User.objects.get(id=comment.user.id).username,
-                "content"   : comment.content,
-                "create_at" : comment.created_at
-                } for comment in Comment.objects.filter(posting_id=posting_id)
-            ]
-
-            return JsonResponse({'data':comment_list}, status=200)
-        
-        except JSONDecodeError:
-            return JsonResponse({'message':'JSON_DECODE_ERROR'}, status=400)
+        return JsonResponse({'data':comment_list}, status=200)
 
 
 class LikeView(View):
@@ -148,7 +140,7 @@ class LikeView(View):
             
             posting = Posting.objects.get(id=posting_id)
             
-            like = Like.objects.create(
+            Like.objects.create(
                 user    = user,
                 posting = posting
             )
@@ -158,29 +150,20 @@ class LikeView(View):
         except JSONDecodeError:
             return JsonResponse({'message':'JSON_DECODE_ERROR'}, status=400)
 
-    def get(self, request):
-        try:
-            data = json.loads(request.body)
 
-            posting_id = data.get('posting_id', None)
-
-            if not posting_id:
-                return JsonResponse({'message':'KEY_ERROR'}, status=400)
-
-            if not Posting.objects.filter(id=posting_id).exists():
-                return JsonResponse({'message':'POSTING_DOES_NOT_EXIST'}, status=404)
-            
-            user_list     = [i.user_id for i in Like.objects.filter(posting_id=posting_id)]
-            username_list = [User.objects.get(id=i).username for i in user_list]
-            posting       = Posting.objects.get(id=posting_id)
-
-            like_list = {
-                "username" : username_list,
-                "likes"    : len(username_list)
-            }
-
-            return JsonResponse({'data':like_list}, status=200)
+class LikeDetailView(View):
+    def get(self, request, posting_id):
+        if not Posting.objects.filter(id=posting_id).exists():
+            return JsonResponse({'message':'POSTING_DOES_NOT_EXIST'}, status=404)
         
-        except JSONDecodeError:
-            return JsonResponse({'message':'JSON_DECODE_ERROR'}, status=400)
+        user_list     = [i.user_id for i in Like.objects.filter(posting_id=posting_id)]
+        username_list = [User.objects.get(id=i).username for i in user_list]
+        posting       = Posting.objects.get(id=posting_id)
+
+        like_list = {
+            "username" : username_list,
+            "likes"    : len(username_list)
+        }
+
+        return JsonResponse({'data':like_list}, status=200)
 
