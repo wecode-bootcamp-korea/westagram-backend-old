@@ -137,7 +137,6 @@ class CommentDeleteView(View):
     @login_decorator
     def post(self, request, data, user):
         try:
-            data = json.loads(request.body)
             comment_id = data['comment_id']
 
             if Comment.objects.filter(id=comment_id).exists():
@@ -157,7 +156,6 @@ class PostDeleteView(View):
     @login_decorator
     def post(self, request, data, user):
         try:
-            data = json.loads(request.body)
             post_id = data['post_id']
 
             if Post.objects.filter(id=post_id).exists():
