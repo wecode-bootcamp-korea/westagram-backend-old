@@ -19,24 +19,22 @@ class PostingView(View):
             image_url    = data['image_url']
             description  = data.get('description', None) #null=True
             username     = data['username']
+            user         = User.objects.get(username=username)
 
-            if not username: 
-                return JsonResponse({"message" : "INVALID_USER"}, status=400)
-            
-            if not image_url:
-                return JsonResponse({"message": "REQUIRED_IMAGE_FIELD"}, status=400)
+            if username != Users.objects.get(username=username):
+                return JsonResponse({"message" : "INVALID_USER"})
 
-            if User.objects.filter(username=username).exists():
-                Posting.objects.create(
-                username=username,
-                image_url=image_url,
-                description=description
+            Posting.objects.create(
+                username     = user.id,
+                description  = description,
+                image_url    = image_url
             )
 
             return JsonResponse({"message" : "SUCCESS"}, status=200)
 
         except KeyError:
-            return JsonResponse({"message" : "KEY_ERROR"}) 
+            return JsonResponse({"message" : "KEY_ERROR"}, status=400)
+            
                 
 # get한 사람이 post한 사람과 맞는지 확인 -> 유저와 유저 아이디가 맞는지 확인해야함
 # 여러개의 포스팅이 들어올 수 있다
