@@ -2,21 +2,24 @@ import json
 import my_settings
 import datetime
 
-from django.views                   import View
-from django.http                    import JsonResponse
+from django.views import View
+from django.http  import JsonResponse
 
-from user.models import User
-from post.models import Post, Comment, Like
+from user.models  import User
+from post.models  import Post, Comment, Like
+from user.utils   import login_decorator
 
 class PostView(View):
+    @login_decorator
     def get(self, request):
         posts = Post.objects.all()
         result  = []
+        user = request.user
 
         for post in posts:
             result.append(
                 {
-                    'nickname'    : post.user.nickname,
+                    'user'        : dict(user),
                     'image'       : post.image,
                     'caption'     : post.caption,
                     'posted_time' : post.posted_time
@@ -24,19 +27,20 @@ class PostView(View):
             )
         return JsonResponse({'message':'SUCCESS', 'data':result}, status=200)
 
+    @login_decorator
     def post(self, request):
         try: 
             data = json.loads(request.body)
 
             image    = data['image']
             caption  = data.get('caption', None)
-            nickname = data['nickname']
+            user     = request.user
 
-            if User.objects.filter(nickname=nickname).exists():
+            if User.objects.filter(email=user.email).exists():
                 Post.objects.create(
                     image    = image,
                     caption  = caption,
-                    user     = User.objects.filter(nickname=nickname)[0]
+                    user     = user
                 )
                 return JsonResponse({'message':'SUCCESS'},status=200)
 
@@ -45,33 +49,41 @@ class PostView(View):
         except KeyError: 
             return JsonResponse({'message':'KEY_ERROR'}, status=400)
 
+
 class CommentsView(View):
-    def get(self, request, post_id):
+    @login_decorator
+    def get(self, request):
+        data = json.loads(request.body)
+        
+        user     = request.user
+        post_id  = data['post_id']
         comments = Post.objects.filter(post_id=post_id)
-        result  = []
+        result   = []
 
         for comment in comments:
             result.append(
                 {
-                    'nickname'    : comments.user.nickname,
+                    'user'        : user,
                     'text'        : comments.text,
                     'posted_time' : comments.posted_time
                 }
             )
         return JsonResponse({'message':'SUCCESS', 'data':result}, status=200)
 
-    def post(self, request, post_id):
+    @login_decorator
+    def post(self, request):
         try:
             data = json.loads(request.body)
             
+            user     = request.user
             text     = data['text']
-            nickname = data['nickname']
-
-            if User.objects.filter(nickname=nickname).exists():
+            post_id  = data['post_id']
+            
+            if User.objects.filter(email=user.email).exists():
                 Comment.objects.create(
                     text = text,
                     post = Post.objects.get(id=post_id),
-                    user = User.objects.filter(nickname=nickname)[0]
+                    user = user
                 )
                 return JsonResponse({'message':'SUCCESS'},status=200)
 
@@ -80,21 +92,24 @@ class CommentsView(View):
         except KeyError: 
             return JsonResponse({'message':'KEY_ERROR'}, status=400)
 
+
 class LikeView(View):
-    def post(self, request, post_id):
-        data = json.loads(request.body)
+    @login_decorator
+    def post(self, request):
+        try:
+            data    = json.loads(request.body)
+            user    = request.user
+            post    = Post.objects.get(id=data['post_id'])
 
-        nickname = data['nickname']
-        post     = Post.objects.get(id=post_id)
+            if Like.objects.filter(post=post, user=user).exists():
+                Like.objects.get(post=post, user=user).delete()
+                like_counts = Like.objects.filter(post=post).count()
+                return JsonResponse({'message':'SUCCESS', 'like_counts':like_counts},status=200)
 
-        if not User.objects.filter(nickname=nickname).exists():
-            return JsonResponse({'message':'USER_DOES_NOT_EXIST'},status=400)
+            like = Like.objects.create(post=post, user=user)
+            like_counts = Like.objects.filter(post=post).count()
+            return JsonResponse({'message':'SUCCESS', 'like_counts':like_counts},status=200)
 
-        user = User.objects.get(nickname=nickname)
-
-        if Like.objects.filter(post=post, user=user).exists():
-            Like.objects.get(post=post, user=user).delete()
-
-        like = Like.objects.create(post=post, user=user)
-        return JsonResponse({'message':'SUCCESS'},status=200)
+        except KeyError: 
+            return JsonResponse({'message':'KEY_ERROR'}, status=400)
 

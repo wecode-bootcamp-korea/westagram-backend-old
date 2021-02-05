@@ -7,8 +7,6 @@ class Post(models.Model):
     caption      = models.CharField(max_length=1000, null=True)
     posted_time  = models.DateTimeField(auto_now_add=True)
     updated_time = models.DateTimeField(auto_now=True)
-    #liked_user   = models.('user.User', through='Like', on_delete=models.CASCADE)
-    #post 입장에선 나를 좋아한 유저, 유저 입장에선 내가 좋아한 포스트 
     user         = models.ForeignKey('user.User', on_delete=models.CASCADE)
 
     class Meta:
