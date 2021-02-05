@@ -64,7 +64,7 @@ class PostView(View):
             if post.user == user:
                 post.image        = data.get('image', post.image)
                 post.caption      = data.get('caption', post.caption)
-                
+
                 post.save()
     
                 return JsonResponse({'message':'SUCCESS'},status=200)
@@ -118,14 +118,16 @@ class CommentsView(View):
         try:
             data = json.loads(request.body)
             
-            user     = request.user
-            text     = data['text']
-            post_id  = data['post_id']
+            user      = request.user
+            text      = data['text']
+            post_id   = data['post_id']
+            parent_id = data.get('parent_id', None) 
             
             if User.objects.filter(email=user.email).exists():
                 Comment.objects.create(
                     text = text,
                     post = Post.objects.get(id=post_id),
+                    parent_id = parent_id,
                     user = user
                 )
                 return JsonResponse({'message':'SUCCESS'},status=200)

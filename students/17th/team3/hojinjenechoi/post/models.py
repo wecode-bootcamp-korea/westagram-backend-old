@@ -18,14 +18,15 @@ class Comment(models.Model):
     updated_time = models.DateTimeField(auto_now=True) 
     post         = models.ForeignKey('Post', on_delete=models.CASCADE)
     user         = models.ForeignKey('user.User', on_delete=models.CASCADE)
+    parent       = models.ForeignKey('self', null=True, blank=True, related_name='replies', on_delete=models.CASCADE)
 
     class Meta:
         db_table = 'comments'
 
 class Like(models.Model):
-    user            = models.ForeignKey('user.User', on_delete=models.CASCADE)
-    post            = models.ForeignKey('Post', on_delete=models.CASCADE)
-    liked_time      = models.DateTimeField(auto_now_add=True)
+    user        = models.ForeignKey('user.User', on_delete=models.CASCADE)
+    post        = models.ForeignKey('Post', on_delete=models.CASCADE)
+    liked_time  = models.DateTimeField(auto_now_add=True)
     
     class Meta:
         db_table = 'likes'
