@@ -1,8 +1,9 @@
-import json, jwt
+import jwt
+import json
 
 from django.http import JsonResponse
 
-from user.models import User
+from .models     import User
 from my_settings import SECRET
 
 def login_decorator(func):
@@ -26,7 +27,5 @@ def login_decorator(func):
             return JsonResponse({'message': 'INVALID_USER'}, status=401)
 
     return wrapper
-
-
 
 
