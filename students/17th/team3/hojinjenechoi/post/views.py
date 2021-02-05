@@ -12,10 +12,10 @@ from user.utils   import login_decorator
 class PostView(View):
     @login_decorator
     def get(self, request):
-        posts = Post.objects.all()
-        result  = []
         user = request.user
 
+        result  = []
+        posts = Post.objects.all()
         for post in posts:
             result.append(
                 {
@@ -49,12 +49,31 @@ class PostView(View):
         except KeyError: 
             return JsonResponse({'message':'KEY_ERROR'}, status=400)
 
+    @login_decorator
+    def delete(self,request):
+        try: 
+            data = json.loads(request.body)
+            user = request.user
 
+            post_id = data['post_id']
+
+            if not Post.objects.filter(id=post_id).exists():
+                return JsonResponse({'message':'POST_DOES_NOT_EXIST'},status=401)
+
+            post = Post.objects.get(id=post_id)
+            if post.user == user:
+                post.delete()
+                return JsonResponse({'message':'SUCCESS'},status=200)
+            return JsonResponse({'message':'INVALID_USER'},status=401)
+        
+        except KeyError: 
+            return JsonResponse({'message':'KEY_ERROR'}, status=400)
+            
 class CommentsView(View):
     @login_decorator
     def get(self, request):
         data = json.loads(request.body)
-        
+
         user     = request.user
         post_id  = data['post_id']
         comments = Post.objects.filter(post_id=post_id)
@@ -92,12 +111,33 @@ class CommentsView(View):
         except KeyError: 
             return JsonResponse({'message':'KEY_ERROR'}, status=400)
 
+    @login_decorator
+    def delete(self,request):
+        try: 
+            data = json.loads(request.body)
+            user = request.user
+
+            post_id    = data['post_id']
+            comment_id = data['id']
+
+            if not Comment.objects.filter(id=comment_id, post_id=post_id).exists():
+                return JsonResponse({'message':'COMMENT_DOES_NOT_EXIST'},status=401)
+
+            comment = Comment.objects.get(id=comment_id, post_id=post_id)
+            if comment.user == user:
+                comment.delete()
+                return JsonResponse({'message':'SUCCESS'},status=200)
+            return JsonResponse({'message':'INVALID_USER'},status=401)
+        
+        except KeyError: 
+            return JsonResponse({'message':'KEY_ERROR'}, status=400)
 
 class LikeView(View):
     @login_decorator
     def post(self, request):
         try:
             data    = json.loads(request.body)
+
             user    = request.user
             post    = Post.objects.get(id=data['post_id'])
 
