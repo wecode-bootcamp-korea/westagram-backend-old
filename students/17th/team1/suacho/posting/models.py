@@ -16,3 +16,13 @@ class Image(models.Model):
 
     class Meta:
         db_table = 'images'
+
+class Comment(models.Model):
+    writer     = models.CharField(max_length=100)
+    content    = models.CharField(max_length=500)
+    created_at = models.DateTimeField(auto_now_add=True)
+    user       = models.ForeignKey('user.User', on_delete=models.CASCADE)
+    posting    = models.ForeignKey('Posting', on_delete=models.CASCADE)
+
+    class Meta:
+        db_table = 'comments'

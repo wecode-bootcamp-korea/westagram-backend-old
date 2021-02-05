@@ -4,7 +4,7 @@ from json.decoder import JSONDecodeError
 from django.http  import JsonResponse
 from django.views import View
 
-from posting.models import Posting, Image
+from posting.models import Posting, Image, Comment
 from user.models    import User
 from user.utils     import login_decorator
 
@@ -76,5 +76,57 @@ class PostingSearchView(View):
         except JSONDecodeError:
             return JsonResponse({'message':'JSON_DECODE_ERROR'}, status=400)
 
+class CommentView(View):
+    @login_decorator
+    def post(self, request):
+        try :
+            data = json.loads(request.body)
+            user = request.user
 
+            content = data.get('content', None)
+            posting_id = data.get('posting_id', None)
+
+            if not (content and posting_id):
+                return JsonResponse({'message':'KEY_ERROR'}, status=400)
+
+            if not Posting.objects.filter(id=posting_id).exists():
+                return JsonResponse({'message':"POSTING_DOES_NOT_EXIST"}, status=404)
+            
+            posting = Posting.objects.get(id=posting_id)
+            
+            comment = Comment.objects.create(
+                writer  = user.username,
+                content = content,
+                user    = user,
+                posting = posting
+            )
+
+            return JsonResponse({'message':'SUCCESS'}, status=200)
+        
+        except JSONDecodeError:
+            return JsonResponse({'message':'JSON_DECODE_ERROR'}, status=400)
+
+    def get(self, request):
+        try:
+            data = json.loads(request.body)
+
+            posting_id = data.get('posting_id', None)
+
+            if not posting_id:
+                return JsonResponse({'message':'KEY_ERROR'}, status=400)
+
+            if not Posting.objects.filter(id=posting_id).exists():
+                return JsonResponse({'message':'POSTING_DOES_NOT_EXIST'}, status=404)
+
+            comment_list = [{
+                "writer"    : comment.writer,
+                "content"   : comment.content,
+                "create_at" : comment.created_at
+                } for comment in Comment.objects.filter(posting_id=posting_id)
+            ]
+
+            return JsonResponse({'data':comment_list}, status=200)
+        
+        except JSONDecodeError:
+            return JsonResponse({'message':'JSON_DECODE_ERROR'}, status=400)
 
