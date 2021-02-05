@@ -60,7 +60,7 @@ class PostingSearchView(View):
             if not username:
                 return JsonResponse({'message':'KEY_ERROR'}, status=400)
 
-            if not Posting.objects.filter(writer=username).exists():
+            if not User.objects.filter(username=username).exists():
                 return JsonResponse({'message':'USER_DOES_NOT_EXIST'}, status=404)
 
             posting_list = [{
