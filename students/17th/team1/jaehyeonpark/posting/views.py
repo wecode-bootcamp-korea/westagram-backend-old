@@ -141,7 +141,11 @@ class CommentDeleteView(View):
 
             if Comment.objects.filter(id=comment_id).exists():
                 comment = Comment.objects.get(id=comment_id)
-                comment.delete()
+                if comment.user == user:
+                    comment.delete()
+                else:
+                    return JsonResponse({'message':'AUTHORIZATION_ERROR'}, status=200)
+
                 return JsonResponse({'message':'SUCCESS'}, status=200)
         
             return JsonResponse({'message':'INVALID_COMMENT'}, status=400)
@@ -160,7 +164,38 @@ class PostDeleteView(View):
 
             if Post.objects.filter(id=post_id).exists():
                 post = Post.objects.get(id=post_id)
-                post.delete()
+
+                if post.user == user:
+                    post.delete()
+                else:
+                    return JsonResponse({'message':'AUTHORIZATION_ERROR'}, status=200)
+                
+                return JsonResponse({'message':'SUCCESS'}, status=200)
+        
+            return JsonResponse({'message':'INVALID_POST'}, status=400)
+
+        except KeyError:
+            return JsonResponse({'message':'KEY_ERROR'}, status=400)
+        
+        except DataError:
+            return JsonResponse({'message':'DATA_ERROR'}, status=400)
+
+class PostModifyView(View):
+    @login_decorator
+    def post(self, request, data, user):
+        try:
+            post_id   = data['post_id']
+            image_url = data['image_url']
+
+            if Post.objects.filter(id=post_id).exists():
+                post = Post.objects.get(id=post_id)
+                
+                if post.user == user:
+                    post.image_url = image_url
+                    post.save()
+                else:
+                    return JsonResponse({'message':'AUTHORIZATION_ERROR'}, status=200)
+
                 return JsonResponse({'message':'SUCCESS'}, status=200)
         
             return JsonResponse({'message':'INVALID_POST'}, status=400)
