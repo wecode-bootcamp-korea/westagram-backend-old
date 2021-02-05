@@ -11,7 +11,23 @@ from posting.models    import (
     Posting
 )
 
-class PostingView(View):
+class PostingView(View): #로그인 데코레이터 
+    def get(self, request):
+        postings = Posting.objects.all()
+
+        posting_list = []
+
+        for posting in postings:
+            posting_list.append(
+                {
+                "username" : posting.username,
+                "image_url" : posting.image_url,
+                "created_at" : posting.created_at,
+                "description" : posting.description
+                }
+            )
+            return Json
+
     def post(self, request):
         data = json.loads(request.body)
 
@@ -21,11 +37,11 @@ class PostingView(View):
             username     = data['username']
             user         = User.objects.get(username=username)
 
-            if username != Users.objects.get(username=username):
+            if user.username != username:
                 return JsonResponse({"message" : "INVALID_USER"})
 
             Posting.objects.create(
-                username     = user.id,
+                username     = user,
                 description  = description,
                 image_url    = image_url
             )
@@ -35,8 +51,6 @@ class PostingView(View):
         except KeyError:
             return JsonResponse({"message" : "KEY_ERROR"}, status=400)
             
-                
-# get한 사람이 post한 사람과 맞는지 확인 -> 유저와 유저 아이디가 맞는지 확인해야함
-# 여러개의 포스팅이 들어올 수 있다
 
-
+class PostingDetailView(View):
+    pass
