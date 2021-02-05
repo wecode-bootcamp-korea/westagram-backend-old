@@ -50,6 +50,30 @@ class PostView(View):
             return JsonResponse({'message':'KEY_ERROR'}, status=400)
 
     @login_decorator
+    def patch(self, request):
+        try:
+            data = json.loads(request.body)
+            user = request.user
+
+            post_id = data['post_id']
+            post    = Post.objects.get(id=post_id)
+
+            if not Post.objects.filter(id=post_id).exists():
+                return JsonResponse({'message':'POST_DOES_NOT_EXIST'},status=401)
+
+            if post.user == user:
+                post.image        = data.get('image', post.image)
+                post.caption      = data.get('caption', post.caption)
+                
+                post.save()
+    
+                return JsonResponse({'message':'SUCCESS'},status=200)
+            return JsonResponse({'message':'INVALID_USER'},status=401)
+
+        except KeyError: 
+            return JsonResponse({'message':'KEY_ERROR'}, status=400)
+
+    @login_decorator
     def delete(self,request):
         try: 
             data = json.loads(request.body)
