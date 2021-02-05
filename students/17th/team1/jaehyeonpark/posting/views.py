@@ -91,12 +91,14 @@ class PostLikeView(View):
             post_id = data['post_id']
                 
             if Post.objects.filter(id=post_id).exists():
-
                 post = Post.objects.get(id=post_id)
-                
                 postlike = PostLike.objects.update_or_create(post=post, user=user)[0]
-                postlike.like = not postlike.like
-                postlike.save()
+                
+                if postlike.like:
+                    postlike.delete()
+                else:
+                    postlike.like = True
+                    postlike.save()
 
                 post.like = len(list(PostLike.objects.filter(post=post_id, like=True)))
                 post.save()

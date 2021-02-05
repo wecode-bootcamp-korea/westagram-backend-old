@@ -26,3 +26,7 @@ class PostLike(models.Model):
 
     class Meta:
         db_table = 'postlikes'
+
+# class Follow(models.Model):
+#     user   = models.TextField(max_length=1000, null=False, unique=True)
+#     follow = models.TextField(max_length=1000, null=False, unique=True)
