@@ -8,7 +8,8 @@ from django.views      import View
 from django.http       import JsonResponse
 from django.db.models  import Q
 
-from user.models    import User
+from user.models    import User, UserFollow
+from user.utils     import login_decorator
 
 MINIMUM_PASSWORD_LENGTH = 8
 
@@ -19,8 +20,7 @@ password_regex = re.compile(r'[A-Za-z0-9@#$%^&+=]{8,}')
 class SignUpView(View):
     def post(self, request):
         try:
-            data = json.loads(request.body) 
-
+            data     = json.loads(request.body) 
             email    = data['email']
             phone    = data['phone']
             nickname = data['nickname']
@@ -60,8 +60,7 @@ class SignUpView(View):
 class LogInView(View):
     def post(self, request):
         try: 
-            data = json.loads(request.body)
-
+            data     = json.loads(request.body)
             email    = data['email']
             phone    = data.get('phone', None)
             nickname = data.get('nickname', None)
@@ -76,5 +75,24 @@ class LogInView(View):
                     
             return JsonResponse({'message':'INVALID_USER'},status=401)    
             
+        except KeyError: 
+            return JsonResponse({'message':'KEY_ERROR'}, status=400)
+    
+class FollowView(View):
+    @login_decorator
+    def post(self, request):
+        try:
+            data         = json.loads(request.body)
+            follower     = request.user
+            follower_id  = follower.id
+            following_id = data['following_id']
+            
+            if UserFollow.objects.filter(follower_id=follower_id, following_id=following_id).exists():
+                UserFollow.objects.get(follower_id=follower_id, following_id=following_id).delete()
+                return JsonResponse({'message': 'SUCCESS'}, status=200)
+
+            UserFollow.objects.create(follower_id=follower_id, following_id=following_id)
+            return JsonResponse({'message': 'SUCCESS'}, status=200)
+
         except KeyError: 
             return JsonResponse({'message':'KEY_ERROR'}, status=400)
