@@ -5,7 +5,8 @@ from posting.views import (
     PostShowView,
     CommentView,
     CommentShowView,
-    PostLikeView
+    PostLikeView, 
+    FollowView
 )
 
 urlpatterns = [
@@ -13,5 +14,6 @@ urlpatterns = [
     path('/postshow', PostShowView.as_view()),
     path('/comment', CommentView.as_view()),
     path('/commentshow', CommentShowView.as_view()),
-    path('/postlike', PostLikeView.as_view())
+    path('/postlike', PostLikeView.as_view()),
+    path('/follow', FollowView.as_view()),
 ]

@@ -5,7 +5,7 @@ from django.views     import View
 from django.db.utils  import DataError
 from django.db.models import Q
 
-from posting.models   import Post, Comment, PostLike
+from posting.models   import Post, Comment, PostLike, Follow
 from user.models      import User
 from westagram.utils  import login_decorator
 
@@ -108,3 +108,28 @@ class PostLikeView(View):
         
         except KeyError:
             return JsonResponse({'message':'KEY_ERROR'}, status=400)
+
+class FollowView(View):
+    @login_decorator
+    def post(self, request, data, user):
+        try:
+            to_user = data['to_user']
+
+            if User.objects.filter(id=to_user).exists():
+                follow_user = User.objects.get(id=to_user)
+
+                if user == follow_user:
+                    return JsonResponse({'message':'CANNOT_FOLLOW_SELF'}, status=200)
+
+                if Follow.objects.filter(from_user=user, to_user=follow_user).exists():
+                    Follow.objects.get(from_user=user, to_user=follow_user).delete()
+                else:
+                    Follow.objects.create(from_user=user, to_user=follow_user)
+
+                return JsonResponse({'message':'SUCCESS'}, status=200)
+                    
+            return JsonResponse({'message':'INVALID_FOLLOW_USER'}, status=400)
+        
+        except KeyError:
+            return JsonResponse({'message':'KEY_ERROR'}, status=400)
+

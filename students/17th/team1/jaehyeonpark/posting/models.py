@@ -1,4 +1,5 @@
 from django.db   import models
+
 from user.models import User
 
 class Post(models.Model):
@@ -27,6 +28,9 @@ class PostLike(models.Model):
     class Meta:
         db_table = 'postlikes'
 
-# class Follow(models.Model):
-#     user   = models.TextField(max_length=1000, null=False, unique=True)
-#     follow = models.TextField(max_length=1000, null=False, unique=True)
+class Follow(models.Model):
+    from_user = models.ForeignKey('user.User', related_name="from_users", on_delete=models.CASCADE)
+    to_user   = models.ForeignKey('user.User', related_name="to_users", on_delete=models.CASCADE)
+    
+    class Meta:
+        db_table = 'follows'
