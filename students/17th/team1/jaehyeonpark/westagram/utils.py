@@ -1,11 +1,12 @@
 import json, bcrypt
 
+from django.http      import JsonResponse
 from django.db.models import Q
 
 from user.models      import User
 
 def login_decorator(func):
-    def wrapper(self, request):
+    def wrapper(self, request, *args, **kwargs):
         try:
             data         = json.loads(request.body)
             email        = data.get('email')
@@ -30,5 +31,6 @@ def login_decorator(func):
         except KeyError:
             return JsonResponse({'message':'KEY_ERROR'}, status=400)
 
-        return func(self, request, user)
+        return func(self, request, data, user)
+
     return wrapper
