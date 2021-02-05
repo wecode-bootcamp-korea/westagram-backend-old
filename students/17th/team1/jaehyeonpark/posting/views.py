@@ -85,7 +85,6 @@ class CommentShowView(View):
         
 
 class PostLikeView(View):
-    @login_decorator
     def post(self, request, data, user):
         try:
             post_id = data['post_id']
@@ -132,4 +131,23 @@ class FollowView(View):
         
         except KeyError:
             return JsonResponse({'message':'KEY_ERROR'}, status=400)
+
+class CommentDeleteView(View):
+    def post(self, request):
+        try:
+            data = json.loads(request.body)
+            comment_id = data['comment_id']
+
+            if Comment.objects.filter(id=comment_id).exists():
+                comment = Comment.objects.get(id=comment_id)
+                comment.delete()
+                return JsonResponse({'message':'SUCCESS'}, status=200)
+        
+            return JsonResponse({'message':'INVALID_COMMENT'}, status=400)
+
+        except KeyError:
+            return JsonResponse({'message':'KEY_ERROR'}, status=400)
+        
+        except DataError:
+            return JsonResponse({'message':'DATA_ERROR'}, status=400)
 
