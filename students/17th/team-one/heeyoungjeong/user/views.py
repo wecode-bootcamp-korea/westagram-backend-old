@@ -12,14 +12,16 @@ from django.views     import View
 from user.models import User
 
 SECRET_KEY = my_settings.SECRET_KEY['secret']
-MINIMUM_PASSWORD_LENGTH = 8
+
+EMAIL_REGULAR_EXPRESSION = re.compile('^[^-_.][a-zA-Z0-9-_.]*[a-zA-Z0-9]*[@][a-zA-Z0-9]+[.][a-zA-Z]{2,3}$')
+PASSWORD_REGULAR_EXPRESSION = re.compile('^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{8,16}$')
 
 class SignUpView(View):
     def post(self, request):
         try:
             data = json.loads(request.body)
 
-            check_lst = ['email', 'password', 'name', 'user_name', 'phone_number',]
+            check_lst = ['email', 'password', 'name', 'user_name', 'phone_number']
             for key in check_lst:
 
                 if key not in data.keys():
@@ -29,10 +31,10 @@ class SignUpView(View):
                 if not value:
                     return JsonResponse({'message': 'KEY_ERROR'}, status=400)
 
-            if not '@' in data['email'] or not '.' in data['email']:
-                return JsonResponse({'message':'The email is not valid'}, status=400)
+            if not EMAIL_REGULAR_EXPRESSION.search(data['email']):
+                return JsonResponse({'message': 'INVAILD_EMAIL'}, status=400)
 
-            if not MINIMUM_PASSWORD_LENGTH <= len(data['password']):
+            if not PASSWORD_REGULAR_EXPRESSION.search(data['password']):
                 return JsonResponse({'message': 'The password is not valid'}, status=400)
 
             user = User.objects.filter(email=data['email'])
