@@ -50,7 +50,6 @@ class CommentView(View):
         try:
             data = json.loads(request.body)
             Comment.objects.create(
-                    user_id=User.objects.get(account=data['account']).id,
                     post_id=Post.objects.get(title=data['title']).id,
                     content=data['content']
                     )
@@ -61,12 +60,11 @@ class CommentView(View):
     def get(self, request):
         data = json.loads(request.body)
         results = []
-        post = Post.objects.get(title=data['title'])
-        comments = Comment.objects.filter(post_id=post.id)
+        comments = Comment.objects.filter(post_id=Post.objects.get(title=data['title']))
         for comment in comments:
             results.append({
+                "post":comment.post.title,
                 "content":comment.content,
                 "created_at":comment.created_at,
-                "Useraccount":User.objects.get(id=comment.user_id).account,
                 })
         return JsonResponse({'RESULT': results}, status=200)
