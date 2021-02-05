@@ -41,10 +41,11 @@ class PostView(View):
 class CommentView(View):
     @login_decorator
     def post(self, request):
-        data    = json.loads(request.body)
-        user    = request.user
-        post_id = data.get('post', None)
-        content = data.get('content', None)
+        data      = json.loads(request.body)
+        user      = request.user
+        post_id   = data.get('post', None)
+        parent_id = data.get('parent', None)
+        content   = data.get('content', None)
         
         # KEY_ERROR check
         if not (post_id and content):
@@ -54,20 +55,29 @@ class CommentView(View):
         if not Post.objects.filter(id=post_id).exists():
             return JsonResponse({'message': 'INVALID_POST'}, status=400)
 
+        # valid comment check
+        if parent_id and not Comment.objects.filter(id=parent_id).exists():
+            return JsonResponse({'message': 'INVALID_COMMENT'}, status=400)
+
         Comment.objects.create(
-            user    = user,
-            post    = Post.objects.get(id=post_id),
-            content = content
+            user      = user,
+            post      = Post.objects.get(id=post_id),
+            parent_id = parent_id,
+            content   = content
         )
         return JsonResponse({'message': 'SUCCESS'}, status=200)
-
 
 class CommentDetailView(View):
     # update
     @login_decorator
     def post(self, request, comment_id):
         try:
-            data = json.loads(request.body)
+            data    = json.loads(request.body)
+            content = data.get('content', None)
+
+            # KEY_ERROR check
+            if not content:
+                return JsonResponse({'message': 'KEY_ERROR'}, status=400)
 
             # vaild comment check
             if not Comment.objects.filter(id=comment_id).exists():
@@ -79,7 +89,7 @@ class CommentDetailView(View):
             if comment.user != request.user:
                 return JsonResponse({'message': 'INVALID_USER'}, status=401)
 
-            comment.content = data.get('content', comment.content)
+            comment.content = content 
             comment.save()
             return JsonResponse({'message': 'SUCCESS'}, status=200)
 
@@ -119,12 +129,19 @@ class PostDetailView(View):
         # comment 정보
         comments = Comment.objects.filter(post=post)
         if comments:
-            comment_list = [{
-                'user'      : comment.user.name,
-                'content'   : comment.content,
-                'created_at': comment.created_at
-                } for comment in comments
-            ]
+            comment_list = []
+            for comment in comments:
+                if comment.parent:
+                    parent_id = comment.parent.id
+                else:
+                    parent_id = None
+
+                comment_list.append({
+                    'user'      : comment.user.name,
+                    'parent_id' : parent_id,
+                    'content'   : comment.content,
+                    'created_at': comment.created_at
+                })
             context['comment_list'] = comment_list
 
         return JsonResponse({'data': context}, status=200)
