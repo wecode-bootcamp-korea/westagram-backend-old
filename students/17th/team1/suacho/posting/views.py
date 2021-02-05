@@ -95,7 +95,6 @@ class CommentView(View):
             posting = Posting.objects.get(id=posting_id)
             
             comment = Comment.objects.create(
-                writer  = user.username,
                 content = content,
                 user    = user,
                 posting = posting
@@ -119,7 +118,7 @@ class CommentView(View):
                 return JsonResponse({'message':'POSTING_DOES_NOT_EXIST'}, status=404)
 
             comment_list = [{
-                "writer"    : comment.writer,
+                "writer"    : User.objects.get(id=comment.user.id).username,
                 "content"   : comment.content,
                 "create_at" : comment.created_at
                 } for comment in Comment.objects.filter(posting_id=posting_id)
