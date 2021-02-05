@@ -72,6 +72,6 @@ class LoginView(View):
                 if bcrypt.checkpw(password.encode('utf-8'), user.password.encode('utf-8')):
                     return JsonResponse({"message": "LOGIN_SUCESS"}, status = 200)
             else:
-                return JsonResponse({"message": "ID_OR_PASSWORD_DOES_NOT_MATCH"}, status = 401)
+                return JsonResponse({"message": "LOGIN_FAIL"}, status = 401)
         except KeyError:
             return JsonResponse({"message": "INVALID_KEYS"}, status = 400)
