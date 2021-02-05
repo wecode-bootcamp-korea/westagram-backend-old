@@ -50,8 +50,7 @@ class SignUpView(View):
                     return JsonResponse({'message':'SUCCESS'}, status=200)
                 except KeyError:
                     return JsonResponse({'message': 'KEY_ERROR'}, status=400)
-            else:
-                return JsonResponse({'message':'USER_ALREADY_EXIST'}, status=409)
+            return JsonResponse({'message':'USER_ALREADY_EXIST'}, status=409)
 
         except JSONDecodeError:
             return JsonResponse({'message':'The request is not valid'}, status=400)
@@ -79,11 +78,11 @@ class SignInView(View):
 
                     return JsonResponse({'message': 'SUCCESS', 'ACCESS_TOKEN': encoded_jwt}, status=200)
 
-                else:
-                    return JsonResponse({'message': 'INVALID_USER'}, status=401)
 
-            else:
                 return JsonResponse({'message': 'INVALID_USER'}, status=401)
+
+
+            return JsonResponse({'message': 'INVALID_USER'}, status=401)
 
         except JSONDecodeError:
             return JsonResponse({'message': 'BAD_REQUEST'}, status=400)
