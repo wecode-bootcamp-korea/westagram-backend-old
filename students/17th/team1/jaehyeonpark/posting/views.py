@@ -5,7 +5,7 @@ from django.views     import View
 from django.db.utils  import DataError
 from django.db.models import Q
 
-from posting.models   import Post, Comment, PostLike, Follow
+from posting.models   import Post, Comment, PostLike, Follow, CommentOnComment
 from user.models      import User
 from westagram.utils  import login_decorator
 
@@ -199,6 +199,27 @@ class PostModifyView(View):
                 return JsonResponse({'message':'SUCCESS'}, status=200)
         
             return JsonResponse({'message':'INVALID_POST'}, status=400)
+
+        except KeyError:
+            return JsonResponse({'message':'KEY_ERROR'}, status=400)
+        
+        except DataError:
+            return JsonResponse({'message':'DATA_ERROR'}, status=400)
+
+class CommentOnCommentView(View):
+    @login_decorator
+    def post(self, request, data, user):
+        try:
+            comment_id   = data['comment_id']
+            comment_body = data['comment_body']
+
+            if Comment.objects.filter(id=comment_id).exists():
+                comment = Comment.objects.get(id=comment_id)
+                CommentOnComment.objects.create(user=user, comment_body=comment_body, comment_id=comment_id)
+
+                return JsonResponse({'message':'SUCCESS'}, status=200)
+        
+            return JsonResponse({'message':'INVALID_COMMENT'}, status=400)
 
         except KeyError:
             return JsonResponse({'message':'KEY_ERROR'}, status=400)

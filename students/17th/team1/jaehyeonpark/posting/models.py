@@ -34,3 +34,12 @@ class Follow(models.Model):
     
     class Meta:
         db_table = 'follows'
+
+class CommentOnComment(models.Model):
+    comment      = models.ForeignKey('Comment', on_delete=models.CASCADE)
+    user         = models.ForeignKey('user.User', on_delete=models.CASCADE)
+    created_at   = models.DateTimeField(auto_now_add=True)
+    comment_body = models.TextField(max_length=10000)
+
+    class Meta:
+        db_table = 'commentoncomments'
