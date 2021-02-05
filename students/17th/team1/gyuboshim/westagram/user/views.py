@@ -1,11 +1,12 @@
+import json
+import bcrypt
+
 from django.shortcuts   import render
 from django.views       import View
 from django.http        import HttpResponse, JsonResponse
 from django.db.models   import Q
 
 from .models            import User
-
-import json
 
 PASSWORD_LEN_LIMIT = 8
 
@@ -18,7 +19,7 @@ class UserView(View):
             name            =   data['name']
             nickname        =   data['nickname']
             password        =   data['password']
-
+            
             if (email_adress or phone_number) and password:
                 
                 if User.objects.filter(email_adress = email_adress).exists():
@@ -32,13 +33,13 @@ class UserView(View):
 
                 if len(password) < PASSWORD_LEN_LIMIT:
                     return JsonResponse({"message": "SHORT_PASSWORD"}, status = 400)
-                    
+
                 User.objects.create(
                                     phone_number    =   phone_number,
                                     email_adress    =   email_adress,
                                     name            =   name,
                                     nickname        =   nickname,
-                                    password        =   password
+                                    password        =   bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode(),
                                     )
                 
                 return JsonResponse({"message":"SUCESS"}, status = 200)
@@ -55,6 +56,7 @@ class LoginView(View):
         phone_number    =   data.get('phone_number', None)
         email_adress    =   data.get('email_adress', None)
         nickname        =   data.get('nickname', None)
+        password        =   data['password']
 
         try:
             if User.objects.filter(
@@ -67,11 +69,9 @@ class LoginView(View):
                                 Q(email_adress  =   email_adress)|
                                 Q(nickname      =   nickname)
                                 )
-                if user.password == data['password']:
+                if bcrypt.checkpw(password.encode('utf-8'), user.password.encode('utf-8')):
                     return JsonResponse({"message": "LOGIN_SUCESS"}, status = 200)
-
             else:
                 return JsonResponse({"message": "ID_OR_PASSWORD_DOES_NOT_MATCH"}, status = 401)
-        
         except KeyError:
             return JsonResponse({"message": "INVALID_KEYS"}, status = 400)
