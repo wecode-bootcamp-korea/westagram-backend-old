@@ -22,7 +22,6 @@ class PostingView(View):
                 return JsonResponse({'message':'KEY_ERROR'}, status=400)
 
             posting = Posting.objects.create(
-                writer  = user.username,
                 content = content,
                 user    = user
             )
@@ -40,7 +39,7 @@ class PostingView(View):
     
     def get(self, request):
         posting_list = [{
-            "writer"    : posting.writer,
+            "username"  : User.objects.get(id=posting.user.id).username,
             "content"   : posting.content,
             "image_url" : [i.image_url for i in Image.objects.filter(posting_id=posting.id)],
             "create_at" : posting.created_at
@@ -62,14 +61,16 @@ class PostingSearchView(View):
 
             if not User.objects.filter(username=username).exists():
                 return JsonResponse({'message':'USER_DOES_NOT_EXIST'}, status=404)
+            
+            user_id = User.objects.get(username=username).id
 
             posting_list = [{
-                "writer"    : posting.writer,
+                "username"  : User.objects.get(id=posting.user.id).username,
                 "content"   : posting.content,
                 "image_url" : [i.image_url for i in Image.objects.filter(posting_id=posting.id)],
                 "create_at" : posting.created_at
-                } for posting in Posting.objects.filter(writer=username)
-            ]
+                } for posting in Posting.objects.filter(user_id=user_id)
+                ]
 
             return JsonResponse({'data':posting_list}, status=200)
         
@@ -83,7 +84,7 @@ class CommentView(View):
             data = json.loads(request.body)
             user = request.user
 
-            content = data.get('content', None)
+            content    = data.get('content', None)
             posting_id = data.get('posting_id', None)
 
             if not (content and posting_id):
@@ -118,7 +119,7 @@ class CommentView(View):
                 return JsonResponse({'message':'POSTING_DOES_NOT_EXIST'}, status=404)
 
             comment_list = [{
-                "writer"    : User.objects.get(id=comment.user.id).username,
+                "username"  : User.objects.get(id=comment.user.id).username,
                 "content"   : comment.content,
                 "create_at" : comment.created_at
                 } for comment in Comment.objects.filter(posting_id=posting_id)
