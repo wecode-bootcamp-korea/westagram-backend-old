@@ -11,22 +11,23 @@ from posting.models    import (
     Posting
 )
 
-class PostingView(View): #로그인 데코레이터 
+class PostingView(View): 
+    #로그인 데코레이터 
     def get(self, request):
         postings = Posting.objects.all()
 
-        posting_list = []
+        posting_list = [] 
 
-        for posting in postings:
-            posting_list.append(
+        for i in range(len(postings)):
+            posting_list.append( 
                 {
-                "username" : posting.username,
-                "image_url" : posting.image_url,
-                "created_at" : posting.created_at,
-                "description" : posting.description
+                "image_url" : postings[i].image_url,
+                "description" : postings[i].description,
+                "username" : postings[i].username.username,
+                "created_at" : postings[i].created_at,
                 }
             )
-            return Json
+        return JsonResponse({"data" : posting_list}, status=201)
 
     def post(self, request):
         data = json.loads(request.body)
