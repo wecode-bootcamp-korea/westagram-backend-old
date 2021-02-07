@@ -45,10 +45,8 @@ class UserSignInView(View):
     def post(self, request):
         try:
             data      = json.loads(request.body)
-            #username  = data['username']
             email     = data['email']
             password  = data['password']
-            #phone_num = data['phone_num']
 
             if Account.objects.filter(email=email).exists():
                 login_user = Account.objects.get(email=email)
@@ -57,7 +55,7 @@ class UserSignInView(View):
                     access_token=jwt.encode({'id' : login_user.id}, 'secret', algorithm='HS256')
                     return JsonResponse({'MESSSAGE': 'SUCCESS', 'ACCESS_TOKEN': access_token}, status=200)
                 
-                return JsonResponse({'MESSSAGE': 'INVALID_USER'}, status=401)
+                return JsonResponse({'MESSSAGE': 'INVALID_PASSWORD'}, status=401)
             
             return JsonResponse({'MESSSAGE': 'INVALID_USER'}, status=401)
         
