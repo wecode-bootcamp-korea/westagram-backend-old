@@ -10,7 +10,6 @@ class Posting(models.Model):
     create_date = models.DateField(auto_now_add=True)
     modify_date = models.DateField(auto_now=True)
 
-
     def __str__(self):
         return f'{self.title}'
 
