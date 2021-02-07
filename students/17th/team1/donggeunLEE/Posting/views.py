@@ -4,9 +4,10 @@ from django.http   import HttpResponse, JsonResponse
 from django.views  import View
 
 from User.models  import Userinfo
-from .models      import UserPosting, UserComment
+from .models      import UserPosting, UserComment, Userlike
 
 
+# Mission4
 class ContentSignupView(View):
     def post(self, request):
         try:
@@ -30,6 +31,7 @@ class ContentGetView(View):
         
         return JsonResponse({"content_data": list(content_data)},status=200)
 
+# Mission5
 class UserCommentView(View):
     def post(self, request):
         try:    
@@ -56,3 +58,28 @@ class GetCommentView(View):
         comment_data = UserComment.objects.values()
 
         return JsonResponse({"comment_data": list(comment_data)}, status=200)
+
+
+
+
+# Mission6 좋아용 구현하기
+class UserLikeView(View):
+    def post(self, request):
+        # 좋아요가 있으면 제거, 없으면 post
+        try:
+            data = json.loads(request.body)
+            user = Userinfo.objects.get(name = data['name'])
+            post = UserPosting.object.get(image = data['image'])
+
+            if Userlike.objects.filter(post = post, user=user).exists():
+                Userlike.objects.get(post=post, user=user).delete()
+                return JsonResponse({"MESSAGE" : "SUCCESS"}, status=200)
+            Userlike.objects.create(
+                    post = post,
+                    user = user
+                    )
+            return JsonResponse({"MESSAGE": "SUCCESS"}, status=200)
+        except KeyError:
+            return JsonResponse({"MESSAGE":"INVALID_KEY"}, status=400)
+
+
