@@ -112,16 +112,13 @@ class LikeView(View):
         try:
             data        = json.loads(request.body)
             posting     = data['posting_id']
-            userlike    = data['user_id']
+            user        = request.user
             post        = Posting.objects.get(id=posting)
 
-
-            if not User.objects.get(id=data['user_id']) == userlike :
-                return JsonResponse({'message' : '토큰-유저 불일치'}, status=400)
             # Posting의 MtoM으로 접근해서 집어넣기!
-            post.userlike.add(UserLike.objects.create(userlike_id=userlike))
+            post.like_user.add(User.objects.get(id=user.id))
             # Like model을 import한다면 아래의 것을 사용
-            #Like.objects.create(userlike_id=userlike, posting_id=posting)
+            #Like.objects.create(user_id=user.id, posting_id=posting)
 
             return JsonResponse({'result' : 'SUCCESS'}, status=200)
         except KeyError:
