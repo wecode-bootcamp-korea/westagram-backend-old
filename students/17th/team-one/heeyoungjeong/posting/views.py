@@ -29,11 +29,35 @@ SECRET_KEY = my_settings.SECRET_KEY['secret']
     create_date = models.DateField(auto_now_add=True)
     modify_date = models.DateField(auto_now=True)
 """
+def login_decorator(func):
+    def wrapper(self, request, *args, **kwargs):
+        try:
+            data = json.loads(request.body)
+            ACCESS_TOKEN = data['ACCESS_TOKEN']
+            payload = jwt.decode(ACCESS_TOKEN, SECRET_KEY, algorithms='HS256')
+            user = User.objects.get(id=payload['user_id'])
+            request.user = user
+            return func(self, request, *args, **kwargs)
+
+        except JSONDecodeError:
+            return JsonResponse({'message': 'BAD_REQUEST'}, status=400)
+
+        except KeyError:
+            return JsonResponse({'message': 'KEY_ERROR'}, status=400)
+
+        except User.DoesNotExist:
+            return JsonResponse({'message': 'INVALID_USER'}, status=400)
+
+    return wrapper
+
+
 class PostingView(View):
+    @login_decorator
     def post(self, request):
 
         try:
             data = json.loads(request.body)
+            user = request.user
 
             title = data.get('title', None)
             content = data.get('content', None)
@@ -45,14 +69,14 @@ class PostingView(View):
             if not (title and content and image_url and ACCESS_TOKEN):
                 return JsonResponse({'message': 'KEY_ERROR'}, status=400)
 
-            payload = jwt.decode(ACCESS_TOKEN, SECRET_KEY, algorithms='HS256')
-            print(payload)
-            user = User.objects.get(id=payload['user_id'])
-            if not user:
-                return JsonResponse({'message': 'INVALID_USER'}, status=401)
+            # payload = jwt.decode(ACCESS_TOKEN, SECRET_KEY, algorithms='HS256')
+            # print(payload)
+            # user = User.objects.get(id=payload['user_id'])
+            # if not user:
+            #     return JsonResponse({'message': 'INVALID_TOKEN'}, status=400)
 
             Posting.objects.create(
-                user_id=payload['user_id'],
+                user_id=user.id,
                 title=title,
                 content=content,
                 image_url=image_url,
@@ -61,7 +85,7 @@ class PostingView(View):
             return JsonResponse({'message': 'SUCCESS'}, status=200)
 
         except JSONDecodeError:
-            return JsonResponse({'message': 'BAD_REQUEST222'}, status=400)
+            return JsonResponse({'message': 'BAD_REQUEST'}, status=400)
 
         except InvalidSignatureError:
-            return JsonResponse({'message': 'BAD_REQUEST1111'}, status=401)
+            return JsonResponse({'message': 'BAD_REQUEST'}, status=401)
