@@ -15,3 +15,18 @@ class Posting(models.Model):
 
     class Meta:
         db_table = 'Posting'
+
+
+class Comment(models.Model):
+    posting = models.ForeignKey('posting.Posting', on_delete=models.SET_NULL, null=True)
+    user = models.ForeignKey('user.User', on_delete=models.SET_NULL, null=True)
+    content = models.TextField(null=True)
+    create_date = models.DateField(auto_now_add=True)
+    modify_date = models.DateField(auto_now=True)
+
+    def __str__(self):
+        return f'{self.content[:10]}'
+
+    class Meta:
+        db_table = 'Comment'
+
