@@ -5,8 +5,10 @@ from utils import login_decorator
 
 from json.decoder import JSONDecodeError
 from jwt import InvalidSignatureError
+from posting.models import Comment
 from posting.models import Posting
 from posting.models import User
+
 
 
 from django.http import JsonResponse
@@ -71,3 +73,46 @@ class PostingView(View):
             result.append(posting_info)
 
         return JsonResponse({'message': 'SUCCESS', 'posting': result}, status=200)
+
+
+class CommentView(View):
+    @login_decorator
+    def post(self, request):
+
+        try:
+            data = json.loads(request.body)
+            user = request.user
+
+            content = data.get('content', None)
+
+            # 일단 request.body로 받고
+            # 구헌하고 url로 받는 것으로 구현해보자
+            posting_id = data.get('posting_id', None)
+
+            if not content and posting_id:
+                return JsonResponse({'message': 'KEY_ERROR'}, status=400)
+
+            comment = Comment.objects.create(
+                content=content,
+                posting_id=posting_id,
+                user_id=user.id,
+            )
+
+            return JsonResponse({'message': 'SUCCESS'}, status=200)
+
+        except JSONDecodeError:
+            return JsonResponse({'message': 'BAD_REQUEST'}, status=400)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
