@@ -1,7 +1,7 @@
 import json
 import jwt
 import my_settings
-
+from utils import login_decorator
 
 from json.decoder import JSONDecodeError
 from jwt import InvalidSignatureError
@@ -15,40 +15,6 @@ from django.views import View
 
 
 SECRET_KEY = my_settings.SECRET_KEY['secret']
-
-"""
-1. post로 데이터를 받는다.
-2. 데이터 검증한다
-2. 값을 저장한다.
-3. 회원가입과 로그인이 되어있는지 먼저 판별해야한다.(토큰이용)
-
-    user = models.ForeignKey('user.User', on_delete=models.SET_NULL, null=True)
-    title = models.CharField(max_length=100, null=True)
-    content = models.TextField(null=True)
-    image_url = models.URLField(null=True)
-    create_date = models.DateField(auto_now_add=True)
-    modify_date = models.DateField(auto_now=True)
-"""
-def login_decorator(func):
-    def wrapper(self, request, *args, **kwargs):
-        try:
-            data = json.loads(request.body)
-            ACCESS_TOKEN = data['ACCESS_TOKEN']
-            payload = jwt.decode(ACCESS_TOKEN, SECRET_KEY, algorithms='HS256')
-            user = User.objects.get(id=payload['user_id'])
-            request.user = user
-            return func(self, request, *args, **kwargs)
-
-        except JSONDecodeError:
-            return JsonResponse({'message': 'BAD_REQUEST'}, status=400)
-
-        except KeyError:
-            return JsonResponse({'message': 'KEY_ERROR'}, status=400)
-
-        except User.DoesNotExist:
-            return JsonResponse({'message': 'INVALID_USER'}, status=400)
-
-    return wrapper
 
 
 class PostingView(View):
