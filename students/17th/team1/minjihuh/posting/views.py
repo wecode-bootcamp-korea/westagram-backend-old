@@ -9,7 +9,8 @@ from user.models      import (
 )
 from posting.models    import (
     Posting,
-    Comment
+    Comment,
+    Like
 )
 
 from westagram.utils   import login_decorator
@@ -58,7 +59,6 @@ class PostingView(View):
 
 class CommentView(View):
     def get(self, request):
-
         try:
             # comments = Comment.objects.all()
             comments   = Comment.objects.filter(id=1)
@@ -79,9 +79,8 @@ class CommentView(View):
         except KeyError:
             return JsonResponse({"message" : "KEY_ERROR"}, status=400)
         
-        def post(self,request): 
-            data = json.loads(request.body)
-
+    def post(self,request): 
+        data = json.loads(request.body)
         #나는 url과 username을 원하지 일반 id를 원하지 않아.. 
         try:
             user_id          = data['username']
@@ -108,6 +107,50 @@ class CommentView(View):
         except KeyError:
             return JsonResponse({"message" : "KEY_ERROR"}, status=400)
 
+class LikeView(View):
+    def get(self, request):
+        # try:
+        likes = Like.objects.all()
+        like_list = []
+
+        for like in likes:
+            like_list.append(
+                {
+                    "like_username" : like.like_username.username,
+                    "posting_photo" : like.posting_photo.id,
+                    "liked_at"    : like.liked_at
+
+                }
+            )
+            return JsonResponse({"data" : like_list}, status=200)
+
+        # except KeyError:
+        #     return JsonResponse({"message" : "KEY_ERROR"}, status=400)
+    def post(self, request):
+        data = json.loads(request.body)
+        try:
+            user_id       = data.get('username', None)
+            posting_id    =  data.get('posting', None)
+            
+            if User.objects.filter(id=user_id).exists():
+                like_username = User.objects.get(id=user_id)
+
+                if Posting.objects.filter(id=posting_id).exists():
+                    posting_photo =  Posting.objects.get(id=posting_id)
+
+                    Like.objects.create(
+                        like_username = like_username,
+                        posting_photo = posting_photo,
+                    )
+                    
+                    return JsonResponse({"message" : "SUCCESS"}, status=200)
+
+                return JsonResponse({"message" : "INVALID_POST"}, status=400)
+
+            return JsonResponse({"message" : "INVALID_USER"}, status=400)
+
+        except KeyError:
+            return JsonResponse({"message" : "KEY_ERROR"}, status=400)
 
 class PostingDetailView(View):
     pass
