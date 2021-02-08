@@ -1,3 +1,4 @@
+from collections import namedtuple
 import json, re
 import bcrypt
 import jwt
@@ -8,8 +9,9 @@ from django.http        import JsonResponse
 from django.views       import View
 from django.db.models   import Q
 
-from .models            import User
+from .models            import User, Follow
 from my_settings        import SECRET_KEY,AL
+from posting.utils      import login_decorator
 
 class UserView(View):
     def post(self, request):
@@ -73,3 +75,43 @@ class SignInView(View):
             return JsonResponse({'message' : 'KEY_ERROR'}, status=400)
         except JSONDecodeError:
             return JsonResponse({'message' : 'NOTHING_INPUT'}, status=400)
+
+class FollowView(View):
+    @login_decorator
+    def post(self, request):
+        try:
+            data        = json.loads(request.body)
+            user        = User.objects.get(id=request.user.id)
+            following   = User.objects.get(name=data['following'])
+
+            Follow.objects.create(user_id = user.id, following_id = following.id)
+
+            return JsonResponse({'result' : '\''+user.name+'\''+' start following'+'\''+following.name+'\''}, status=200)
+
+        except KeyError:
+            return JsonResponse({'message' : 'KEY_ERROR'}, status=400)
+
+    def get(self, request):
+        try:
+            if not request.body:
+                follows = Follow.objects.all()
+            # 특정 user의 name을 입력하면 그 user의 follower만 보여준다
+            else:
+                data    = json.loads(request.body)
+                user    = User.objects.get(name = data['user'])
+                follows = Follow.objects.filter(user_id = user.id)
+            
+            follow_list = []
+            for follow in follows:
+                follow_info = {
+                        'user' : follow.user.name,
+                        'follower' : follow.following.name,
+                        }
+                follow_list.append(follow_info)
+
+            if not follow_list :
+                return JsonResponse({'result' : 'NONE'}, status=200)
+            return JsonResponse({'result' : follow_list}, status=200)
+
+        except KeyError:
+            return JsonResponse({'message' : 'KEY_ERROR'}, status=400)
