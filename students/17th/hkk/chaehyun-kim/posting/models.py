@@ -26,7 +26,7 @@ class UserLike(models.Model):
     userlike   = models.ForeignKey(User, on_delete=models.CASCADE)
 
 class Like(models.Model):
-    userlike   = models.ForeignKey(UserLike, on_delete=models.CASCADE, null=True)
+    userlike    = models.ForeignKey(UserLike, on_delete=models.CASCADE, null=True)
     posting     = models.ForeignKey(Posting, on_delete=models.CASCADE)
     create_at   = models.DateTimeField(auto_now_add=True, null=timezone.now())
 
