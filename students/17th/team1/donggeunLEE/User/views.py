@@ -7,7 +7,9 @@ from django.views             import View
 from django.db.models         import Q
 from django.core.validators   import validate_email, ValidationError
 
-from .models      import Userinfo
+from .models                  import Userinfo, Follow
+import my_settings
+from .utilities               import login_decorator
 
 # 회원가입
 MINIMUM_PASSWORD_LENGTH = 8                    # 변수명만 봐도 이게 먼지 알수있도록 줄이지 말고 적어준다. , 나중에 비교하는데 숫자가 많이 들어가게 될 경우도 있기때문에 넣어준다. 보이면 안되는 상수는 my_settings.에 넣어서 git에 올리지 않는다.
@@ -58,22 +60,68 @@ class UserSignUpView(View):
 
 class UserlonginView(View):
     def post(self, request):
-        data = json.loads(request.body)  # data에 try에 넣어줘야한다. 경우를 어떻게 생각하느냐... 
         try:
-
+            data = json.loads(request.body)   
             name         = data.get('name', None)
             phone_number = data.get('phone_number', None)
             email        = data.get('email', None)
      
             if Userinfo.objects.filter(name = name).exists():
                 user = Userinfo.objects.get(name = name)
-                
+                print('***************************************************************')
                 # db에 암호화한 비밀번호랑 받은 비밀번호를 비교해서 맞으면 토큰을 주고 아니면 오류메세지 리턴
                 if bcrypt.checkpw(data['password'].encode('utf-8'), user.password.encode('utf-8')):
-                    access_token = jwt.encode({'id' : user.id}, 'secret', algorithm='HS256')   # 아무도 모르게 해야한다.
-                    return JsonResponse({"TOKEN" : access_token, "MESSAGE":"SUCCESS"}, status = 200)
+                    access_token = jwt.encode({'id' : user.id}, 'secret' , algorithm ='HS256').decode('utf-8')   
+                    print('***********************************************************************')
+                    return JsonResponse({"TOKEN" : access_token},status=200)
+                    #return JsonResponse({"TOKEN" : access_token, "MESSAGE":"SUCCESS"}, status = 200)
+                    print('*******************************************************************')
                 return JsonResponse({"MESSAGE" : "INVALID_PASSWORD"}, status = 401)
+            
             return JsonResponse({"MESSAGE": "INVALID_USER"}, status = 401)
         except KeyError:
             return JsonResponse({"MESSAGE": "INVALID_KEYS"}, status = 400)
+
+
+class FollowView(View):
+    @login_decorator
+    def post(self, request):
+        data           = json.loads(request.body)
+        follower       = request.user
+        follower_id    = follower.id
+        followee_id    = data['followee_id']
+
+
+        if Follow.objects.filter(follower_id = follower_id, followee_id = followee_id).exists():
+            return JsonResponse({"MESSAGE" : "INVALID_USER"}, status=400)
+        
+        Follow.objects.create(
+                follower = follower_id,
+                followee = followee_id
+                )
+        return JsonResponse({"MESSAGE": "SUCCESS"}, status=200)
+
+    
+    @login_decorator
+    def delete(self, request):
+        data         = json.loads(request.body)
+        follower     = request.user
+        follower_id  = follower.id
+        followee_id = data['followeee_id']
+
+        if Follow.objects.filter(follower_id = follower_id, followee_id = followee_id).exists():
+            Follow.objects.get(follower_id=follower_id, followee_id=followee_id).delete()
+            return JsonResponse({"MESSAGE": "SUCCESS"}, status=200)
+
+
+        
+
+
+
+
+
+
+
+
+
 

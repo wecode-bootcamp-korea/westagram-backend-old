@@ -3,33 +3,45 @@ import json
 from django.http   import HttpResponse, JsonResponse
 from django.views  import View
 
-from User.models  import Userinfo
-from .models      import UserPosting, UserComment, Userlike
+from User.models   import Userinfo
+from .models       import UserPosting, UserComment, Userlike
+from User.utilities import login_decorator
 
 
 # Mission4
 class ContentSignupView(View):
+    @login_decorator
     def post(self, request):
         try:
             data = json.loads(request.body)
-            if Userinfo.objects.filter(name = data['name']).exists():
-                user = Userinfo.objects.get(name = data['name'])  
-                image_url = data['image_url']
-
-                UserPosting.objects.create(
-                        user_ID   = user,
-                        image_url = image_url
-                        )
-                return JsonResponse({"MESSAGE": "SUCCESS"}, status=200)
-            return JsonResponse({"MESSAGE" : "INVALID_NAME"}, status=400)
+            user = request.user
+            image_url = data['image_url']
+            
+            UserPosting.objects.create(
+                    user_ID   = user,
+                    image_url = image_url
+                    )
+            return JsonResponse({"MESSAGE": "SUCCESS"}, status=200)
         except KeyError:
             return JsonResponse({"MESSAGE":"INVALID_KEY"}, status=400)
 
 class ContentGetView(View):
+    @login_decorator
     def get(self, request):
-        content_data = UserPosting.objects.values()
-        
-        return JsonResponse({"content_data": list(content_data)},status=200)
+        user = request.user
+        result = []
+        posts = UserPosting.objects.all()
+
+        for post in posts:
+            result.append(
+                    {   
+                        'user_ID'     : dict(user),
+                        'image_url'   : UserPosting.image_url,
+                        'posted_time' : UserPosting.create_at
+                        }
+                    )
+        return JsonResponse({"MESSAGE": "SUCCESS", "result" : result}, status=200)
+       
 
 # Mission5
 class UserCommentView(View):

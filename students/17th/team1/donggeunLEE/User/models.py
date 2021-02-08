@@ -14,3 +14,16 @@ class Userinfo(models.Model):
 
     class Meta:
         db_table = 'userinfo'
+
+
+
+class Follow(models.Model):
+    follower  = models.ForeignKey('Userinfo', related_name='follower', on_delete=models.CASCADE)
+    followee  = models.ForeignKey('Userinfo', related_name='followee' ,on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f'{self.follower, self.followee}'
+
+
+    class Meta:
+        db_table = 'follow'

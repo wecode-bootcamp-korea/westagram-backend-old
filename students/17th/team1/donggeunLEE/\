@@ -1,0 +1,27 @@
+import json
+
+from django.http  import HttpResponse, JsonResponse
+from django.views import View
+
+from .models      import CreateFollow
+from User.models  import Userinfo
+from User.utilities import login_decorator
+
+
+class CreateFollowView(View):
+    def post(self, request):
+        data = json.loads(request.body)
+        print("*********************************************************")
+        #회원가입이 된 사용자 인지부터 확인
+        
+        # followee에 이름이 있는지 확인 있으면 
+        if CreateFollow.objects.filter(followee = data['followee']).exists():
+            return JsonResponse({"MESSAGE" : "ALEADY_EXIST"}, status=400)
+        user = Userinfo.objects.get(name = data['name'])     # 내가 팔로우 하려는 사람
+
+        CreateFollow.objects.create(
+                follower = request.POST.get('id',''),
+                followee = user
+                )
+
+        return JsonResponse({"MESSAGE": "SUCCESS"}, status=200)
