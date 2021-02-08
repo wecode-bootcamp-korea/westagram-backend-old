@@ -89,7 +89,7 @@ class CommentView(View):
             # 구헌하고 url로 받는 것으로 구현해보자
             posting_id = data.get('posting_id', None)
 
-            if not content and posting_id:
+            if not (content and posting_id):
                 return JsonResponse({'message': 'KEY_ERROR'}, status=400)
 
             comment = Comment.objects.create(
@@ -103,8 +103,42 @@ class CommentView(View):
         except JSONDecodeError:
             return JsonResponse({'message': 'BAD_REQUEST'}, status=400)
 
+    def get(self, request):
 
+        comments = Comment.objects.all()
 
+        result = []
+        for comment in comments:
+            comment_info = {
+                'comment': comment.content,
+                'posting_id': comment.posting_id,
+                'posting_title': comment.posting.title,
+                'user_email': comment.user.email,
+                'create_date': comment.create_date,
+            }
+
+            result.append(comment_info)
+
+        return JsonResponse({'message': 'SUCCESS', 'comment': result}, status=200)
+
+class CommentDetailView(View):
+    def get(self, request, posting_id):
+
+        comments = Comment.objects.filter(posting_id=posting_id)
+
+        result = []
+        for comment in comments:
+            comment_info = {
+                'comment': comment.content,
+                'posting_id': comment.posting_id,
+                'posting_title': comment.posting.title,
+                'user_email': comment.user.email,
+                'create_date': comment.create_date,
+            }
+
+            result.append(comment_info)
+
+        return JsonResponse({'message': 'SUCCESS', 'comment': result}, status=200)
 
 
 
