@@ -6,7 +6,7 @@ from django.http        import JsonResponse
 from django.views       import View
 from django.db.models   import Q
 
-from .models            import Posting, Comment, UserLike, Like
+from .models            import Posting, Comment
 from user.models        import User
 from .utils             import login_decorator
 
