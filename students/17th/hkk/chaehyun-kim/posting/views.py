@@ -6,7 +6,7 @@ from django.http        import JsonResponse
 from django.views       import View
 from django.db.models   import Q
 
-from .models            import Posting, Comment
+from .models            import Posting, Comment, UserLike
 from user.models        import User
 from .utils             import login_decorator
 
@@ -87,7 +87,7 @@ class CommentView(View):
             data    = json.loads(request.body)
             comment = data['comment']
             user    = request.user
-            
+            # 이따 테스트할때 data['user_id']대신 user['user_id']로 해보기
             if not User.objects.get(id=data['user_id']) == user :
                 return JsonResponse({'message' : '토큰-유저 불일치'}, status=400)
 
@@ -104,4 +104,25 @@ class CommentView(View):
         except KeyError:
             return JsonResponse({'메세지' : '왜 키에러?'}, status=400)
         except Exception as e:
-            return JsonResponse({'message' : e}, status=400) 
+            return JsonResponse({'message' : e}, status=400)
+
+class LikeView(View):
+    @login_decorator
+    def post(self, request):
+        try:
+            data    = json.loads(request.body)
+            posting  = data['posting_id']
+            userlike = data['user_id']
+            post    = Posting.objects.get(id=posting)
+
+
+            if not User.objects.get(id=data['user_id']) == userlike :
+                return JsonResponse({'message' : '토큰-유저 불일치'}, status=400)
+            # Posting의 MtoM으로 접근해서 집어넣기!
+            post.userlike.add(UserLike.objects.create(userlike_id=userlike))
+            # Like model을 import한다면 아래의 것을 사용
+            #Like.objects.create(userlike_id=userlike, posting_id=posting)
+
+            return JsonResponse({'result' : 'SUCCESS'}, status=200)
+        except KeyError:
+            return JsonResponse({'message' : 'KEY_ERROR'}, status=400)
