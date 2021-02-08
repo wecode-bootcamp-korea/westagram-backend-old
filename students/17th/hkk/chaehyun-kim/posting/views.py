@@ -6,7 +6,7 @@ from django.http        import JsonResponse
 from django.views       import View
 from django.db.models   import Q
 
-from .models            import Posting, Comment, UserLike
+from .models            import Posting, Comment, UserLike, Like
 from user.models        import User
 from .utils             import login_decorator
 
@@ -110,10 +110,10 @@ class LikeView(View):
     @login_decorator
     def post(self, request):
         try:
-            data    = json.loads(request.body)
-            posting  = data['posting_id']
-            userlike = data['user_id']
-            post    = Posting.objects.get(id=posting)
+            data        = json.loads(request.body)
+            posting     = data['posting_id']
+            userlike    = data['user_id']
+            post        = Posting.objects.get(id=posting)
 
 
             if not User.objects.get(id=data['user_id']) == userlike :
@@ -124,5 +124,27 @@ class LikeView(View):
             #Like.objects.create(userlike_id=userlike, posting_id=posting)
 
             return JsonResponse({'result' : 'SUCCESS'}, status=200)
+        except KeyError:
+            return JsonResponse({'message' : 'KEY_ERROR'}, status=400)
+    # 특정 게시글의 좋아요 갯수 세기
+    def get(self, request):
+        try:
+            data        = json.loads(request.body)
+            posting_id  = data['posting_id']
+            posts       = Like.objects.filter(posting_id=posting_id)
+            posting_like =[]
+            for post in posts:
+                posting_like_info = {
+                    'posting_id' : posting_id,
+                    'user_id' : post.userlike_id
+                    }
+                posting_like.append(posting_like_info)
+            
+            # 좋아요 수가 하나도 없을 경우
+            if not posting_like:
+                return JsonResponse({'result' : 'NONE_HEART'}, status=200)
+
+            return JsonResponse({'result' : len(posting_like)}, status=200)
+        
         except KeyError:
             return JsonResponse({'message' : 'KEY_ERROR'}, status=400)
