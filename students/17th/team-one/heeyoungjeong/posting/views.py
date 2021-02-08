@@ -144,13 +144,6 @@ class CommentDetailView(View):
         return JsonResponse({'message': 'SUCCESS', 'comment': result}, status=200)
 
 
-
-"""
-posting_id : url로 받기
-user_id : 데코레이터 user 의 user.id로 받기
-request로 토큰만 받으면됨.
-"""
-
 class LikeView(View):
     @login_decorator
     def post(self, request, posting_id):
@@ -168,8 +161,21 @@ class LikeView(View):
             return JsonResponse({'message': 'INVALID_POSTING'}, status=400)
 
 
+class UnlikeView(View):
+    @login_decorator
+    def post(self, request, posting_id):
+        try:
+            posting = Posting.objects.get(id=posting_id)
+            user = request.user
 
+            if not UserPostingLike.objects.filter(user_id=user.id, posting_id=posting_id).exists():
+                return JsonResponse({'message': 'INVALID_REQUEST'}, status=400)
 
+            unlike = UserPostingLike.objects.get(user_id=user.id, posting_id=posting_id).delete()
+            return JsonResponse({'message':'SUCCESS'}, status=200)
+
+        except Posting.DoesNotExist:
+            return JsonResponse({'message': 'INVALID_POSTING'}, status=400)
 
 
 
