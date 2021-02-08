@@ -8,11 +8,14 @@ from user.models      import (
     User
 )
 from posting.models    import (
-    Posting
+    Posting,
+    Comment
 )
 
+from westagram.utils   import login_decorator
+
 class PostingView(View): 
-    #로그인 데코레이터 
+    # @login_decorator #로그인 데코레이터 테스트하기
     def get(self, request):
         postings = Posting.objects.all()
 
@@ -52,6 +55,59 @@ class PostingView(View):
         except KeyError:
             return JsonResponse({"message" : "KEY_ERROR"}, status=400)
             
+
+class CommentView(View):
+    def get(self, request):
+
+        try:
+            # comments = Comment.objects.all()
+            comments   = Comment.objects.filter(id=1)
+
+            comment_list = [] 
+
+            for comment in comments:
+                comment_list.append( 
+                    {
+                    "comment_username"   : comment.comment_username.username,
+                    "text"               : comment.text,
+                    "posting_photo"      : comment.posting_photo.id,
+                    "created_at"         : comment.created_at
+                    }
+                )
+            return JsonResponse({"data" : comment_list}, status=201)
+
+        except KeyError:
+            return JsonResponse({"message" : "KEY_ERROR"}, status=400)
+        
+        def post(self,request): 
+            data = json.loads(request.body)
+
+        #나는 url과 username을 원하지 일반 id를 원하지 않아.. 
+        try:
+            user_id          = data['username']
+            comment_username = User.objects.get(id=user_id)
+            text             = data['text']
+            posting_id       = data['posting']
+
+            if text == "":
+                return JsonResponse({"message" : "TEXT_FIELD_REQUIRED"})
+
+            if posting_id == "":
+                return JsonResponse({"message" : "INVALID_IMAGE"})
+
+            posting_photo = Posting.objects.get(id=posting_id)
+
+            Comment.objects.create( 
+                comment_username = comment_username,
+                text             = text,
+                posting_photo    = posting_photo,
+            )
+
+            return JsonResponse({"message" : "SUCCESS"}, status=200)
+        
+        except KeyError:
+            return JsonResponse({"message" : "KEY_ERROR"}, status=400)
+
 
 class PostingDetailView(View):
     pass
