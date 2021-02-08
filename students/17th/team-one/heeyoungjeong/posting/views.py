@@ -55,3 +55,19 @@ class PostingView(View):
 
         except InvalidSignatureError:
             return JsonResponse({'message': 'BAD_REQUEST'}, status=401)
+
+    def get(self, request):
+
+        postings = Posting.objects.all()
+
+        result = []
+        for posting in postings:
+            posting_info={
+                'user_name': posting.user.name,
+                'title': posting.title,
+                'content': posting.content,
+                'image': posting.image_url,
+            }
+            result.append(posting_info)
+
+        return JsonResponse({'message': 'SUCCESS', 'posting': result}, status=200)
