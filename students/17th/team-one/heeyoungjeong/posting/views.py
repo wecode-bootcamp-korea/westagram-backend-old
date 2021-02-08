@@ -7,7 +7,7 @@ from json.decoder import JSONDecodeError
 from jwt import InvalidSignatureError
 from posting.models import Comment
 from posting.models import Posting
-from posting.models import User
+from user.models import User
 
 
 
@@ -120,6 +120,7 @@ class CommentView(View):
             result.append(comment_info)
 
         return JsonResponse({'message': 'SUCCESS', 'comment': result}, status=200)
+
 
 class CommentDetailView(View):
     def get(self, request, posting_id):
