@@ -162,16 +162,12 @@ class CommentView(View):
             data    = json.loads(request.body)
             comment = data['comment']
             user    = request.user
-            if not User.objects.get(id=data['user_id']) == user :
-                return JsonResponse({'message' : 'MISMATCH_TOKEN'}, status=400)
-
-            if not data['user_id'] : 
-                return JsonResponse({'message' : 'INVALID_USER'}, status=400)
 
             Comment.objects.create(
                     comment     = comment,
-                    user_id     = data['user_id'],
-                    posting_id  = data['posting_id']
+                    user_id     = user.id,
+                    posting_id  = data['posting_id'],
+                    parent_id   = data.get('parent_id', None)
                     )
             return JsonResponse({'result' : 'SUCCESS'}, status=200)
 
@@ -181,6 +177,7 @@ class CommentView(View):
             return JsonResponse({'message' : e}, status=400)
 
 class CommentDetailView(View):
+    # 특정 게시글의 댓글만 보기
     def get(self, request, posting_id):
         try:
             comments = Comment.objects.filter(posting_id=posting_id)
@@ -188,7 +185,8 @@ class CommentDetailView(View):
             for comment in comments:
                 comment_detail = {
                         'user' : comment.user.name,
-                        'comment' : comment.comment
+                        'comment' : comment.comment,
+                        'Up_comment' : comment.parent_id
                         }
                 comment_list.append(comment_detail)
             if not comment_list:
@@ -197,7 +195,26 @@ class CommentDetailView(View):
             return JsonResponse({'result' : comment_list}, status=200)
         except KeyError:
             return JsonResponse({'message' : 'KEY_ERROR'}, status=400)
-    
+    # 특정 게시글의 특정 댓글에 달린 대댓글만 보기
+    def get(self, request, comment_id):
+        try:
+            comments = Comment.objects.filter(parent_id=comment_id)
+            comment_list = []
+            for comment in comments:
+                comment_detail = {
+                        'user' : comment.user.name,
+                        'comment' : comment.comment,
+                        'Up_comment' : comment.parent_id
+                        }
+                comment_list.append(comment_detail)
+            if not comment_list:
+                return JsonResponse({'result' : 'NO_COMMENT'}, status=200)
+
+            return JsonResponse({'result' : comment_list}, status=200)
+        except KeyError:
+            return JsonResponse({'message' : 'KEY_ERROR'}, status=400)
+
+
     @login_decorator
     def put(self, request, comment_id):
         try:
