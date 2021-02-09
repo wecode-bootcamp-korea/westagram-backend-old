@@ -191,3 +191,21 @@ class LikeView(View):
             return JsonResponse({'result' : 'SUCCESS'}, status=200)
         except KeyError:
             return JsonResponse({'message' : 'KEY_ERROR'}, status=400)
+
+    @login_decorator
+    def delete(self, request):
+        try:
+            data        = json.loads(request.body)
+            user        = request.user
+            posting_id  = data['posting_id']
+            like        = Like.objects.get(user_id=user.id, posting_id=posting_id)
+
+            like.delete()
+            return JsonResponse({'result' : 'SUCCESS'}, status=200)
+
+        except ValueError:
+            return JsonResponse({'message' : 'VALUE_ERROR'}, status=400)
+        except KeyError:
+            return JsonResponse({'message' : 'KEY_ERROR'}, status=400)
+        except Like.DoesNotExist:
+            return JsonResponse({'message' : 'INVALID_LIKE'}, status=400)
