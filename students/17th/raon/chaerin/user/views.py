@@ -31,7 +31,7 @@ class UserSignUpView(View):
                 user_data = Account.objects.create(
                         username   = username,
                         email      = email,
-                        password   = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()),
+                        password   = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8'),
                         phone_num  = phone_num
                         )
                 return JsonResponse({'MESSSAGE': 'SUCCESS'}, status=200)
