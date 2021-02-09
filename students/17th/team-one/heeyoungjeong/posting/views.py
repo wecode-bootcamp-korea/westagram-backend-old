@@ -10,9 +10,6 @@ from posting.models import Posting
 from posting.models import UserPostingLike
 from user.models import User
 
-
-
-
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.views import View

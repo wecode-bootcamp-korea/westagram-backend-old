@@ -3,6 +3,8 @@ import jwt
 import my_settings
 
 from json.decoder import JSONDecodeError
+from jwt import DecodeError
+from jwt import InvalidSignatureError
 from posting.models import Posting
 from user.models import User
 
@@ -28,5 +30,11 @@ def login_decorator(func):
 
         except User.DoesNotExist:
             return JsonResponse({'message': 'INVALID_USER'}, status=400)
+
+        except DecodeError:
+            return JsonResponse({'message': 'INVALID_ACCESS_TOKEN'}, status=401)
+
+        except InvalidSignatureError:
+            return JsonResponse({'message': 'INVALID_ACCESS_TOKEN'}, status=401)
 
     return wrapper

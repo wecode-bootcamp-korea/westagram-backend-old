@@ -9,7 +9,10 @@ from django.db.models import Q
 from django.http      import JsonResponse, HttpResponse
 from django.views     import View
 
+from utils import login_decorator
 from user.models import User
+from user.models import Relationship
+
 
 SECRET_KEY = my_settings.SECRET_KEY['secret']
 
@@ -80,11 +83,49 @@ class SignInView(View):
 
                     return JsonResponse({'message': 'SUCCESS', 'ACCESS_TOKEN': encoded_jwt}, status=200)
 
+                return JsonResponse({'message': 'INVALID_USER'}, status=401)
 
-                return JsonResponse({'message': 'INVALID_USER1111111'}, status=401)
-
-
-            return JsonResponse({'message': 'INVALID_USE222R'}, status=401)
+            return JsonResponse({'message': 'INVALID_USER'}, status=401)
 
         except JSONDecodeError:
             return JsonResponse({'message': 'BAD_REQUEST'}, status=400)
+
+
+class RelationShipView(View):
+    @login_decorator
+    def post(self, request, to_user_id):
+        try:
+            user = request.user
+
+            from_user = User.objects.get(id=user.id)
+            to_user = User.objects.get(id=to_user_id)
+
+            if not Relationship.objects.filter(from_user=from_user, to_user=to_user).exists():
+                relationship = Relationship(from_user=from_user, to_user=to_user)
+                relationship.save()
+                return JsonResponse({'message':'SUCCESS'}, status=200)
+
+            return JsonResponse({'message':'INVALID_REQUEST'}, status=401)
+
+        except User.DoNotExists:
+            return JsonResponse({'message':'INVALID_USER'}, status=400)
+
+
+class RelationShipUnfollowView(View):
+    @login_decorator
+    def post(self, request, to_user_id):
+        try:
+            user = request.user
+
+            from_user = User.objects.get(id=user.id)
+            to_user = User.objects.get(id=to_user_id)
+
+            if not Relationship.objects.filter(from_user=from_user, to_user=to_user).exists():
+                return JsonResponse({'message': 'INVALID_REQUEST'}, status=400)
+
+            relationship = Relationship.objects.filter(from_user=from_user, to_user=to_user).delete()
+            return JsonResponse({'message': 'SUCCESS'}, status=200)
+
+        except User.DoNotExist:
+            return JsonResponse({'message': 'INVALID_USER'}, status=400)
+
