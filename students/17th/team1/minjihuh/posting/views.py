@@ -16,7 +16,7 @@ from posting.models    import (
 from westagram.utils   import login_decorator
 
 class PostingView(View): 
-    # @login_decorator #로그인 데코레이터 테스트하기
+    @login_decorator
     def get(self, request):
         postings = Posting.objects.all()
 
@@ -33,6 +33,7 @@ class PostingView(View):
             )
         return JsonResponse({"data" : posting_list}, status=201)
 
+    @login_decorator
     def post(self, request):
         data = json.loads(request.body)
 
@@ -57,6 +58,7 @@ class PostingView(View):
             return JsonResponse({"message" : "KEY_ERROR"}, status=400)            
 
 class CommentView(View):
+    @login_decorator
     def get(self, request):
         try:
             # comments = Comment.objects.all()
@@ -70,14 +72,16 @@ class CommentView(View):
                     "comment_username"   : comment.comment_username.username,
                     "text"               : comment.text,
                     "posting_photo"      : comment.posting_photo.id,
-                    "created_at"         : comment.created_at
+                    "created_at"         : comment.created_at,
+                    "root"               : comment.root
                     }
                 )
             return JsonResponse({"data" : comment_list}, status=201)
 
         except KeyError:
             return JsonResponse({"message" : "KEY_ERROR"}, status=400)
-        
+
+    @login_decorator    
     def post(self,request): 
         data = json.loads(request.body)
         #나는 url과 username을 원하지 일반 id를 원하지 않아.. 
@@ -86,12 +90,13 @@ class CommentView(View):
             comment_username = User.objects.get(id=user_id)
             text             = data['text']
             posting_id       = data['posting']
+            root_id          = data.get('root', None)
 
             if text == "":
-                return JsonResponse({"message" : "TEXT_FIELD_REQUIRED"})
+                return JsonResponse({"message" : "TEXT_FIELD_REQUIRED"}, status=400)
 
             if posting_id == "":
-                return JsonResponse({"message" : "INVALID_IMAGE"})
+                return JsonResponse({"message" : "INVALID_IMAGE"}, status=400)
 
             posting_photo = Posting.objects.get(id=posting_id)
 
@@ -99,6 +104,7 @@ class CommentView(View):
                 comment_username = comment_username,
                 text             = text,
                 posting_photo    = posting_photo,
+                root             = root_id
             )
 
             return JsonResponse({"message" : "SUCCESS"}, status=200)
@@ -107,6 +113,7 @@ class CommentView(View):
             return JsonResponse({"message" : "KEY_ERROR"}, status=400)
 
 class LikeView(View):
+    @login_decorator
     def get(self, request):
         try:
             likes = Like.objects.all()
@@ -126,6 +133,7 @@ class LikeView(View):
         except KeyError:
             return JsonResponse({"message" : "KEY_ERROR"}, status=400)
 
+    @login_decorator
     def post(self, request):
         data = json.loads(request.body)
         try:
@@ -155,6 +163,7 @@ class LikeView(View):
     # unlike 구현해야함       
 
 class PostingDetailView(View):
+    @login_decorator
     def patch(self, request, posting_id):
         data = json.loads(request.body)
         if Posting.objects.filter(id=posting_id):
@@ -169,6 +178,7 @@ class PostingDetailView(View):
 
             return JsonResponse({"message" : "SUCCESS"}, status=201)
 
+    @login_decorator
     def delete(self, request, posting_id):
         if Posting.objects.filter(id=posting_id).exists():
             Posting.objects.filter(id=posting_id).delete()
@@ -176,9 +186,12 @@ class PostingDetailView(View):
         return JsonResponse({"message" : "INVALID_APPROACH"})
 
 class CommentDetailView(View):
-    def post(self, request, posting_id, root_id):
+    @login_decorator
+    def post(self, request, comment_id):
         data = json.loads(request.body)
+        
 
+    @login_decorator  
     def delete(self, request, comment_id):
         if Comment.objects.filter(id=comment_id).exists():
             Comment.objects.filter(id=comment_id).delete()
