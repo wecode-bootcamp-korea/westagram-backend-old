@@ -176,6 +176,9 @@ class PostingDetailView(View):
         return JsonResponse({"message" : "INVALID_APPROACH"})
 
 class CommentDetailView(View):
+    def post(self, request, posting_id, root_id):
+        data = json.loads(request.body)
+
     def delete(self, request, comment_id):
         if Comment.objects.filter(id=comment_id).exists():
             Comment.objects.filter(id=comment_id).delete()

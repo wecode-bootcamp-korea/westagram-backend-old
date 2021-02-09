@@ -15,6 +15,7 @@ class Comment(models.Model):
     text             = models.TextField(max_length=300)
     created_at       = models.DateTimeField(auto_now_add=True)
     posting_photo    = models.ForeignKey('Posting', on_delete=models.CASCADE)
+    root             = models.ForeignKey('self', on_delete=models.CASCADE, null=True)
 
     class Meta:
         db_table = 'comments'
