@@ -119,20 +119,28 @@ class FollowView(View):
         except KeyError:
             return JsonResponse({'message' : 'KEY_ERROR'}, status=400)
 
-    # 언팔하려는 유저의 닉네임을 입력값으로 받는다
+class FollowDetailView(View):
     @login_decorator
-    def delete(self, requeste):
-        try:
-            data        = json.loads(requeste.body)
-            user        = requeste.user
-            following   = User.objects.get(name=data['following'])
+    def get(self, request, user_id):
+        user    = request.user
+        follows = Follow.objects.filter(user_id = user.id)
 
-            if not Follow.objects.filter(user_id=user.id, following_id=following.id).exists():
-                return JsonResponse({'message' : 'NOT_FOLLOWING'}, status=400)
-            follow  = Follow.objects.get(user_id=user.id, following_id=following.id)
-            follow.delete()
+        follow_list = []
+        for follow in follows:
+            follow_info = {
+                    'following' : follow.following_id
+                    }
+            follow_list.append(follow_info)
+        return JsonResponse({'result' : follow_list}, status=200)
+    
+    @login_decorator
+    def delete(self, requeste, user_id):
+        user        = requeste.user
+        following   = User.objects.get(id=user_id)
 
-            return JsonResponse({'result' : 'BYE BYE'}, status=200)
+        if not Follow.objects.filter(user_id=user.id, following_id=following.id).exists():
+            return JsonResponse({'message' : 'NOT_FOLLOWING'}, status=400)
+        follow  = Follow.objects.get(user_id=user.id, following_id=following.id)
+        follow.delete()
 
-        except KeyError:
-            return JsonResponse({'message' : 'KEY_ERROR'}, status=400)
+        return JsonResponse({'result' : 'BYE BYE'}, status=200)
