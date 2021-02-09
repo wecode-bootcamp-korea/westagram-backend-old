@@ -81,10 +81,10 @@ class CommentView(View):
         except KeyError:
             return JsonResponse({"message" : "KEY_ERROR"}, status=400)
 
-    @login_decorator    
+    # @login_decorator    
     def post(self,request): 
         data = json.loads(request.body)
-        #나는 url과 username을 원하지 일반 id를 원하지 않아.. 
+        # 쉘이서 되고... http로는 안되는 상황
         try:
             user_id          = data['username']
             comment_username = User.objects.get(id=user_id)
@@ -97,6 +97,9 @@ class CommentView(View):
 
             if posting_id == "":
                 return JsonResponse({"message" : "INVALID_IMAGE"}, status=400)
+            
+            # if not Comment.objects.filter(id=root_id):
+            #     return JsonResponse({"message" : "INVALID_COMMENT"}, status=400)
 
             posting_photo = Posting.objects.get(id=posting_id)
 
@@ -104,7 +107,7 @@ class CommentView(View):
                 comment_username = comment_username,
                 text             = text,
                 posting_photo    = posting_photo,
-                root             = root_id
+                root             = Comment.objects.filter(id=root_id)
             )
 
             return JsonResponse({"message" : "SUCCESS"}, status=200)
@@ -186,11 +189,6 @@ class PostingDetailView(View):
         return JsonResponse({"message" : "INVALID_APPROACH"})
 
 class CommentDetailView(View):
-    @login_decorator
-    def post(self, request, comment_id):
-        data = json.loads(request.body)
-        
-
     @login_decorator  
     def delete(self, request, comment_id):
         if Comment.objects.filter(id=comment_id).exists():
