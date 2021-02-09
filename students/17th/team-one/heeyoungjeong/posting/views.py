@@ -182,7 +182,7 @@ class PostingDeleteView(View):
             user = request.user
             posting = Posting.objects.get(id=posting_id)
 
-            if not posting.user_id == user.id:
+            if posting.user_id != user.id:
                 return JsonResponse({'message': 'INVALID_REQUEST'}, status=401)
 
             posting.delete()
@@ -191,3 +191,19 @@ class PostingDeleteView(View):
         except Posting.DoesNotExist:
             return JsonResponse({'message': 'INVALID_POSTING'},status=400)
 
+
+class CommentDeleteView(View):
+    @login_decorator
+    def post(self, request, comment_id):
+        try:
+            user = request.user
+            comment = Comment.objects.get(id=comment_id)
+
+            if not comment.user_id == user.id:
+                return JsonResponse({'message': 'INVALID_REQUEST'}, status=401)
+
+            comment.delete()
+            return JsonResponse({'message': 'SUCCESS'}, status=200)
+
+        except Comment.DoesNotExist:
+            return JsonResponse({'mssage': 'INVALID_COMMENT'}, status=400)
