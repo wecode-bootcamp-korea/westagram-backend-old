@@ -58,11 +58,11 @@ class PostingView(View):
             return JsonResponse({"message" : "KEY_ERROR"}, status=400)            
 
 class CommentView(View):
-    @login_decorator
+    # @login_decorator
     def get(self, request):
         try:
             # comments = Comment.objects.all()
-            comments   = Comment.objects.filter(id=1)
+            comments   = Comment.objects.filter(id=13)
 
             comment_list = [] 
 
@@ -73,7 +73,7 @@ class CommentView(View):
                     "text"               : comment.text,
                     "posting_photo"      : comment.posting_photo.id,
                     "created_at"         : comment.created_at,
-                    "root"               : comment.root
+                    "root"               : comment.root_id
                     }
                 )
             return JsonResponse({"data" : comment_list}, status=201)
@@ -103,11 +103,13 @@ class CommentView(View):
 
             posting_photo = Posting.objects.get(id=posting_id)
 
+            root          = Comment.objects.filter(root_id=root_id)[0].id 
+
             Comment.objects.create( 
                 comment_username = comment_username,
                 text             = text,
                 posting_photo    = posting_photo,
-                root             = Comment.objects.filter(id=root_id)
+                root             = Comment.objects.get(id=root)
             )
 
             return JsonResponse({"message" : "SUCCESS"}, status=200)
