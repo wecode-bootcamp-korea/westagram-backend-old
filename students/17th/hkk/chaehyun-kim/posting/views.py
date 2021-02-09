@@ -149,6 +149,31 @@ class CommentView(View):
         except Exception as e:
             return JsonResponse({'message' : e}, status=400)
 
+    # 삭제할 comment의 아이디를 받는다
+    @login_decorator
+    def delete(self, request):
+        try:
+            data        = json.loads(request.body)
+            user        = request.user
+            posting_id = data['posting_id']
+
+            if not Comment.objects.get(user_id=user.id, posting_id=posting_id):
+                return JsonResponse({'message' : 'NO_EXISTING_COMMENT'}, status=400)
+            
+            comment = Comment.objects.filter(user_id=user.id, posting_id=posting_id)
+            comment.delete()
+
+            return JsonResponse({'result' : 'SUCCESS_DELETE'}, status=200)
+
+        except KeyError:
+            return JsonResponse({'message' : 'KEY_ERROR'}, status=400)
+        except Comment.DoesNotExist:
+            return JsonResponse({'message' : 'NO_EXISTING_COMMENT'}, status=400)
+
+
+
+
+
 class LikeView(View):
     # 특정 게시글의 좋아요 수 세기
     def get(self, request):
