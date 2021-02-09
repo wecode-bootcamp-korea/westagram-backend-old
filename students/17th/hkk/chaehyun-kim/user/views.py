@@ -83,6 +83,9 @@ class FollowView(View):
             data        = json.loads(request.body)
             user        = User.objects.get(id=request.user.id)
             following   = User.objects.get(name=data['following'])
+            
+            if Follow.objects.filter(user_id=user.id, following_id=following.id).exists():
+                return JsonResponse({'message' : 'ALREADY_DONE'}, status=400)
 
             Follow.objects.create(user_id = user.id, following_id = following.id)
 
@@ -112,6 +115,24 @@ class FollowView(View):
             if not follow_list :
                 return JsonResponse({'result' : 'NONE'}, status=200)
             return JsonResponse({'result' : follow_list}, status=200)
+
+        except KeyError:
+            return JsonResponse({'message' : 'KEY_ERROR'}, status=400)
+
+    # 언팔하려는 유저의 닉네임을 입력값으로 받는다
+    @login_decorator
+    def delete(self, requeste):
+        try:
+            data        = json.loads(requeste.body)
+            user        = requeste.user
+            following   = User.objects.get(name=data['following'])
+
+            if not Follow.objects.filter(user_id=user.id, following_id=following.id).exists():
+                return JsonResponse({'message' : 'NOT_FOLLOWING'}, status=400)
+            follow  = Follow.objects.get(user_id=user.id, following_id=following.id)
+            follow.delete()
+
+            return JsonResponse({'result' : 'BYE BYE'}, status=200)
 
         except KeyError:
             return JsonResponse({'message' : 'KEY_ERROR'}, status=400)
