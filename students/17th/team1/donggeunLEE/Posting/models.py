@@ -51,3 +51,10 @@ class UserComment(models.Model):
     class Meta:
         db_table = 'usercomment'
 
+
+class AdditonalComment(models.Model):
+    comment    = models.ForeignKey('UserComment',on_delete=models.CASCADE)
+    name       = models.ForeignKey('User.Userinfo', on_delete=models.CASCADE)
+    addcomment = models.CharField(max_length=200)
+
+
