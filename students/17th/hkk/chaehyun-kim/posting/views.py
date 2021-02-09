@@ -6,7 +6,7 @@ from django.http        import JsonResponse
 from django.views       import View
 from django.db.models   import Q
 
-from .models            import Posting, Comment
+from .models            import Posting, Comment, Like
 from user.models        import User
 from .utils             import login_decorator
 
@@ -33,10 +33,10 @@ class PostingView(View):
             user        = request.user
 
             if not User.objects.get(name=data['name']) == user :
-                return JsonResponse({'message' : '토큰-유저 불일치'}, status=400)
+                return JsonResponse({'message' : 'MISMATCH_TOKEN'}, status=400)
             
             if not User.objects.get(name=data['name']).exists() : 
-                return JsonResponse({'message' : '없는 유저'}, status=400)
+                return JsonResponse({'message' : 'INVALID_USER'}, status=400)
             
             Posting.objects.create(
                     user        = user.id,
@@ -49,10 +49,53 @@ class PostingView(View):
             return JsonResponse({'message' : 'KEY_ERROR'}, status=400)
 
         except User.DoesNotExist:
-            return JsonResponse({'message' : '누구냐 넌'}, status=400)
+            return JsonResponse({'message' : 'INVALID_USER'}, status=400)
         
         except JSONDecodeError:
             return JsonResponse({'message' : 'NOTHING_INPUT'}, status=400)
+
+    @login_decorator
+    def put(self, request):
+        try:
+            data        = json.loads(request.body)
+            user        = request.user
+            posting_id  = data['posting_id']
+
+            post = Posting.objects.get(id=posting_id)
+            if not user.name == post.user.name:
+                return JsonResponse({'message' : 'INVALID_USER'}, status=200)
+            post.description=data['description']
+            post.save()
+
+            return JsonResponse({'result' : 'SUCCESS'}, status=200)
+
+        except ValueError:
+            return JsonResponse({'message' : 'VALUE_ERROR'}, status=400)
+        except KeyError:
+            return JsonResponse({'message' : 'KEY_ERROR'}, status=400)
+        except Posting.DoesNotExist:
+            return JsonResponse({'message' : 'INVALID_POST'}, status=400)
+    
+    @login_decorator
+    def delete(self, request):
+        try:
+            data        = json.loads(request.body)
+            user        = request.user
+            posting_id  = data['posting_id']
+
+            post = Posting.objects.get(id=posting_id)
+            if not user.name == post.user.name:
+                return JsonResponse({'message' : 'INVALID_USER'}, status=200)
+            post.delete()
+
+            return JsonResponse({'result' : 'SUCCESS'}, status=200)
+
+        except ValueError:
+            return JsonResponse({'message' : 'VALUE_ERROR'}, status=400)
+        except KeyError:
+            return JsonResponse({'message' : 'KEY_ERROR'}, status=400)
+        except Posting.DoesNotExist:
+            return JsonResponse({'message' : 'INVALID_POST'}, status=400)
 
 class CommentView(View):
     def get(self, request):
@@ -68,7 +111,7 @@ class CommentView(View):
             comments = Comment.objects.filter(posting=data['posting_id'])
         # 아직 댓글이 없는 게시글을 선택했을때
             if not Comment.objects.filter(posting_id=data['posting_id']):
-                return JsonResponse({'result' : '아직 댓글 없음'}, status=200)
+                return JsonResponse({'result' : 'NONE'}, status=200)
         comment_list = []
 
         for comment in comments:
@@ -89,10 +132,10 @@ class CommentView(View):
             user    = request.user
             # 이따 테스트할때 data['user_id']대신 user['user_id']로 해보기
             if not User.objects.get(id=data['user_id']) == user :
-                return JsonResponse({'message' : '토큰-유저 불일치'}, status=400)
+                return JsonResponse({'message' : 'MISMATCH_TOKEN'}, status=400)
 
             if not data['user_id'] : 
-                return JsonResponse({'message' : '없는 유저'}, status=400)
+                return JsonResponse({'message' : 'INVALID_USER'}, status=400)
 
             Comment.objects.create(
                     comment     = comment,
@@ -102,11 +145,36 @@ class CommentView(View):
             return JsonResponse({'result' : 'SUCCESS'}, status=200)
 
         except KeyError:
-            return JsonResponse({'메세지' : '왜 키에러?'}, status=400)
+            return JsonResponse({'message' : 'KEY_ERROR'}, status=400)
         except Exception as e:
             return JsonResponse({'message' : e}, status=400)
 
 class LikeView(View):
+    # 특정 게시글의 좋아요 수 세기
+    def get(self, request):
+        try:
+            data        = json.loads(request.body)
+            posts       = Like.objects.filter(posting_id=data['posting_id'])
+            if not Posting.objects.filter(id=data['posting_id']).exists():
+                return JsonResponse({'message' : 'INVALID_POST'}, status=400)
+
+            posting_like =[]
+            for post in posts:
+                posting_like_info = {
+                    'posting_id' : post.id,
+                    'user_id' : post.user_id
+                    }
+                posting_like.append(posting_like_info)
+
+            # 좋아요 수가 하나도 없을 경우
+            if not posting_like:
+                return JsonResponse({'result' : 'NONE_HEART'}, status=200)
+
+            return JsonResponse({'result' : len(posting_like)}, status=200)
+
+        except KeyError:
+            return JsonResponse({'message' : 'KEY_ERROR'}, status=400)
+
     @login_decorator
     def post(self, request):
         try:
@@ -121,27 +189,5 @@ class LikeView(View):
             #Like.objects.create(user_id=user.id, posting_id=posting)
 
             return JsonResponse({'result' : 'SUCCESS'}, status=200)
-        except KeyError:
-            return JsonResponse({'message' : 'KEY_ERROR'}, status=400)
-    # 특정 게시글의 좋아요 갯수 세기
-    def get(self, request):
-        try:
-            data        = json.loads(request.body)
-            posting_id  = data['posting_id']
-            posts       = Like.objects.filter(posting_id=posting_id)
-            posting_like =[]
-            for post in posts:
-                posting_like_info = {
-                    'posting_id' : posting_id,
-                    'user_id' : post.userlike_id
-                    }
-                posting_like.append(posting_like_info)
-            
-            # 좋아요 수가 하나도 없을 경우
-            if not posting_like:
-                return JsonResponse({'result' : 'NONE_HEART'}, status=200)
-
-            return JsonResponse({'result' : len(posting_like)}, status=200)
-        
         except KeyError:
             return JsonResponse({'message' : 'KEY_ERROR'}, status=400)
