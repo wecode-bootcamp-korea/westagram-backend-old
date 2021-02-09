@@ -13,7 +13,7 @@ class User(models.Model):
         db_table = 'users'
 
 
-class Follow(models.Model): # 팔로우 수 관리
+class Follow(models.Model):
     follower  = models.ForeignKey('User', related_name = "follower", on_delete=models.CASCADE)
     following = models.ForeignKey('User', related_name = "following", on_delete=models.CASCADE) 
 

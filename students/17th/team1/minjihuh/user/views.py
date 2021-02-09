@@ -120,6 +120,7 @@ class FollowView(View):
             Follow.objects.filter(follower=follower_id, following=following_id).delete()
             return JsonResponse({"message" : "DELETE_SUCCESS"}, status=200)
         
+        # Follow
         Follow.objects.create(
                     follower = follower_id,
                     following = following_id

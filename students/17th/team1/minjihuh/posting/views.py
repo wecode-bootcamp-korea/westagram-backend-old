@@ -109,23 +109,24 @@ class CommentView(View):
 
 class LikeView(View):
     def get(self, request):
-        # try:
-        likes = Like.objects.all()
-        like_list = []
+        try:
+            likes = Like.objects.all()
+            like_list = []
 
-        for like in likes:
-            like_list.append(
-                {
-                    "like_username" : like.like_username.username,
-                    "posting_photo" : like.posting_photo.id,
-                    "liked_at"    : like.liked_at
+            for like in likes:
+                like_list.append(
+                    {
+                        "like_username" : like.like_username.username,
+                        "posting_photo" : like.posting_photo.id,
+                        "liked_at"    : like.liked_at
 
-                }
-            )
-            return JsonResponse({"data" : like_list}, status=200)
+                    }
+                )
+                return JsonResponse({"data" : like_list}, status=200)
 
-        # except KeyError:
-        #     return JsonResponse({"message" : "KEY_ERROR"}, status=400)
+        except KeyError:
+            return JsonResponse({"message" : "KEY_ERROR"}, status=400)
+
     def post(self, request):
         data = json.loads(request.body)
         try:
@@ -150,7 +151,21 @@ class LikeView(View):
             return JsonResponse({"message" : "INVALID_USER"}, status=400)
 
         except KeyError:
-            return JsonResponse({"message" : "KEY_ERROR"}, status=400)
+            return JsonResponse({"message" : "KEY_ERROR"}, status=400)  
+
+    # unlike 구현해야함       
 
 class PostingDetailView(View):
-    pass
+    def delete(self, request, posting_id):
+        if Posting.objects.filter(id=posting_id).exists():
+            Posting.objects.filter(id=posting_id).delete()
+            return HttpResponse(status=200)
+        return JsonResponse({"message" : "INVALID_APPROACH"})
+
+class CommentDetailView(View):
+    def delete(self, request, comment_id):
+        if Comment.objects.filter(id=comment_id).exists():
+            Comment.objects.filter(id=comment_id).delete()
+            return HttpResponse(status=200)
+
+        return JsonResponse({"message" : "INVALID_APPROACH"})
