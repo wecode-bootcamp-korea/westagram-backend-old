@@ -4,7 +4,7 @@ from django.http        import JsonResponse
 from django.views       import View
 from django.db.models   import Q
 
-from .models            import Post, Comment, Like
+from .models            import Post, Comment, Like, Follow
 from users.models       import Account
 from utils              import login_decorator
 
@@ -87,6 +87,7 @@ class LikeView(View):
         data = json.loads(request.body)
 
         try :
+            print(request.account)
             account = Account.objects.get(nickname=data['nickname'])
             posting = Post.objects.get(contents=data['contents'])
 
@@ -107,3 +108,28 @@ class LikeView(View):
             return JsonResponse({'message' : 'KEY_ERROR'}, status = 400)
 
 
+class FollowView(View):
+    @login_decorator
+    def post(self, request):
+        data = json.loads(request.body)
+
+        try :
+            follower  = request.account
+            following = Account.objects.get(nickname=data['following'])
+
+            if not follower or not following:
+                return JsonResponse({'message' : 'KEY_ERROR'}, status=400)
+
+            if Follow.objects.filter(follower=follower, following=following).exists():
+                Follow.objects.filter(follower=follower, following=following).delete()
+                return JsonResponse({'message' : 'DELETE_FOLLOWING'}, status=200)
+
+            Follow.objects.create(
+                follower  = follower,
+                following = following
+            )
+            return JsonResponse({'message' : 'SUCCESS'}, status=200)
+
+        except KeyError :
+            return JsonResponse({'message' : 'KEY_ERROR'}, status=400)
+        

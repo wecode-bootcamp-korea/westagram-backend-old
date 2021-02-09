@@ -29,3 +29,11 @@ class Like(models.Model):
 
     class Meta:
         db_table = 'likes'
+
+
+class Follow(models.Model):
+    following = models.ForeignKey('users.Account', related_name='following', on_delete=models.CASCADE)
+    follower  = models.ForeignKey('users.Account', related_name='follower', on_delete=models.CASCADE)
+
+    class Meta:
+        db_table = 'follows'
