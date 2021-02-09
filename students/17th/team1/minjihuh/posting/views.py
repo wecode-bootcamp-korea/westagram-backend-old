@@ -58,7 +58,7 @@ class PostingView(View):
             return JsonResponse({"message" : "KEY_ERROR"}, status=400)            
 
 class CommentView(View):
-    # @login_decorator
+    @login_decorator
     def get(self, request):
         try:
             # comments = Comment.objects.all()
@@ -81,10 +81,9 @@ class CommentView(View):
         except KeyError:
             return JsonResponse({"message" : "KEY_ERROR"}, status=400)
 
-    # @login_decorator    
+    @login_decorator    
     def post(self,request): 
         data = json.loads(request.body)
-        # 쉘이서 되고... http로는 안되는 상황
         try:
             user_id          = data['username']
             comment_username = User.objects.get(id=user_id)
