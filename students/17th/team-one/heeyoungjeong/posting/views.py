@@ -175,6 +175,19 @@ class UnlikeView(View):
             return JsonResponse({'message': 'INVALID_POSTING'}, status=400)
 
 
+class PostingDeleteView(View):
+    @login_decorator
+    def post(self, request, posting_id):
+        try:
+            user = request.user
+            posting = Posting.objects.get(id=posting_id)
 
+            if not posting.user_id == user.id:
+                return JsonResponse({'message': 'INVALID_REQUEST'}, status=401)
 
+            posting.delete()
+            return JsonResponse({'message': 'SUCCESS'}, status=200)
+
+        except Posting.DoesNotExist:
+            return JsonResponse({'message': 'INVALID_POSTING'},status=400)
 
