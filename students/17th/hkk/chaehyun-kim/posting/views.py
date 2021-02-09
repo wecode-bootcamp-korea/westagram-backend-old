@@ -54,19 +54,48 @@ class PostingView(View):
         except JSONDecodeError:
             return JsonResponse({'message' : 'NOTHING_INPUT'}, status=400)
 
+class PostingDetailView(View):
     @login_decorator
-    def put(self, request):
+    def get(self, request, user_id):
+        try:
+            user    = request.user
+            posts   = Posting.objects.filter(user_id=user_id)
+
+            if not user.id == user_id :
+                return JsonResponse({'message' : 'INVALID_RIGHT'}, status=400)
+            
+            post_list = []
+            for post in posts:
+                post_info = {
+                        'id' : post.id,
+                        'image_url' : post.image_url,
+                        'description' : post.description
+                        }
+                post_list.append(post_info)
+
+            return JsonResponse({'result' : post_list}, status=200)
+        
+        except KeyError:
+            return JsonResponse({'message' : 'KEY_ERROR'}, status=400)
+
+    @login_decorator
+    def put(self, request, posting_id):
         try:
             data        = json.loads(request.body)
             user        = request.user
-            posting_id  = data['posting_id']
+            image_url   = data['image_url']
+            description = data['description']
+            user_id     = user.id
 
             post = Posting.objects.get(id=posting_id)
-            if not user.name == post.user.name:
-                return JsonResponse({'message' : 'INVALID_USER'}, status=200)
-            post.description=data['description']
-            post.save()
 
+            if not user.name == post.user.name :
+                return JsonResponse({'message' : 'INVALID_RIGHT'}, status=400)
+            
+            post.image_url      = image_url
+            post.description    = description
+            post.save()
+            
             return JsonResponse({'result' : 'SUCCESS'}, status=200)
 
         except ValueError:
@@ -77,11 +106,28 @@ class PostingView(View):
             return JsonResponse({'message' : 'INVALID_POST'}, status=400)
     
     @login_decorator
-    def delete(self, request):
+    def patch(self, request,posting_id):
         try:
-            data        = json.loads(request.body)
+            data    = json.loads(request.body)
+            user    = request.user
+            post    = Posting.objects.get(id=posting_id)
+
+            if not user.name == post.user.name :
+                return JsonResponse({'message' : 'INVALID_RIGHT'}, status=400)
+            
+            post.description    = data.get('description', post.description)
+            post.image_url      = data.get('image_url', post.image_url)
+            post.save()
+
+            return JsonResponse({'result' : 'SUCCESS_EDIT'}, status=200)
+
+
+        except KeyError:
+            return JsonResponse({'message' : 'KEY_ERROR'}, status=400)
+    @login_decorator
+    def delete(self, request, posting_id):
+        try:
             user        = request.user
-            posting_id  = data['posting_id']
 
             post = Posting.objects.get(id=posting_id)
             if not user.name == post.user.name:
@@ -99,21 +145,8 @@ class PostingView(View):
 
 class CommentView(View):
     def get(self, request):
-        # 모든 댓글을 보고자 한다면 request.body에 아무것도 안 담으면 된다.
-        if not request.body:
-            comments = Comment.objects.all()
-        
-        # 질문 : 이 경우 else 문을 안만들면 comment_list=[]이 그냥 실행되는건지, else 문안에 포함되는 건지 구분할 수 가 있나요??
-        
-        # 특정 포스팅에 대한 댓글만 보고싶다면 포스팅 id 를 body에 보내주면 된다.
-        else:
-            data = json.loads(request.body)
-            comments = Comment.objects.filter(posting=data['posting_id'])
-        # 아직 댓글이 없는 게시글을 선택했을때
-            if not Comment.objects.filter(posting_id=data['posting_id']):
-                return JsonResponse({'result' : 'NONE'}, status=200)
+        comments = Comment.objects.all()
         comment_list = []
-
         for comment in comments:
             comment_info={
                     'user' : comment.user.name,
@@ -123,14 +156,12 @@ class CommentView(View):
             comment_list.append(comment_info)
         return JsonResponse({'result' : comment_list}, status=200)
 
-
     @login_decorator
     def post(self, request):
         try:
             data    = json.loads(request.body)
             comment = data['comment']
             user    = request.user
-            # 이따 테스트할때 data['user_id']대신 user['user_id']로 해보기
             if not User.objects.get(id=data['user_id']) == user :
                 return JsonResponse({'message' : 'MISMATCH_TOKEN'}, status=400)
 
@@ -149,18 +180,47 @@ class CommentView(View):
         except Exception as e:
             return JsonResponse({'message' : e}, status=400)
 
-    # 삭제할 comment의 아이디를 받는다
-    @login_decorator
-    def delete(self, request):
+class CommentDetailView(View):
+    def get(self, request, posting_id):
         try:
-            data        = json.loads(request.body)
-            user        = request.user
-            posting_id = data['posting_id']
+            comments = Comment.objects.filter(posting_id=posting_id)
+            comment_list = []
+            for comment in comments:
+                comment_detail = {
+                        'user' : comment.user.name,
+                        'comment' : comment.comment
+                        }
+                comment_list.append(comment_detail)
+            if not comment_list:
+                return JsonResponse({'result' : 'NO_COMMENT'}, status=200)
 
-            if not Comment.objects.get(user_id=user.id, posting_id=posting_id):
-                return JsonResponse({'message' : 'NO_EXISTING_COMMENT'}, status=400)
-            
-            comment = Comment.objects.filter(user_id=user.id, posting_id=posting_id)
+            return JsonResponse({'result' : comment_list}, status=200)
+        except KeyError:
+            return JsonResponse({'message' : 'KEY_ERROR'}, status=400)
+    
+    @login_decorator
+    def put(self, request, comment_id):
+        try:
+            data    = json.loads(request.body)
+            user    = request.user
+            comment = Comment.objects.get(id=comment_id)
+
+            if user.id != comment.user_id:
+                return JsonResponse({'message' : 'INVALID_RIGHT'}, status=400)
+
+            comment.comment=data['comment']
+            comment.save()
+            return JsonResponse({'result' : 'SUCCESS_EDIT'}, status=200)
+
+        except KeyError:
+            return JsonResponse({'message' : 'KEY_ERROR'}, status=400)
+
+
+    @login_decorator
+    def delete(self, request, comment_id):
+        try:
+            user    = request.user
+            comment = Comment.objects.filter(id=comment_id)
             comment.delete()
 
             return JsonResponse({'result' : 'SUCCESS_DELETE'}, status=200)
@@ -170,17 +230,40 @@ class CommentView(View):
         except Comment.DoesNotExist:
             return JsonResponse({'message' : 'NO_EXISTING_COMMENT'}, status=400)
 
-
-
-
-
 class LikeView(View):
-    # 특정 게시글의 좋아요 수 세기
     def get(self, request):
+            like_list =[]
+            for post in posts:
+                like_info = {
+                    'posting_id' : post.id,
+                    'user_id' : post.user_id
+                    }
+                like_list.append(like_info)
+
+            return JsonResponse({'result' : like_list}, status=200)
+
+    @login_decorator
+    def post(self, request):
         try:
             data        = json.loads(request.body)
-            posts       = Like.objects.filter(posting_id=data['posting_id'])
-            if not Posting.objects.filter(id=data['posting_id']).exists():
+            posting     = data['posting_id']
+            user        = request.user
+            post        = Posting.objects.get(id=posting)
+
+            # Posting의 MtoM으로 접근해서 집어넣기!
+            post.like_user.add(User.objects.get(id=user.id))
+            # Like model을 import한다면 아래의 것을 사용
+            #Like.objects.create(user_id=user.id, posting_id=posting)
+
+            return JsonResponse({'result' : 'SUCCESS'}, status=200)
+        except KeyError:
+            return JsonResponse({'message' : 'KEY_ERROR'}, status=400)
+
+class LikeDetailView(View):
+    def get(self, request, posting_id):
+        try:
+            posts       = Like.objects.filter(posting_id=posting_id)
+            if not Posting.objects.filter(id=posting_id).exists():
                 return JsonResponse({'message' : 'INVALID_POST'}, status=400)
 
             posting_like =[]
@@ -201,28 +284,9 @@ class LikeView(View):
             return JsonResponse({'message' : 'KEY_ERROR'}, status=400)
 
     @login_decorator
-    def post(self, request):
+    def delete(self, request, posting_id):
         try:
-            data        = json.loads(request.body)
-            posting     = data['posting_id']
             user        = request.user
-            post        = Posting.objects.get(id=posting)
-
-            # Posting의 MtoM으로 접근해서 집어넣기!
-            post.like_user.add(User.objects.get(id=user.id))
-            # Like model을 import한다면 아래의 것을 사용
-            #Like.objects.create(user_id=user.id, posting_id=posting)
-
-            return JsonResponse({'result' : 'SUCCESS'}, status=200)
-        except KeyError:
-            return JsonResponse({'message' : 'KEY_ERROR'}, status=400)
-
-    @login_decorator
-    def delete(self, request):
-        try:
-            data        = json.loads(request.body)
-            user        = request.user
-            posting_id  = data['posting_id']
             like        = Like.objects.get(user_id=user.id, posting_id=posting_id)
 
             like.delete()
