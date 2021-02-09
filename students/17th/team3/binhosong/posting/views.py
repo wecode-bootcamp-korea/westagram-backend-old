@@ -4,7 +4,7 @@ from django.http        import JsonResponse
 from django.views       import View
 from django.db.models   import Q
 
-from .models            import Post, Comment
+from .models            import Post, Comment, Like
 from users.models       import Account
 from utils              import login_decorator
 
@@ -79,3 +79,31 @@ class CommentView(View):
 
         except KeyError:
             return JsonResponse({'message' : 'KEY_ERROR'}, status = 400)
+
+
+class LikeView(View):
+    @login_decorator
+    def post(self, request):
+        data = json.loads(request.body)
+
+        try :
+            account = Account.objects.get(nickname=data['nickname'])
+            posting = Post.objects.get(contents=data['contents'])
+
+            if not account or not posting:
+                return JsonResponse({'message' : 'KEY_ERROR'}, status = 400)
+
+            if Like.objects.filter(posting=posting, account=account).exists():
+                Like.objects.filter(posting=posting, account=account).delete()
+                return JsonResponse({'message' : 'DELETE_LIKE'}, status = 200)
+
+            Like.objects.create(
+                account = account,
+                posting = posting
+            )
+            return JsonResponse({'message' : 'SUCCESS'}, status = 200)
+
+        except KeyError :
+            return JsonResponse({'message' : 'KEY_ERROR'}, status = 400)
+
+
