@@ -54,8 +54,7 @@ class PostingView(View):
             return JsonResponse({"message" : "SUCCESS"}, status=200)
 
         except KeyError:
-            return JsonResponse({"message" : "KEY_ERROR"}, status=400)
-            
+            return JsonResponse({"message" : "KEY_ERROR"}, status=400)            
 
 class CommentView(View):
     def get(self, request):
@@ -156,6 +155,20 @@ class LikeView(View):
     # unlike 구현해야함       
 
 class PostingDetailView(View):
+    def patch(self, request, posting_id):
+        data = json.loads(request.body)
+        if Posting.objects.filter(id=posting_id):
+            posting               = Posting.objects.get(id=posting_id)
+
+            username_id           = User.objects.get(id=data.get('user.User', posting.username.id))
+            posting.username.id   = username_id
+            posting.image_url     = data.get('image_url', posting.image_url)
+            posting.description   = data.get('description', posting.description)
+
+            posting.save()
+
+            return JsonResponse({"message" : "SUCCESS"}, status=201)
+
     def delete(self, request, posting_id):
         if Posting.objects.filter(id=posting_id).exists():
             Posting.objects.filter(id=posting_id).delete()
