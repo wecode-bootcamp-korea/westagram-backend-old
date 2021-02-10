@@ -207,3 +207,40 @@ class CommentDeleteView(View):
 
         except Comment.DoesNotExist:
             return JsonResponse({'mssage': 'INVALID_COMMENT'}, status=400)
+
+
+
+"""
+
+    title = models.CharField(max_length=100, null=True)
+    content = models.TextField(null=True)
+    image_url = models.URLField(null=True)
+    create_date = models.DateField(auto_now_add=True)
+    modify_date = models.DateField(auto_now=True)
+    like = models.ManyToManyField('u
+    """
+class PostingUpdateView(View):
+    @login_decorator
+    def post(self, request, posting_id):
+        try:
+            data = json.loads(request.body)
+            user = request.user
+            posting = Posting.objects.get(id=posting_id)
+
+            title = data.get('title', None)
+            content = data.get('content', None)
+            image_url = data.get('image_url', None)
+
+            if posting.user_id != user.id:
+                return JsonResponse({'message': 'INVALID_USER'}, status=401)
+
+            posting.title = title
+            posting.content = content
+            posting.image_url = image_url
+            posting.save()
+
+            return JsonResponse({'message': 'SUCCESS'}, status=200)
+
+        except Posting.DoesNotExist:
+            return JsonResponse({'message': 'INVALID_POSTING'}, status=400)
+
