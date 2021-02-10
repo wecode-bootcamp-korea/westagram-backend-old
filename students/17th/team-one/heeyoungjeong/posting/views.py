@@ -244,3 +244,22 @@ class PostingUpdateView(View):
         except Posting.DoesNotExist:
             return JsonResponse({'message': 'INVALID_POSTING'}, status=400)
 
+class CommentUpdateView(View):
+    @login_decorator
+    def post(self, request, comment_id):
+        try:
+            data = json.loads(request.body)
+            user = request.user
+            comment = Comment.objects.get(id=comment_id)
+
+            content = data.get('content', None)
+
+            if not comment.user_id == user.id:
+                return JsonResponse({'message': 'INVALID_USER'}, status=401)
+
+            comment.content = content
+            comment.save()
+            return JsonResponse({'message': 'SUCCESS'}, status=200)
+
+        except Comment.DoesNotExist:
+            return JsonResponse({'message': 'INVALID_COMMENT'}, status=400)
