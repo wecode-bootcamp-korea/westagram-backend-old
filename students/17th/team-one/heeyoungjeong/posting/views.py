@@ -261,6 +261,41 @@ class CommentUpdateView(View):
             comment.save()
             return JsonResponse({'message': 'SUCCESS'}, status=200)
 
+        except JSONDecodeError:
+            return JsonResponse({'message': 'INVALID_REQUEST'}, status=400)
+
+        except Comment.DoesNotExist:
+            return JsonResponse({'message': 'INVALID_COMMENT'}, status=400)
+
+
+class NestedCommentView(View):
+    @login_decorator
+    def post(self, request, comment_id):
+        try:
+            data = json.loads(request.body)
+
+            user = request.user
+            comment = Comment.objects.get(id=comment_id)
+
+            content = data.get('content', None)
+            posting_id = comment.posting_id
+            user_id = user.id
+            depth = comment.depth + 1
+            parent_id = comment.id
+
+            nested_comment = Comment.objects.create(
+                content=content,
+                posting_id=posting_id,
+                user_id=user_id,
+                depth=depth,
+                parent_id=parent_id,
+            )
+
+            return JsonResponse({'message': 'SUCCESS'}, status=200)
+
+        except JSONDecodeError:
+            return JsonResponse({'message': 'INVALID_REQUEST'}, status=400)
+
         except Comment.DoesNotExist:
             return JsonResponse({'message': 'INVALID_COMMENT'}, status=400)
 
