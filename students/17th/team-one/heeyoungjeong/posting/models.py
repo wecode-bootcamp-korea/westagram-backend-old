@@ -24,6 +24,8 @@ class Comment(models.Model):
     content = models.TextField(null=True)
     create_date = models.DateField(auto_now_add=True)
     modify_date = models.DateField(auto_now=True)
+    parent = models.ForeignKey('self', on_delete=models.CASCADE, related_name='child', null=True)
+    depth = models.IntegerField(default=0)
 
     def __str__(self):
         return f'{self.content[:10]}'

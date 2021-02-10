@@ -263,3 +263,4 @@ class CommentUpdateView(View):
 
         except Comment.DoesNotExist:
             return JsonResponse({'message': 'INVALID_COMMENT'}, status=400)
+
