@@ -49,33 +49,20 @@ class PostingView(View):
         return JsonResponse({'data':posting_list}, status=200)
 
 
-class PostingSearchView(View):
-    def post(self, request):
-        try:
-            data = json.loads(request.body)
+class PostingDetailView(View):
+    def get(self, request, user_id):
+        if not User.objects.filter(id=user_id).exists():
+            return JsonResponse({'message':'USER_DOES_NOT_EXIST'}, status=404)
 
-            username = data.get('username', None)
+        posting_list = [{
+            "username"  : User.objects.get(id=user_id).username,
+            "content"   : posting.content,
+            "image_url" : [i.image_url for i in Image.objects.filter(posting_id=posting.id)],
+            "create_at" : posting.created_at
+            } for posting in Posting.objects.filter(user_id=user_id)
+            ]
 
-            if not username:
-                return JsonResponse({'message':'KEY_ERROR'}, status=400)
-
-            if not User.objects.filter(username=username).exists():
-                return JsonResponse({'message':'USER_DOES_NOT_EXIST'}, status=404)
-            
-            user_id = User.objects.get(username=username).id
-
-            posting_list = [{
-                "username"  : User.objects.get(id=posting.user.id).username,
-                "content"   : posting.content,
-                "image_url" : [i.image_url for i in Image.objects.filter(posting_id=posting.id)],
-                "create_at" : posting.created_at
-                } for posting in Posting.objects.filter(user_id=user_id)
-                ]
-
-            return JsonResponse({'data':posting_list}, status=200)
-        
-        except JSONDecodeError:
-            return JsonResponse({'message':'JSON_DECODE_ERROR'}, status=400)
+        return JsonResponse({'data':posting_list}, status=200)
 
 
 class CommentView(View):
