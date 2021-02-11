@@ -2,7 +2,7 @@ from django.db   import models
 from user.models import User
 
 class Posting(models.Model):
-    content    = models.CharField(max_length=2000)
+    content    = models.CharField(max_length=2000, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     user       = models.ForeignKey('user.User', on_delete=models.CASCADE)
 

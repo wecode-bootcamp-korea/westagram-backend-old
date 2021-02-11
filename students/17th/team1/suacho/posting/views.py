@@ -18,7 +18,7 @@ class PostingView(View):
             content        = data.get('content', None)
             image_url_list = data.get('image_url', None)
 
-            if not (content and image_url_list):
+            if not image_url_list:
                 return JsonResponse({'message':'KEY_ERROR'}, status=400)
 
             posting = Posting.objects.create(
@@ -30,7 +30,7 @@ class PostingView(View):
                 Image.objects.create(
                     image_url = image_url,
                     posting   = posting
-                ) 
+                )
 
             return JsonResponse({'message':'SUCCESS'}, status=200)
         
