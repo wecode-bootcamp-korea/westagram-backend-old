@@ -44,6 +44,23 @@ class PostingView(View):
 
         except KeyError:
             return JsonResponse({'message' : 'KEY_ERROR'}, status = 400)
+    
+    @login_decorator
+    def delete(self, request):
+
+        try:
+            data    = json.loads(request.body)
+            account = request.account
+
+            contents_id = data['contents_id']
+
+            if Post.objects.filter(id=contents_id).exists():
+                Post.objects.get(id=contents_id).delete()
+                return JsonResponse({'message':'SUCCESS'},status=200)
+            return JsonResponse({'message':'POST_DOES_NOT_EXIST'},status=401)
+
+        except KeyError: 
+            return JsonResponse({'message':'KEY_ERROR'}, status=400)
 
 
 class CommentView(View):
@@ -79,6 +96,24 @@ class CommentView(View):
 
         except KeyError:
             return JsonResponse({'message' : 'KEY_ERROR'}, status = 400)
+
+    @login_decorator
+    def delete(self, request):
+        data = json.loads(request.body)
+
+        try :
+            data    = json.loads(request.body)
+            account = request.account
+
+            comments_id = data['comments_id']
+
+            if Comment.objects.filter(id=comments_id).exists():
+                Comment.objects.get(id=comments_id).delete()
+                return JsonResponse({'message' : 'SUCCESS'}, status=200)
+            return JsonResponse({'message':'POST_DOES_NOT_EXIST'},status=401)
+
+        except KeyError: 
+            return JsonResponse({'message':'KEY_ERROR'}, status=400)
 
 
 class LikeView(View):
