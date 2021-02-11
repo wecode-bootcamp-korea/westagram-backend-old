@@ -20,6 +20,14 @@ class Comment(models.Model):
     class Meta:
         db_table='comments'
 
+class CommentReply(models.Model):
+    text    = models.CharField(max_length=1000)
+    comment = models.ForeignKey('Comment', on_delete=models.SET_NULL, null=True, related_name='comment_replies')
+    user    = models.ForeignKey('user.User', on_delete=models.SET_NULL, null=True, related_name='comment_replies')
+
+    class Meta:
+        db_table='comment_replies'
+
 class Like(models.Model):
     user        = models.ForeignKey('user.User', on_delete=models.SET_NULL, null=True, related_name='like')
     post        = models.ForeignKey('Post', on_delete=models.SET_NULL, null=True, related_name='like')

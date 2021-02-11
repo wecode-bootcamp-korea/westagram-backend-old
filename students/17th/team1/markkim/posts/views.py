@@ -4,7 +4,7 @@ import jwt
 from django.views import View
 from django.http  import JsonResponse, HttpResponse
 
-from . models     import Post, Comment, Like
+from . models     import Post, Comment, CommentReply, Like
 from user.models  import User
 from user.utils   import login_decorator
 
@@ -133,6 +133,25 @@ class CommentDetailView(View):
                 return JsonResponse({'message': "SUCCESS"}, status=200)
 
             return JsonResponse({'message': 'CANNOT_DELETE_COMMENT'}, status=403)
+
+        except KeyError:
+            return JsonResponse({'message': 'KEY_ERROR'}, status=400)
+
+class CommentReplyView(View):
+    @login_decorator
+    def post(self, request):
+        try:
+            data = json.loads(request.body)
+            comment_id = data['comment_id']
+            text       = data['text']
+            user_id    = request.user.id
+
+            if Comment.objects.filter(id=comment_id).exists():
+                CommentReply.objects.create(text=text, comment_id=comment_id, user_id=user_id)
+
+                return JsonResponse({'message': 'SUCCESS'}, status=201)
+
+            return JsonResponse({'message': 'INVALID_COMMENT'}, status=400)
 
         except KeyError:
             return JsonResponse({'message': 'KEY_ERROR'}, status=400)
