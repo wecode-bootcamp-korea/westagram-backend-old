@@ -1,5 +1,6 @@
 import json
 import bcrypt
+import jwt
 
 from django.shortcuts   import render
 from django.views       import View
@@ -70,7 +71,8 @@ class LoginView(View):
                                 Q(nickname      =   nickname)
                                 )
                 if bcrypt.checkpw(password.encode('utf-8'), user.password.encode('utf-8')):
-                    return JsonResponse({"message": "LOGIN_SUCESS"}, status = 200)
+                    token = jwt.encode({'user':user.id}, 'westagram', algorithm='HS256')
+                    return JsonResponse({"message": "LOGIN_SUCESS", 'Token': token}, status = 200)
             else:
                 return JsonResponse({"message": "LOGIN_FAIL"}, status = 401)
         except KeyError:
