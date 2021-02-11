@@ -112,7 +112,7 @@ class CommentView(View):
             return JsonResponse({'message':'JSON_DECODE_ERROR'}, status=400)
 
 
-class CommentDetailView(View):
+class CommentSearchView(View):
     def get(self, request, posting_id):
         if not Posting.objects.filter(id=posting_id).exists():
             return JsonResponse({'message':'POSTING_DOES_NOT_EXIST'}, status=404)
@@ -125,6 +125,23 @@ class CommentDetailView(View):
         ]
 
         return JsonResponse({'data':comment_list}, status=200)
+
+
+class CommentDetailView(View):
+    @login_decorator
+    def delete(self, request, comment_id):
+        user = request.user
+
+        if not Comment.objects.filter(id=comment_id).exists():
+            return JsonResponse({'message':'COMMENT_DOES_NOT_EXIST'}, status=404)
+
+        comment = Comment.objects.get(id=comment_id)
+
+        if user != comment.user:
+            return JsonResponse({'message':'INVALID_USER'}, status=401)
+
+        Comment.objects.filter(id=comment.id).delete()
+        return JsonResponse({'message': 'SUCCESS'}, status=200)
 
 
 class LikeView(View):
