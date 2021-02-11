@@ -79,11 +79,11 @@ class CommentView(View):
                 return JsonResponse({'message':'KEY_ERROR'}, status=400)
 
             if not Posting.objects.filter(id=posting_id).exists():
-                return JsonResponse({'message':"POSTING_DOES_NOT_EXIST"}, status=404)
+                return JsonResponse({'message':'POSTING_DOES_NOT_EXIST'}, status=404)
             
             posting = Posting.objects.get(id=posting_id)
             
-            comment = Comment.objects.create(
+            Comment.objects.create(
                 content = content,
                 user    = user,
                 posting = posting
@@ -126,31 +126,18 @@ class LikeView(View):
                 return JsonResponse({'message':"POSTING_DOES_NOT_EXIST"}, status=404)
             
             posting = Posting.objects.get(id=posting_id)
-            
+
+            if Like.objects.filter(user=user, posting=posting).exists():
+                Like.objects.filter(user=user, posting=posting).delete()
+                like_count = Like.objects.filter(posting=posting).count()
+                return JsonResponse({'message': 'SUCCESS', 'like_count':like_count}, status=200)
+
             Like.objects.create(
                 user    = user,
                 posting = posting
             )
+            like_count = Like.objects.filter(posting=posting).count()
+            return JsonResponse({'message': 'SUCCESS', 'like_count': like_count}, status=200)
 
-            return JsonResponse({'message':'SUCCESS'}, status=200)
-        
         except JSONDecodeError:
             return JsonResponse({'message':'JSON_DECODE_ERROR'}, status=400)
-
-
-class LikeDetailView(View):
-    def get(self, request, posting_id):
-        if not Posting.objects.filter(id=posting_id).exists():
-            return JsonResponse({'message':'POSTING_DOES_NOT_EXIST'}, status=404)
-        
-        user_list     = [i.user_id for i in Like.objects.filter(posting_id=posting_id)]
-        username_list = [User.objects.get(id=i).username for i in user_list]
-        posting       = Posting.objects.get(id=posting_id)
-
-        like_list = {
-            "username" : username_list,
-            "likes"    : len(username_list)
-        }
-
-        return JsonResponse({'data':like_list}, status=200)
-

@@ -2,10 +2,9 @@ from django.urls import path
 from .views import (
     PostingView, 
     PostingDetailView,
-    CommentView, 
-    CommentDetailView, 
+    CommentView,
+    CommentDetailView,
     LikeView, 
-    LikeDetailView
 )
 
 urlpatterns = [
@@ -14,5 +13,4 @@ urlpatterns = [
     path('/comment', CommentView.as_view()),
     path('/comment/<int:posting_id>', CommentDetailView.as_view()),
     path('/like', LikeView.as_view()),
-    path('/like/<int:posting_id>', LikeDetailView.as_view()),
     ]
