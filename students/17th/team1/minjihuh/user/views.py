@@ -102,27 +102,30 @@ class SignInView(View):
 class FollowView(View):
     def post(self, request):
         data = json.loads(request.body)
-        # try:
-        follower     = data['follower']
-        following    = data['following']
+        try:
+            follower     = data['follower']
+            following    = data['following']
 
-        follower_id  = User.objects.get(id=follower)
-        following_id = User.objects.get(id=following)
+            follower_id  = User.objects.get(id=follower)
+            following_id = User.objects.get(id=following)
 
-        if not follower:
-            return JsonResponse({"message" : "INVALID_USER"}, status=400)
+            if not follower:
+                return JsonResponse({"message" : "INVALID_USER"}, status=400)
 
-        if not following:
-            return JsonResponse({"message" : "INVALID_APPROACH"}, status=400)
-        
-        # Unfollow
-        if Follow.objects.filter(follower=follower_id, following=following_id).exists(): #boolean으로 알려준다
-            Follow.objects.filter(follower=follower_id, following=following_id).delete()
-            return JsonResponse({"message" : "DELETE_SUCCESS"}, status=200)
-        
-        # Follow
-        Follow.objects.create(
-                    follower = follower_id,
-                    following = following_id
-        )
-        return JsonResponse({"message" : "CREATE_SUCCESS"}, status=200)
+            if not following:
+                return JsonResponse({"message" : "INVALID_APPROACH"}, status=400)
+            
+            # Unfollow
+            if Follow.objects.filter(follower=follower_id, following=following_id).exists(): #boolean으로 알려준다
+                Follow.objects.filter(follower=follower_id, following=following_id).delete()
+                return JsonResponse({"message" : "DELETE_SUCCESS"}, status=200)
+            
+            # Follow
+            Follow.objects.create(
+                        follower = follower_id,
+                        following = following_id
+            )
+            return JsonResponse({"message" : "CREATE_SUCCESS"}, status=200)
+
+        except KeyError:
+            return JsonResponse({"message" : "KEY_ERROR"}, status=400)

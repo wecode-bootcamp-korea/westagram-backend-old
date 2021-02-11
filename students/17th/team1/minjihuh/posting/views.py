@@ -18,20 +18,24 @@ from westagram.utils   import login_decorator
 class PostingView(View): 
     @login_decorator
     def get(self, request):
-        postings = Posting.objects.all()
+        try: 
+            postings = Posting.objects.all()
 
-        posting_list = [] 
+            posting_list = [] 
 
-        for i in range(len(postings)):
-            posting_list.append( 
-                {
-                "image_url" : postings[i].image_url,
-                "description" : postings[i].description,
-                "username" : postings[i].username.username,
-                "created_at" : postings[i].created_at,
-                }
-            )
-        return JsonResponse({"data" : posting_list}, status=201)
+            for i in range(len(postings)):
+                posting_list.append( 
+                    {
+                    "image_url" : postings[i].image_url,
+                    "description" : postings[i].description,
+                    "username" : request.user.username.username,
+                    "created_at" : postings[i].created_at,
+                    }
+                )
+            return JsonResponse({"data" : posting_list}, status=201)
+
+        except KeyError:
+            return JsonResponse({"message" : "KEY_ERROR"}, status=400)   
 
     @login_decorator
     def post(self, request):
@@ -40,7 +44,7 @@ class PostingView(View):
         try:
             image_url    = data['image_url']
             description  = data.get('description', None) #null=True
-            username     = data['username']
+            username     = request.user.username 
             user         = User.objects.get(username=username)
 
             if user.username != username:
@@ -69,7 +73,7 @@ class CommentView(View):
             for comment in comments:
                 comment_list.append( 
                     {
-                    "comment_username"   : comment.comment_username.username,
+                    "comment_username"   : request.user.username,
                     "text"               : comment.text,
                     "posting_photo"      : comment.posting_photo.id,
                     "created_at"         : comment.created_at,
@@ -84,8 +88,9 @@ class CommentView(View):
     @login_decorator    
     def post(self,request): 
         data = json.loads(request.body)
+
         try:
-            user_id          = data['username']
+            user_id          = request.user.id
             comment_username = User.objects.get(id=user_id)
             text             = data['text']
             posting_id       = data['posting']
@@ -126,7 +131,7 @@ class LikeView(View):
             for like in likes:
                 like_list.append(
                     {
-                        "like_username" : like.like_username.username,
+                        "like_username" : request.user.username,
                         "posting_photo" : like.posting_photo.id,
                         "liked_at"    : like.liked_at
 
@@ -140,8 +145,9 @@ class LikeView(View):
     @login_decorator
     def post(self, request):
         data = json.loads(request.body)
+
         try:
-            user_id       = data.get('username', None)
+            user_id       = data.get(request.user, None)
             posting_id    =  data.get('posting', None)
             
             if User.objects.filter(id=user_id).exists():
@@ -170,30 +176,62 @@ class PostingDetailView(View):
     @login_decorator
     def patch(self, request, posting_id):
         data = json.loads(request.body)
-        if Posting.objects.filter(id=posting_id):
-            posting               = Posting.objects.get(id=posting_id)
+        
+        try:
+            if Posting.objects.filter(id=posting_id):
+                posting               = Posting.objects.get(id=posting_id)
 
-            username_id           = User.objects.get(id=data.get('user.User', posting.username.id))
-            posting.username.id   = username_id
-            posting.image_url     = data.get('image_url', posting.image_url)
-            posting.description   = data.get('description', posting.description)
+                username_id           = User.objects.get(id=data.get('user.User', posting.username.id))
+                posting.username.id   = username_id
+                posting.image_url     = data.get('image_url', posting.image_url)
+                posting.description   = data.get('description', posting.description)
 
-            posting.save()
+                posting.save()
 
-            return JsonResponse({"message" : "SUCCESS"}, status=201)
+                if request.user != username_id:
+                    return JsonResponse({"message" : "INVALID_APPROACH"}, status=400)
+                
+                return JsonResponse({"message" : "SUCCESS"}, status=201)
+
+        except JSONDecodeError:
+            return JsonResponse({"message" : "REQUEST_BODY_IS_MANDATORY"}, status=400)  
+
+        except KeyError:
+            return JsonResponse({"message" : "KEY_ERROR"}, status=400)  
 
     @login_decorator
     def delete(self, request, posting_id):
-        if Posting.objects.filter(id=posting_id).exists():
-            Posting.objects.filter(id=posting_id).delete()
-            return HttpResponse(status=200)
-        return JsonResponse({"message" : "INVALID_APPROACH"})
+        try:
+            if Posting.objects.filter(id=posting_id).exists():
+                user_id    = request.user
+                posting    = Posting.objects.get(id=posting_id)
+
+                if user_id != posting.username.id:
+                    return JsonResponse({"message" : "INVALID_USER"}, status=400)
+
+                Posting.objects.filter(id=posting_id).delete()
+                return HttpResponse(status=200)
+
+            return JsonResponse({"message" : "INVALID_APPROACH"}, status=400)
+
+        except KeyError:
+            return JsonResponse({"message" : "KEY_ERROR"}, status=400)  
 
 class CommentDetailView(View):
     @login_decorator  
     def delete(self, request, comment_id):
-        if Comment.objects.filter(id=comment_id).exists():
-            Comment.objects.filter(id=comment_id).delete()
-            return HttpResponse(status=200)
+        try:
+            if Comment.objects.filter(id=comment_id).exists():
+                user_id  = request.user
+                comment  = Comment.objects.get(id=comment_id)
 
-        return JsonResponse({"message" : "INVALID_APPROACH"})
+                if user_id != comment.comment_username:
+                    return JsonResponse({"message" : "INVALID_USER"}, status=400)
+
+                Comment.objects.filter(id=comment_id).delete()
+                return HttpResponse(status=200)
+
+            return JsonResponse({"message" : "INVALID_APPROACH"}, status=400)
+
+        except KeyError:
+            return JsonResponse({"message" : "KEY_ERROR"}, status=400)  
