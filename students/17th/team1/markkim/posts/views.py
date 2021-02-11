@@ -98,6 +98,23 @@ class CommentDetailView(View):
         except Post.DoesNotExist:
             return JsonResponse({'message':'INVALID_POST'}, status=400)
 
+    @login_decorator
+    def delete(self, request, post_id):
+        try:
+            data       = json.loads(request.body)
+            comment_id = data['comment_id']
+            user_id    = request.user.id
+
+            if Comment.objects.filter(id=comment_id, user_id=user_id, post_id=post_id).exists():
+                Comment.objects.get(id=comment_id).delete()
+
+                return JsonResponse({'message': "SUCCESS"}, status=200)
+
+            return JsonResponse({'message': 'CANNOT DELETE COMMENT'}, status=403)
+
+        except KeyError:
+            return JsonResponse({'message': 'KEY_ERROR'}, status=400)
+
 class LikeView(View):
     @login_decorator
     def post(self, request):
