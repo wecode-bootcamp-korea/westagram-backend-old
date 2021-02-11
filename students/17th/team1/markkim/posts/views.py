@@ -29,6 +29,28 @@ class PostView(View):
         except KeyError:
             return JsonResponse({'message':'KEY_ERROR'}, status=400)
 
+    @login_decorator
+    def patch(self, request):
+        try:
+            data      = json.loads(request.body)
+            image_url = data['image_url']
+            caption   = data['caption']
+            post_id   = data['post_id']
+            user_id   = request.user.id
+
+            if Post.objects.filter(id=post_id, user_id=user_id).exists():
+                Post.objects.filter(id=post_id).update(
+                        image_url = image_url,
+                        caption   = caption
+                        )
+
+                return JsonResponse({'message': 'SUCCESS'}, status=200)
+            
+            return JsonResponse({'message': 'CANNOT_UPDATE_POST'}, status=403)
+
+        except KeyError:
+            return JsonResponse({'message': 'Key_Error'}, status=400)
+
 class PostDetailView(View):
     @login_decorator
     def get(self, request, post_id):
@@ -110,7 +132,7 @@ class CommentDetailView(View):
 
                 return JsonResponse({'message': "SUCCESS"}, status=200)
 
-            return JsonResponse({'message': 'CANNOT DELETE COMMENT'}, status=403)
+            return JsonResponse({'message': 'CANNOT_DELETE_COMMENT'}, status=403)
 
         except KeyError:
             return JsonResponse({'message': 'KEY_ERROR'}, status=400)
