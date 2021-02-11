@@ -32,7 +32,7 @@ class PostingView(View):
                     posting   = posting
                 )
 
-            return JsonResponse({'message':'SUCCESS'}, status=200)
+            return JsonResponse({'message':'SUCCESS'}, status=201)
         
         except JSONDecodeError:
             return JsonResponse({'message':'JSON_DECODE_ERROR'}, status=400)
@@ -89,7 +89,7 @@ class CommentView(View):
                 posting = posting
             )
 
-            return JsonResponse({'message':'SUCCESS'}, status=200)
+            return JsonResponse({'message':'SUCCESS'}, status=201)
         
         except JSONDecodeError:
             return JsonResponse({'message':'JSON_DECODE_ERROR'}, status=400)
@@ -137,7 +137,7 @@ class LikeView(View):
                 posting = posting
             )
             like_count = Like.objects.filter(posting=posting).count()
-            return JsonResponse({'message': 'SUCCESS', 'like_count': like_count}, status=200)
+            return JsonResponse({'message': 'SUCCESS', 'like_count': like_count}, status=201)
 
         except JSONDecodeError:
             return JsonResponse({'message':'JSON_DECODE_ERROR'}, status=400)

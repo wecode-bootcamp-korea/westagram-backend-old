@@ -13,4 +13,4 @@ urlpatterns = [
     path('/comment', CommentView.as_view()),
     path('/comment/<int:posting_id>', CommentDetailView.as_view()),
     path('/like', LikeView.as_view()),
-    ]
+]

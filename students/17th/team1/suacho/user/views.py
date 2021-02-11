@@ -9,8 +9,8 @@ from django.views     import View
 from django.db.models import Q
 from my_settings      import SECRET, ALGORITHM
 
-from user.models import User
-
+from user.models import User, Follow
+from user.utils  import login_decorator
 
 PASSWORD_MINIMUM_LENGTH = 8
 
@@ -101,7 +101,38 @@ class LogInView(View):
 
             access_token = jwt.encode({"id":user.id}, SECRET, algorithm=ALGORITHM)
 
-            return JsonResponse({'message': 'SUCCESS', 'Authorization':access_token}, status=200)
+            return JsonResponse({'message': 'SUCCESS', 'Authorization':access_token}, status=201)
+
+        except JSONDecodeError:
+            return JsonResponse({'message': 'JSON_DECODE_ERROR'}, status=400)
+
+
+class FollowView(View):
+    @login_decorator
+    def post(self, request):
+        try:
+            data = json.loads(request.body)
+            follower = request.user
+
+            following_id = data.get('following_id', None)
+
+            if not following_id:
+                return JsonResponse({'message': 'KEY_ERROR'}, status=400)
+
+            if not User.objects.filter(id=following_id).exists():
+                return JsonResponse({'message': 'USER_DOES_NOT_EXIST'}, status=401)
+
+            following = User.objects.get(id=following_id)
+
+            if Follow.objects.filter(follower=follower, following=following).exists():
+                Follow.objects.filter(follower=follower, following=following).delete()
+                return JsonResponse({'message': 'SUCCESS'}, status=200)
+
+            Follow.objects.create(
+                follower = follower,
+                following = following
+            )
+            return JsonResponse({'message':'SUCCESS'}, status=201)
 
         except JSONDecodeError:
             return JsonResponse({'message': 'JSON_DECODE_ERROR'}, status=400)
