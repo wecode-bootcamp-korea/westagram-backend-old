@@ -49,7 +49,7 @@ class PostingView(View):
         return JsonResponse({'data':posting_list}, status=200)
 
 
-class PostingDetailView(View):
+class PostingSearchView(View):
     def get(self, request, user_id):
         if not User.objects.filter(id=user_id).exists():
             return JsonResponse({'message':'USER_DOES_NOT_EXIST'}, status=404)
@@ -63,6 +63,23 @@ class PostingDetailView(View):
             ]
 
         return JsonResponse({'data':posting_list}, status=200)
+
+
+class PostingDetailView(View):
+    @login_decorator
+    def delete(self, request, posting_id):
+        user = request.user
+
+        if not Posting.objects.filter(id=posting_id).exists():
+            return JsonResponse({'message':'POSTING_DOES_NOT_EXIST'}, status=404)
+
+        posting = Posting.objects.get(id=posting_id)
+
+        if user != posting.user:
+            return JsonResponse({'message':'INVALID_USER'}, status=401)
+
+        Posting.objects.filter(id=posting.id).delete()
+        return JsonResponse({'message': 'SUCCESS'}, status=200)
 
 
 class CommentView(View):
