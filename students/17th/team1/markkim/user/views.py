@@ -6,10 +6,11 @@ from django.views          import View
 from django.http           import JsonResponse, HttpResponse
 
 from westagram.my_settings import SECRET
-from . models              import User
+from . models              import User, Follower, Following
+from posts.models          import Comment, Like, Post
+from . utils               import login_decorator
 
-
-class UserView(View):
+class SignUpView(View):
     def post(self, request):
         try:
             data         = json.loads(request.body)
@@ -76,6 +77,30 @@ class LoginView(View):
 
         except KeyError:
             return JsonResponse({'message': 'KEY_ERROR'}, status=400)
+
+class FollowView(View):
+    @login_decorator
+    def post(self, request):
+        try:
+            data         = json.loads(request.body)
+            following_id = data['following_id']
+            user_id      = request.user.id
+
+            if Following.objects.filter(following_id=following_id, user_id=user_id).exists():
+                Following.objects.get(following_id=following_id, user_id=user_id).delete()
+                Follower.objects.get(follower_id=user_id, user_id=following_id).delete()
+                return JsonResponse({'message': 'SUCCESS'}, status=200)
+
+            else:
+                Following.objects.create(following_id=following_id, user_id=user_id)
+                Follower.objects.create(follower_id=user_id, user_id=following_id)
+                return JsonResponse({'message': 'SUCCESS'}, status=201)
+
+        except KeyError:
+            return JsonResponse({'message': 'KEY_ERROR'}, status=400)
+
+
+
 
 
 

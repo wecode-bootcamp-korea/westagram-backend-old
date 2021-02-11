@@ -10,5 +10,16 @@ class User(models.Model):
     class Meta:
         db_table = 'users'
 
+class Following(models.Model):
+    following_id = models.IntegerField(default=0)
+    user         = models.ForeignKey('User', on_delete=models.SET_NULL, null=True, related_name='following')
 
+    class Meta:
+        db_table = 'following'
 
+class Follower(models.Model): 
+    follower_id = models.IntegerField(default=0)
+    user        = models.ForeignKey('User', on_delete=models.SET_NULL, null=True, related_name='follower')
+
+    class Meta:
+        db_table = 'followers'
