@@ -1,5 +1,5 @@
-from django.db import models
-from user.models import User
+from django.db    import models
+from user.models  import User
 
 class Posting(models.Model):
     username    = models.ForeignKey('user.User', on_delete=models.CASCADE) #Installedapps - Class

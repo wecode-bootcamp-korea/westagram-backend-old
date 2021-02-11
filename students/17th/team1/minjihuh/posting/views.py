@@ -1,10 +1,10 @@
 import json
 
-from django.http      import JsonResponse, HttpResponse
-from django.views     import View
-from django.db.models import Q
+from django.http       import JsonResponse, HttpResponse
+from django.views      import View
+from django.db.models  import Q
 
-from user.models      import (
+from user.models       import (
     User
 )
 from posting.models    import (

@@ -2,8 +2,8 @@ import  jwt
 import  json
 import  requests
 
-from django.http  import JsonResponse
-from django.conf  import settings
+from django.http           import JsonResponse
+from django.conf           import settings
 
 from westagram.my_settings import SECRET_KEY, ALGORITHM
 from user.models           import User

@@ -3,15 +3,17 @@ import re
 import bcrypt
 import jwt
 
-from django.http      import JsonResponse, HttpResponse
-from django.views     import View
-from django.db.models import Q
+from django.http             import JsonResponse, HttpResponse
+from django.views            import View
+from django.db.models        import Q
 
-from user.models   import (
+from user.models             import (
     User,
     Follow
 )
-from westagram.my_settings import SECRET_KEY, ALGORITHM
+
+from westagram.utils         import login_decorator
+from westagram.my_settings   import SECRET_KEY, ALGORITHM
 
 email_regex              = re.compile(r'^[a-zA-Z0-9+-_.]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$')
 password_regex           = re.compile(r'^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$')
@@ -100,10 +102,11 @@ class SignInView(View):
             return JsonResponse({"message" : "KEY_ERROR"}, status=400).decode("UTF-8")
 
 class FollowView(View):
+    @login_decorator
     def post(self, request):
         data = json.loads(request.body)
         try:
-            follower     = data['follower']
+            follower     = request.user.id
             following    = data['following']
 
             follower_id  = User.objects.get(id=follower)
@@ -116,7 +119,7 @@ class FollowView(View):
                 return JsonResponse({"message" : "INVALID_APPROACH"}, status=400)
             
             # Unfollow
-            if Follow.objects.filter(follower=follower_id, following=following_id).exists(): #boolean으로 알려준다
+            if Follow.objects.filter(follower=follower_id, following=following_id).exists():
                 Follow.objects.filter(follower=follower_id, following=following_id).delete()
                 return JsonResponse({"message" : "DELETE_SUCCESS"}, status=200)
             
