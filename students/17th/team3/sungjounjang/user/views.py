@@ -10,7 +10,8 @@ from django.db.models import Q
 import bcrypt
 import jwt
 
-from .models     import Accounts, Follow
+from .models import Accounts, Follow
+from .utils  import login_decorator
 import my_settings
 
 MINIMUM_PASSWORD_LEN = 8
@@ -24,9 +25,12 @@ class AccountView(View):
         try:
             email        = data['email']
             password     = data['password']
-            name         = data['name']
-            nickname     = data['nickname']
-            phone_number = data['phone_number']
+            name = '이정민이라오'
+            nickname = '킹정민'
+            phone_number = '010-1234-8888'
+            # name         = data['name']
+            # nickname     = data['nickname']
+            # phone_number = data['phone_number']
 
             # email, password check
             if not EMAIL_VALIDATION.match(email):
@@ -90,8 +94,11 @@ class LoginView(View):
 
         except KeyError:
             return JsonResponse({'message': 'KEY_ERROR'}, status=400)
+        except Accounts.DoesNotExist:
+            return JsonResponse({'message': 'ACCOUNT_DOESNOTEXIST_ERROR'}, status=400)
 
 class FollowView(View):
+    @login_decorator
     def post(self, request):
         data = json.loads(request.body)
 

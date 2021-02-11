@@ -5,6 +5,7 @@ from django.http  import JsonResponse
 
 from .models     import Posting, Comment, LikePosting
 from user.models import Accounts
+from user.utils  import login_decorator
 
 class PostingView(View):
     def get(self, request):
@@ -14,7 +15,6 @@ class PostingView(View):
             {
                 # 'account'  : postings[i].account,
                 'account'  : postings[i].account.nickname,
-                # 'account'  : 'ㅋㅋㅋ',
                 'image_url': postings[i].image_url,
                 'contents' : postings[i].contents,
                 'create_at': postings[i].create_at,
@@ -24,6 +24,7 @@ class PostingView(View):
 
         return JsonResponse({'message':'SUCCESS', 'result':response_posting}, status=200)
 
+    @login_decorator
     def post(self, request):
         data = json.loads(request.body)
 
@@ -41,6 +42,7 @@ class PostingView(View):
         except KeyError:
             return JsonResponse({'message':'KEY_ERROR'}, status=400)
 
+    @login_decorator
     def patch(self, request):
         data = json.loads(request.body)
 
@@ -49,7 +51,7 @@ class PostingView(View):
             image_url = data.get('image_url')
             contents  = data.get('contents')
 
-            if posting.account.nickname != data['account']:
+            if posting.account.nickname != request.user.nickname:
                 return JsonResponse({'message':'NOT_WRRITER'}, status=400)
             
             updatePosting = Posting.objects.get(id=posting.id)
@@ -64,6 +66,7 @@ class PostingView(View):
         except KeyError:
             return JsonResponse({'message':'KEY_ERROR'}, status=400)
 
+    @login_decorator
     def delete(self, request, account, posting):
         account = Accounts.objects.filter(nickname=account)
         posting = Posting.objects.filter(id=posting)
@@ -94,6 +97,7 @@ class CommentView(View):
 
         return JsonResponse({'message':'SUCCESS', 'result':comments}, status=200)
 
+    @login_decorator
     def post(self, request):
         data = json.loads(request.body)
 
@@ -123,6 +127,7 @@ class CommentView(View):
         except KeyError:
             return JsonResponse({'message':'KEY_ERROR'}, status=400)
 
+    @login_decorator
     def delete(self, request, account, posting, comment):
         account = Accounts.objects.filter(nickname=account)[0]
         
@@ -134,6 +139,7 @@ class CommentView(View):
         return JsonResponse({'message':'DOES_NOT_EXIST'}, status=400)
 
 class LikePostingView(View):
+    @login_decorator
     def post(self, request):
         data = json.loads(request.body)
 
