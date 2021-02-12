@@ -57,11 +57,39 @@ class PostingView(View):
             if Post.objects.filter(id=contents_id).exists():
                 Post.objects.get(id=contents_id).delete()
                 return JsonResponse({'message':'SUCCESS'},status=200)
+
             return JsonResponse({'message':'POST_DOES_NOT_EXIST'},status=401)
 
         except KeyError: 
             return JsonResponse({'message':'KEY_ERROR'}, status=400)
 
+    @login_decorator
+    def patch(self, request):
+
+        try:
+            data    = json.loads(request.body)
+            account = request.account
+
+            contents    = data['contents']
+            image_url   = data['image_url']
+            contents_id = data['contents_id']
+            post        = Post.objects.get(id=contents_id)
+
+
+            if post.account.id == account.id:
+                if image_url:
+                    post.image_url = image_url
+                if contents:
+                    post.contents  = contents
+                post.save()
+                return JsonResponse({'message':'SUCCESS'},status=200)
+
+            return JsonResponse({'message':'NOT_WRRITER'}, status=400)
+
+        except KeyError: 
+            return JsonResponse({'message':'KEY_ERROR'}, status=400)
+        
+            
 
 class CommentView(View):
     @login_decorator
