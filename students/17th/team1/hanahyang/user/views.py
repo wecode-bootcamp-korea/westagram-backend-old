@@ -121,7 +121,34 @@ class FollowView(View):
             message = 'Following'
 
         return JsonResponse({'message': message}, status=200)
-
+    
+class FollowingView(View):
+    def get(self, request, user_name):
+        # valid user check
+        if not User.objects.filter(name=user_name).exists():
+            return JsonResponse({"message": "USER_DOES_NOT_EXIST"}, status=404)
         
+        user       = User.objects.get(name=user_name)
+        followings = Follow.objects.filter(from_user=user) 
         
+        if not followings:
+            return JsonResponse({'message': 'follow 하고 있는 계정이 없습니다.'}, status=204)
+        
+        following_list = [following.to_user.name for following in followings]
+        return JsonResponse({'data': following_list}, status=200)
+        
+class FollowerView(View):
+    def get(self, request, user_name):
+        # valid user check
+        if not User.objects.filter(name=user_name).exists():
+            return JsonResponse({"message": "USER_DOES_NOT_EXIST"}, status=404)
+        
+        user      = User.objects.get(name=user_name)
+        followers = Follow.objects.filter(to_user=user)
 
+        if not followers:
+            return JsonResponse({'message': 'follower가 없습니다.'}, status=204)
+
+        follower_list = [follower.from_user.name for follower in followers]
+        return JsonResponse({'data': follower_list}, status=200)
+        
