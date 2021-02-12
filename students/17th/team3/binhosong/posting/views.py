@@ -112,14 +112,25 @@ class CommentView(View):
         data = json.loads(request.body)
 
         try :
-            account = Account.objects.get(nickname=data['nickname'])
-            posting = Post.objects.get(contents=data['contents'])
+            account    = Account.objects.get(nickname=data['nickname'])
+            posting    = Post.objects.get(contents=data['contents'])
+
+            if 'comments_id' in data:
+                Comment.objects.create(
+                        account     = account,
+                        comments    = data['comments'],
+                        posting     = posting,
+                        comments_id = data['comments_id'],
+                        level       = 2
+                )
+                return JsonResponse({'message' : 'SUCCESS'}, status = 200)
 
             Comment.objects.create(
                 account  = account,
                 comments = data['comments'],
                 posting  = posting,
             )
+
             return JsonResponse({'message' : 'SUCCESS'}, status = 200)
 
         except KeyError:
@@ -138,6 +149,7 @@ class CommentView(View):
             if Comment.objects.filter(id=comments_id).exists():
                 Comment.objects.get(id=comments_id).delete()
                 return JsonResponse({'message' : 'SUCCESS'}, status=200)
+
             return JsonResponse({'message':'POST_DOES_NOT_EXIST'},status=401)
 
         except KeyError: 

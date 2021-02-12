@@ -18,6 +18,7 @@ class Comment(models.Model):
     update_at = models.DateTimeField(auto_now=True)
     posting   = models.ForeignKey('Post', on_delete=models.CASCADE)
     account   = models.ForeignKey('users.Account', on_delete=models.CASCADE)
+    level     = models.IntegerField(null=True, default=None)
 
     class Meta:
         db_table = 'comments'
