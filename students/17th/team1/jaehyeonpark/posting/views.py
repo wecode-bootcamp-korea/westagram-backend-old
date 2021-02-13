@@ -54,7 +54,7 @@ class CommentView(View):
             if Post.objects.filter(id=post_id).exists():
                 post           = Post.objects.get(id=post_id)
             
-                if Comment.objects.filter(id=parent_comment).exists():
+                if Comment.objects.filter(Q(id=parent_comment) & Q(post=post)).exists():
                     parent_comment = Comment.objects.get(id=parent_comment)
             
                     Comment.objects.create(post=post, user=user, comment_body=comment_body, parent_comment=parent_comment)
@@ -80,10 +80,11 @@ class CommentShowView(View):
         for comment in comments:
             results.append(
                 {
-                "post":comment.post.id,
-                "user":comment.post.user.account,
-                "created_at":comment.created_at,
-                "comment_body":comment.comment_body
+                "post"          : comment.post.id,
+                "parent_comment": comment.parent_comment,
+                "user"          : comment.post.user.account,
+                "created_at"    : comment.created_at,
+                "comment_body"  : comment.comment_body
                 }
             )
 
