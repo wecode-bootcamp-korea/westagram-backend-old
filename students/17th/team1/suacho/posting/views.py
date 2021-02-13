@@ -60,7 +60,7 @@ class PostingSearchView(View):
             "image_url" : [i.image_url for i in Image.objects.filter(posting_id=posting.id)],
             "create_at" : posting.created_at
             } for posting in Posting.objects.filter(user_id=user_id)
-            ]
+        ]
 
         return JsonResponse({'data':posting_list}, status=200)
 
@@ -81,11 +81,32 @@ class PostingDetailView(View):
         Posting.objects.filter(id=posting.id).delete()
         return JsonResponse({'message': 'SUCCESS'}, status=200)
 
+    @login_decorator
+    def post(self, request, posting_id):
+        try:
+            data = json.loads(request.body)
+            user = request.user
+
+            if not Posting.objects.filter(id=posting_id).exists():
+                return JsonResponse({'message': 'POSTING_DOES_NOT_EXIST'}, status=404)
+
+            posting = Posting.objects.get(id=posting_id)
+
+            if user != posting.user:
+                return JsonResponse({'message':'INVALID_USER'}, status=401)
+
+            posting.content = data.get('content', posting.content)
+            posting.save()
+            return JsonResponse({'message': 'SUCCESS'}, status=201)
+
+        except JSONDecodeError:
+            return JsonResponse({'message':'JSON_DECODE_ERROR'}, status=400)
+
 
 class CommentView(View):
     @login_decorator
     def post(self, request):
-        try :
+        try:
             data = json.loads(request.body)
             user = request.user
 
