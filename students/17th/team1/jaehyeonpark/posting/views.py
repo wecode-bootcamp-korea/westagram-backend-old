@@ -53,9 +53,13 @@ class CommentView(View):
             
             if Post.objects.filter(id=post_id).exists():
                 post           = Post.objects.get(id=post_id)
-                parent_comment = Comment.objects.get(id=parent_comment)
-                Comment.objects.create(post=post, user=user, comment_body=comment_body, parent_comment=parent_comment)
-                return JsonResponse({'message':'SUCCESS'}, status=200)
+            
+                if Comment.objects.filter(id=parent_comment).exists():
+                    parent_comment = Comment.objects.get(id=parent_comment)
+            
+                    Comment.objects.create(post=post, user=user, comment_body=comment_body, parent_comment=parent_comment)
+                    return JsonResponse({'message':'SUCCESS'}, status=200)
+                return JsonResponse({'message':'INVALID_COMMENT'}, status=400)
         
             return JsonResponse({'message':'INVALID_POST'}, status=400)
 
