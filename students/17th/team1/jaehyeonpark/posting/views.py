@@ -87,7 +87,7 @@ class CommentShowView(View):
                 "comment_body"  : comment.comment_body
                 }
             )
-
+    
         return JsonResponse({'results':results}, status=200)
         
 
