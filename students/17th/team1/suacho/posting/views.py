@@ -110,8 +110,9 @@ class CommentView(View):
             data = json.loads(request.body)
             user = request.user
 
-            content    = data.get('content', None)
-            posting_id = data.get('posting_id', None)
+            content           = data.get('content', None)
+            posting_id        = data.get('posting_id', None)
+            parent_comment_id = data.get('parent_comment_id', None)
 
             if not (content and posting_id):
                 return JsonResponse({'message':'KEY_ERROR'}, status=400)
@@ -120,11 +121,12 @@ class CommentView(View):
                 return JsonResponse({'message':'POSTING_DOES_NOT_EXIST'}, status=404)
             
             posting = Posting.objects.get(id=posting_id)
-            
+
             Comment.objects.create(
-                content = content,
-                user    = user,
-                posting = posting
+                content           = content,
+                user              = user,
+                posting           = posting,
+                parent_comment_id = parent_comment_id
             )
 
             return JsonResponse({'message':'SUCCESS'}, status=201)

@@ -18,18 +18,20 @@ class Image(models.Model):
         db_table = 'images'
 
 class Comment(models.Model):
-    content    = models.CharField(max_length=500)
-    created_at = models.DateTimeField(auto_now_add=True)
-    user       = models.ForeignKey('user.User', on_delete=models.CASCADE)
-    posting    = models.ForeignKey('Posting', on_delete=models.CASCADE)
+    content        = models.CharField(max_length=500)
+    created_at     = models.DateTimeField(auto_now_add=True)
+    user           = models.ForeignKey('user.User', on_delete=models.CASCADE)
+    posting        = models.ForeignKey('Posting', on_delete=models.CASCADE)
+    parent_comment = models.ForeignKey('self', on_delete=models.CASCADE, null=True)
 
     class Meta:
         db_table = 'comments'
 
 class Like(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
-    user = models.ForeignKey('user.User', on_delete=models.CASCADE)
-    posting = models.ForeignKey('Posting', on_delete=models.CASCADE)
+    user       = models.ForeignKey('user.User', on_delete=models.CASCADE)
+    posting    = models.ForeignKey('Posting', on_delete=models.CASCADE)
 
     class Meta:
         db_table = 'likes'
+

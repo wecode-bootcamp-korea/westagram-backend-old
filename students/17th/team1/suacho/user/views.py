@@ -129,7 +129,7 @@ class FollowView(View):
                 return JsonResponse({'message': 'SUCCESS'}, status=200)
 
             Follow.objects.create(
-                follower = follower,
+                follower  = follower,
                 following = following
             )
             return JsonResponse({'message':'SUCCESS'}, status=201)

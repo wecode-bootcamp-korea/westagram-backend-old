@@ -13,7 +13,7 @@ class User(models.Model):
         db_table = 'users'
 
 class Follow(models.Model):
-    follower = models.ForeignKey('User', on_delete=models.CASCADE, related_name='follower')
+    follower  = models.ForeignKey('User', on_delete=models.CASCADE, related_name='follower')
     following = models.ForeignKey('User', on_delete=models.CASCADE, related_name='following')
 
     class Meta:
