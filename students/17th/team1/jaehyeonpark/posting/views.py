@@ -5,7 +5,7 @@ from django.views     import View
 from django.db.utils  import DataError
 from django.db.models import Q
 
-from posting.models   import Post, Comment, PostLike, Follow, CommentOnComment
+from posting.models   import Post, Comment, PostLike, Follow
 from user.models      import User
 from westagram.utils  import login_decorator
 
@@ -47,12 +47,14 @@ class CommentView(View):
     @login_decorator
     def post(self, request, data, user):
         try:
-            post_id = data['post_id']
+            post_id      = data['post_id']
             comment_body = data['comment_body']
+            parent_comment = data['parent_comment']
             
             if Post.objects.filter(id=post_id).exists():
-                post = Post.objects.get(id=post_id)
-                Comment.objects.create(post=post, user=user, comment_body=comment_body)
+                post           = Post.objects.get(id=post_id)
+                parent_comment = Comment.objects.get(id=parent_comment)
+                Comment.objects.create(post=post, user=user, comment_body=comment_body, parent_comment=parent_comment)
                 return JsonResponse({'message':'SUCCESS'}, status=200)
         
             return JsonResponse({'message':'INVALID_POST'}, status=400)
@@ -91,7 +93,7 @@ class PostLikeView(View):
             post_id = data['post_id']
                 
             if Post.objects.filter(id=post_id).exists():
-                post = Post.objects.get(id=post_id)
+                post     = Post.objects.get(id=post_id)
                 postlike = PostLike.objects.update_or_create(post=post, user=user)[0]
                 
                 if postlike.like:
@@ -199,27 +201,6 @@ class PostModifyView(View):
                 return JsonResponse({'message':'SUCCESS'}, status=200)
         
             return JsonResponse({'message':'INVALID_POST'}, status=400)
-
-        except KeyError:
-            return JsonResponse({'message':'KEY_ERROR'}, status=400)
-        
-        except DataError:
-            return JsonResponse({'message':'DATA_ERROR'}, status=400)
-
-class CommentOnCommentView(View):
-    @login_decorator
-    def post(self, request, data, user):
-        try:
-            comment_id   = data['comment_id']
-            comment_body = data['comment_body']
-
-            if Comment.objects.filter(id=comment_id).exists():
-                comment = Comment.objects.get(id=comment_id)
-                CommentOnComment.objects.create(user=user, comment_body=comment_body, comment_id=comment_id)
-
-                return JsonResponse({'message':'SUCCESS'}, status=200)
-        
-            return JsonResponse({'message':'INVALID_COMMENT'}, status=400)
 
         except KeyError:
             return JsonResponse({'message':'KEY_ERROR'}, status=400)

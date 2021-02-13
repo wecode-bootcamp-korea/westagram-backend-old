@@ -12,10 +12,11 @@ class Post(models.Model):
         db_table = 'posts'
 
 class Comment(models.Model):
-    post         = models.ForeignKey('Post', on_delete=models.CASCADE)
-    user         = models.ForeignKey('user.User', on_delete=models.CASCADE)
-    created_at   = models.DateTimeField(auto_now_add=True)
-    comment_body = models.TextField(max_length=10000)
+    post           = models.ForeignKey('Post', on_delete=models.CASCADE)
+    parent_comment = models.ForeignKey('self', on_delete=models.CASCADE, null=True)
+    user           = models.ForeignKey('user.User', on_delete=models.CASCADE)
+    created_at     = models.DateTimeField(auto_now_add=True)
+    comment_body   = models.TextField(max_length=10000)
 
     class Meta:
         db_table = 'comments'
@@ -34,12 +35,3 @@ class Follow(models.Model):
     
     class Meta:
         db_table = 'follows'
-
-class CommentOnComment(models.Model):
-    comment      = models.ForeignKey('Comment', on_delete=models.CASCADE)
-    user         = models.ForeignKey('user.User', on_delete=models.CASCADE)
-    created_at   = models.DateTimeField(auto_now_add=True)
-    comment_body = models.TextField(max_length=10000)
-
-    class Meta:
-        db_table = 'commentoncomments'
