@@ -68,14 +68,11 @@ class UserlonginView(View):
      
             if Userinfo.objects.filter(name = name).exists():
                 user = Userinfo.objects.get(name = name)
-                print('***************************************************************')
                 # db에 암호화한 비밀번호랑 받은 비밀번호를 비교해서 맞으면 토큰을 주고 아니면 오류메세지 리턴
                 if bcrypt.checkpw(data['password'].encode('utf-8'), user.password.encode('utf-8')):
                     access_token = jwt.encode({'id' : user.id}, 'secret' , algorithm ='HS256').decode('utf-8')   
-                    print('***********************************************************************')
                     return JsonResponse({"TOKEN" : access_token},status=200)
                     #return JsonResponse({"TOKEN" : access_token, "MESSAGE":"SUCCESS"}, status = 200)
-                    print('*******************************************************************')
                 return JsonResponse({"MESSAGE" : "INVALID_PASSWORD"}, status = 401)
             
             return JsonResponse({"MESSAGE": "INVALID_USER"}, status = 401)
@@ -84,22 +81,25 @@ class UserlonginView(View):
 
 
 class FollowView(View):
+    # follower 팔로우를 할 사람, followee 팔로우를 걸 사람
     @login_decorator
     def post(self, request):
-        data           = json.loads(request.body)
-        follower       = request.user
-        follower_id    = follower.id
-        followee_id    = data['followee_id']
+        try:
+            data           = json.loads(request.body)
+            follower_id    = request.user
+            followee_id    = data['followee_id']
 
 
-        if Follow.objects.filter(follower_id = follower_id, followee_id = followee_id).exists():
-            return JsonResponse({"MESSAGE" : "INVALID_USER"}, status=400)
+            if Follow.objects.filter(follower_id = follower_id, followee_id = followee_id).exists():
+                return JsonResponse({"MESSAGE" : "INVALID_USER"}, status=400)
         
-        Follow.objects.create(
-                follower = follower_id,
-                followee = followee_id
-                )
-        return JsonResponse({"MESSAGE": "SUCCESS"}, status=200)
+            Follow.objects.create(
+                    follower = follower_id,
+                    followee = followee_id
+                    )
+            return JsonResponse({"MESSAGE": "SUCCESS"}, status=200)
+        except KeyError:
+            return JsonResponse({"MESSAGE" : 'INVALID_KEY'}, status=400)
 
     
     @login_decorator
