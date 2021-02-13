@@ -15,10 +15,10 @@ class Post(models.Model):
 
 
 class Comment(models.Model):
-    user  = models.ForeignKey(Account, on_delete=models.CASCADE, null=True)
-    post  = models.ForeignKey(Post, on_delete=models.CASCADE, null=True)
+    user       = models.ForeignKey(Account, on_delete=models.CASCADE, null=True)
+    post       = models.ForeignKey(Post, on_delete=models.CASCADE, null=True)
     created_at = models.TimeField(auto_now_add=True, null=True)
-    content = models.TextField()
+    content    = models.TextField()
 
     class Meta:
         db_table = 'comments'
