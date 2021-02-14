@@ -140,6 +140,19 @@ class FollowView(View):
         except KeyError:
             return JsonResponse({'message':'KEY_ERROR'}, status=400)
 
+class FollowShowView(View):
+    @login_decorator
+    def get(self, request, data, user):
+        try:
+            followings = [follow_object.to_user.account for follow_object in user.from_users.all()]
+            followers = [follow_object.from_user.account for follow_object in user.to_users.all()]
+            print(followings)
+            return JsonResponse({'followings':followings, 'followers':followers}, status=400)
+
+        
+        except KeyError:
+            return JsonResponse({'message':'KEY_ERROR'}, status=400)
+
 class CommentDeleteView(View):
     @login_decorator
     def post(self, request, data, user):

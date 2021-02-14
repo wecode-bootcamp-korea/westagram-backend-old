@@ -10,6 +10,7 @@ from posting.views import (
     CommentDeleteView,
     PostDeleteView,
     PostModifyView,
+    FollowShowView,
 )
 
 urlpatterns = [
@@ -22,4 +23,5 @@ urlpatterns = [
     path('/commentdelete', CommentDeleteView.as_view()),
     path('/postdelete', PostDeleteView.as_view()),
     path('/postmodify', PostModifyView.as_view()),
+    path('/followshow', FollowShowView.as_view()),
 ]
