@@ -1,7 +1,7 @@
 from django.urls import path
-from .views      import ContentSignUpView, ContentGetView
+from .views      import ContentView, CommentView
 
 urlpatterns = [
-    path('/contentsignup', ContentSignUpView.as_view()),
-    path('/contentget', ContentGetView.as_view())
+    path('/posting', ContentView.as_view()),
+    path('/comment', CommentView.as_view())
 ]
