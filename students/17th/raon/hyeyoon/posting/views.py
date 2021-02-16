@@ -85,4 +85,5 @@ class CommentView(View):
             }
         comment_list.append(comment_info)
 
+
         return JsonResponse({"comment":comment_list}, status = 201)
