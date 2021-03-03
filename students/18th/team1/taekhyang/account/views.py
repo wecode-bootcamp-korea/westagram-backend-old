@@ -4,6 +4,8 @@ import re
 from django.views     import View
 from django.http      import JsonResponse
 
+from .models import User
+
 
 class SignUpView(View):
     def post(self, request):
@@ -25,5 +27,16 @@ class SignUpView(View):
 
         if not is_valid_email or not is_valid_password:
             return JsonResponse({'message': 'WRONG_FORMAT'}, status=400)
+
+        # check existing user
+        
+        
+
+
+        try:
+            User.objects.create(email=email, password=password)
+        except:
+            return JsonResponse({'message': 'WRONG_FORMAT'}, status=400)
+
 
         return JsonResponse({'message': 'SUCCESS'}, status=200)
