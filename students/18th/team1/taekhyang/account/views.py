@@ -23,10 +23,10 @@ class SignUpView(View):
 
         # TODO : modify password validation check
         is_valid_email    = True if p_email.match(email) else False 
-        is_valid_password = True if p_password.match(email) else False
+        is_valid_password = True if p_password.match(password) else False
 
         if not is_valid_email or not is_valid_password:
-            return JsonResponse({'message': 'WRONG_FORMAT'}, status=400)
+            return JsonResponse({'message': 'INVALID_FORMAT'}, status=400)
 
         # check existing user
         is_existing_user = True if User.objects.filter(email=email) else False
@@ -37,5 +37,5 @@ class SignUpView(View):
         try:
             User.objects.create(email=email, password=password)
         except:
-            return JsonResponse({'message': 'WRONG_FORMAT'}, status=400)
+            return JsonResponse({'message': 'INVALID_FORMAT'}, status=400)
         return JsonResponse({'message': 'SUCCESS'}, status=200)
