@@ -13,16 +13,17 @@ class SignUpView(View):
         email    = json_data['email']
         password = json_data['password']
 
-        p = re.compile(r'^[a-zA-Z0-9.+_-]+@[a-zA-Z0-9_]+\.[a-zA-Z-.]+$')
-        is_valid_email = True if p.match(email) else False 
+        if not email or not password:
+            return JsonResponse('{"message": "KEY_ERROR"}', status=400)
 
-        print(is_valid_email)
+        p_email    = re.compile(r'^[a-zA-Z0-9.+_-]+@[a-zA-Z0-9_]+\.[a-zA-Z-.]+$')
+        p_password = re.compile(r'.{8,45}')
 
+        # TODO : modify password validation check
+        is_valid_email    = True if p.match(email) else False 
+        is_valid_password = True if p.match(email) else False
 
-
-
-
-
-
+        if not is_valid_email or not is_valid_password:
+            return JsonResponse('{"message": "WRONG_FORMAT"}', status=400)
 
         
