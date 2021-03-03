@@ -29,14 +29,13 @@ class SignUpView(View):
             return JsonResponse({'message': 'WRONG_FORMAT'}, status=400)
 
         # check existing user
-        
-        
+        is_existing_user = True if User.objects.filter(email=email) else False
+        if is_existing_user:
+            return JsonResponse({'message': 'EXISTING_USER'}, status=400)
 
-
+        # not sure if it may throw unexpected error when inserting data
         try:
             User.objects.create(email=email, password=password)
         except:
             return JsonResponse({'message': 'WRONG_FORMAT'}, status=400)
-
-
         return JsonResponse({'message': 'SUCCESS'}, status=200)
