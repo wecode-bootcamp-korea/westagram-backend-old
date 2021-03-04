@@ -119,3 +119,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
 STATIC_URL = '/static/'
+
+# 작업을 완료하고!
+# 1. git status
+# 2. git add . (커밋할 준비)
+# 3. git status
+# 4. git commit -m "커밋메세지"
+# 5. git push origin 브랜치명 (feature/seunghyunson18)
