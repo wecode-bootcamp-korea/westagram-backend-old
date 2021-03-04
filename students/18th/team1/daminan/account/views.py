@@ -3,7 +3,7 @@ import json
 from django.views import View
 from django.http  import JsonResponse
 
-from .models import User, Login
+from .models import User
 
 class UserView(View):
     def post(self, request):
@@ -26,7 +26,7 @@ class LoginView(View):
     def post(self, request):
         data = json.loads(request.body)
         try:
-            user = User(
+            user = User.objects.filter(
                email    = User.objects.filter(email=data['email']),
                password = User.objects.filter(password=data['password'])
             )
