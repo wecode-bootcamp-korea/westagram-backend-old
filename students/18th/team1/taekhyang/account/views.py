@@ -9,6 +9,7 @@ from utils.debugger  import debugger
 
 class SignUpView(View):
     def post(self, request):
+        # 예외 처리
         data      = request.body
         json_data = json.loads(data)
 
@@ -16,7 +17,6 @@ class SignUpView(View):
             email    = json_data['email']
             password = json_data['password']
             
-            # check empty string
             if not email or not password:
                 return JsonResponse({'message': 'EMPTY_VALUE'}, status=400)
 
@@ -30,7 +30,6 @@ class SignUpView(View):
             if not is_valid_email or not is_valid_password:
                 return JsonResponse({'message': 'INVALID_FORMAT'}, status=400)
 
-            # check existing user
             is_existing_user = User.objects.filter(email=email).exists()
             if is_existing_user:
                 return JsonResponse({'message': 'EXISTING_USER'}, status=400)
@@ -41,11 +40,27 @@ class SignUpView(View):
             debugger.exception('KeyError')
             return JsonResponse({'message': 'KEY_ERROR'}, status=400)
         except:
-            debugger.exception()
+            debugger.debug('Unexpected Error inserting user info into User Model')
             return JsonResponse({'message': 'INVALID_FORMAT'}, status=400)
         return JsonResponse({'message': 'SUCCESS'}, status=200)
 
 
 class LoginView(View):
     def post(self, request):
-        pass
+        data      = request.body
+        json_data = json.loads(data)
+
+        try:
+            email    = json_data['email']
+            password = json_data['password']
+        except KeyError:
+            debugger.exception('KeyError')
+            return JsonResponse({'message': 'KEY_ERROR'}, status=400)
+        
+        if not email or not password:
+            return JsonResponse({'message': 'EMPTY_VALUE'}, status=400)
+        
+        is_valid_account = User.objects.filter(email=email, password=password).exists()
+        if not is_valid_account:
+            return JsonResponse({'message': 'INVALID_USER'}, status=401)
+        return JsonResponse({'message': 'SUCCESS'}, status=200)

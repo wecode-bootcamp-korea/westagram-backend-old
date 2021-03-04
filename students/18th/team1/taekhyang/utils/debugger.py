@@ -6,19 +6,20 @@ from logging.handlers import RotatingFileHandler
 
 
 debugger = logging.getLogger("Debugger")
-
 # to make directory for log files
 try:
-    now = str(datetime.datetime.now().date().replace('-', ''))
+    now = str(datetime.datetime.now().date()).replace('-', '')
     if not os.path.isdir('./logs'):
         os.mkdir('./logs')
-    os.mkdir('./logs/log-{}'.format(now))
-
+    if not os.path.isdir('./logs/log-{}'.format(now)):
+        os.mkdir('./logs/log-{}'.format(now))
+    
     f_hdlr = RotatingFileHandler('./logs/log-{}/Debugger.log'.format(now),
                                 encoding='UTF-8',
                                 maxBytes=10 * 1024 * 1024,
                                 backupCount=3)
 except Exception as e:
+    print(e)
     f_hdlr = RotatingFileHandler('Debugger.log',
                                 encoding='UTF-8',
                                 maxBytes=10 * 1024 * 1024,
