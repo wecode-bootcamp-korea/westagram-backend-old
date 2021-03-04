@@ -59,11 +59,14 @@ class SignInView(View):
             if not (user_name or phone_number or email):
                 raise KeyError
             
-            user = User.objects.filter(
+            valid_user = User.objects.filter(
                 (Q(user_name=user_name) | Q(email=email) | Q(phone_number=phone_number)) & Q(password=password)
             )
 
-            print(user)
+            if not valid_user:
+                return JsonResponse({'message': 'INVALID_USER'}, status=401)
+
+                        
         except KeyError:
             return JsonResponse({'message': 'KEY_ERROR'}, status=400)
         else:
