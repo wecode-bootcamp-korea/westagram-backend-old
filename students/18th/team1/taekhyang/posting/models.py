@@ -3,6 +3,7 @@ from django.db import models
 
 class Posting(models.Model):
     created_time = models.DateTimeField(auto_now_add=True)
+    content      = models.CharField(max_length=2000, blank=True)
     user         = models.ForeignKey('account.User', on_delete=models.CASCADE)
 
     class Meta(object):

@@ -5,6 +5,8 @@ from json.decoder import JSONDecodeError
 from django.views    import View
 from django.http     import JsonResponse
 from .models         import Posting, PostingImage
+from account.models  import User
+
 from utils.debugger  import debugger
 
 
@@ -16,22 +18,18 @@ class UploadView(View):
             data      = request.body
             json_data = json.loads(data)
 
-            created_time = data['created_time']
             image_url    = data['image_url']
+            
+            # temporary test User object
+            user = User.objects.filter(id=TEST_USER_ID).exists()
+            if not user:
+                return JsonResponse({'message': 'INVALID_USER'}, status=400)
 
-
-
-
-
-
-
-
-
-
+            posting = Posting(user=user)
+            for img in image_url:
+                posting_images = PostingImage(image_url=img, posting=posting)
         except KeyError:
-            return False
+            return JsonResponse({'message': 'KEY_ERROR'}, status=400)            
         except JSONDecodeError:
-            return False
-
-
-
+            return JsonResponse({'message': 'JSON_DECODE_ERROR'}, status=400)
+        return JsonResponse({'message': 'SUCCESS'}, status=200)
