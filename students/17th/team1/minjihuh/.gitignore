@@ -37,7 +37,7 @@ parts/
 sdist/
 var/
 wheels/
-pip-wheel-metadata/
+pi-wheel-metadata/
 share/python-wheels/
 *.egg-info/
 .installed.cfg
@@ -270,5 +270,5 @@ tags
 
 # End of https://www.toptal.com/developers/gitignore/api/macos,python,django,vscode,vim
 
-my_settings.py
-.csv
+mysettings.py
+*.csv
