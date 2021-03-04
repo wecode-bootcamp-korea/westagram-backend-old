@@ -33,11 +33,16 @@ class SignUpView(View):
 
 class LogInView(View): 
     def post(self, request):
-        data = json.loads(request.body)
+        try:
+            data = json.loads(request.body)
 
-        email    = data["email"]
-        password = data["password"]
-
+            email    = data["email"]
+            password = data["password"]
+            
+        except:
+            if not request.body:
+                return JsonResponse({"message": "데이터가 없습니다."})
+        
         if not email or not password:
             return JsonResponse({"message": "KEY_ERROR"}, status=400)
         
