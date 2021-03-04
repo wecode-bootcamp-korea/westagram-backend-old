@@ -24,7 +24,7 @@ class UserView(View):
 
 class LoginView(View):
     def post(self, request):
-        data      = json.loads(request.body)
+        data = json.loads(request.body)
         try:
             user = User(
                email    = User.objects.filter(email=data['email']),
