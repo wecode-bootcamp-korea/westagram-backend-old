@@ -31,5 +31,20 @@ class SignUpView(View):
         return JsonResponse({"message":"SUCCESS"}, status=200)
 
 
-class LogInView(View):
-    
+class LogInView(View): 
+    def post(self, request):
+        data = json.loads(request.body)
+
+        email    = data["email"]
+        password = data["password"]
+
+        if not email or not password:
+            return JsonResponse({"message": "KEY_ERROR"}, status=400)
+        
+        if User.objects.filter(email=email).exists()==False or User.objects.filter(password=password).exists()==False:
+            return JsonResponse({"message": "INVALID_USER"}, status=401)
+        
+        return JsonResponse({"message": "SUCCESS"}, status=200)
+            
+
+        
