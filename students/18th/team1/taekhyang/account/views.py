@@ -12,11 +12,14 @@ class SignUpView(View):
         data      = request.body
         json_data = json.loads(data)
 
-        email    = json_data['email']
-        password = json_data['password']
+        try:
+            email    = json_data['email']
+            password = json_data['password']
+        except KeyError:
+            return JsonResponse({'message': 'KEY_ERROR'}, status=400)
 
         if not email or not password:
-            return JsonResponse({'message': 'KEY_ERROR'}, status=400)
+            return JsonResponse({'message': 'EMPTY_VALUE'}, status=400)
 
         p_email    = re.compile(r'^[a-zA-Z0-9.+_-]+@[a-zA-Z0-9_]+\.[a-zA-Z-.]+$')
         p_password = re.compile(r'.{8,45}')
