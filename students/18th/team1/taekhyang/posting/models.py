@@ -10,8 +10,8 @@ class Posting(models.Model):
 
 
 class PostingImage(models.Model):
-    image   = models.TextField(max_length=1000)
-    posting = models.ForeignKey('Posting', on_delete=models.CASCADE)
+    image_url = models.TextField(max_length=1000)
+    posting   = models.ForeignKey('Posting', on_delete=models.CASCADE)
 
     class Meta(object):
         db_table = 'posting_images'
