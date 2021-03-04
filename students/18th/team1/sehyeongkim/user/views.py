@@ -33,5 +33,5 @@ class SignUpView(View):
             return JsonResponse({'message': 'KEY_ERROR'}, status= 400)
         
         else:
-            #User.objects.create(email=user_email, password=user_password)
+            User.objects.create(email=user_email, password=user_password)
             return JsonResponse({'message': 'SUCCESS'}, status= 200)
