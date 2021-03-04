@@ -28,3 +28,21 @@ class PostView(View):
         else:
             return JsonResponse({'message': 'SUCCSESS'}, status=200)
             
+    def get(self, request):
+        posts = Post.objects.all()
+        
+        result = []
+        
+        for post in posts:
+            user_id   = post.user_name
+            user_name = user_id.user_name
+            
+            post_dict = {
+                'user_name'  : user_name,
+                'image_url'  : post.image_url,
+                'content'    : post.content,
+                'create_date': post.create_date,
+            }
+            result.append(post_dict)
+
+        return JsonResponse({'result': result}, status=200)
