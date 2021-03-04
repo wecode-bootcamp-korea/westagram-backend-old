@@ -5,7 +5,7 @@ from django.http  import JsonResponse
 
 from .models import User
 
-class UserView(View):
+class SignupView(View):
     def post(self, request):
         data = json.loads(request.body)
         if User.objects.filter(email=data['email']).exists():

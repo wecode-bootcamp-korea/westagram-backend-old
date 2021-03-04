@@ -2,7 +2,7 @@ from django.urls import path
 from .views      import *
 
 urlpatterns = [
-    path('user', UserView.as_view()),
+    path('user', SignupView.as_view()),
     path('login', LoginView.as_view()),    
 ]
 '''urls.py 슬래시 위치 확인
