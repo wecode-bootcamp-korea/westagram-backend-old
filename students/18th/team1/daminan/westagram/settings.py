@@ -37,12 +37,12 @@ SECRET_KEY = get_secret("SECRET_KEY")
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-
-
+SECRET_KEY = SECRET_KEY
+# 인증 인가 때 자세히 할 예정
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
@@ -55,7 +55,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'corsheaders',
-
 ]
 
 MIDDLEWARE = [
@@ -67,7 +66,6 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 	'corsheaders.middleware.CorsMiddleware',
-    
 ]
 
 ROOT_URLCONF = 'westagram.urls'
@@ -96,7 +94,6 @@ WSGI_APPLICATION = 'westagram.wsgi.application'
 from . import my_settings
 
 DATABASES = my_settings.DATABASES
-
 
 
 # Password validation
@@ -136,7 +133,6 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
-
 
 ##CORS
 CORS_ORIGIN_ALLOW_ALL=True

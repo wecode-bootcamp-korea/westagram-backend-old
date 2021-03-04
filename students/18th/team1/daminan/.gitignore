@@ -1,6 +1,11 @@
 
+<<<<<<< HEAD
 # Created by https://www.toptal.com/developers/gitignore/api/python,pycharm,vscode,vim,linux,macos,zsh
 # Edit at https://www.toptal.com/developers/gitignore?templates=python,pycharm,vscode,vim,linux,macos,zsh
+=======
+# Created by https://www.toptal.com/developers/gitignore/api/python,vscode,vim,macos,linux,zsh
+# Edit at https://www.toptal.com/developers/gitignore?templates=python,vscode,vim,macos,linux,zsh
+>>>>>>> 6798d2f6f6e91af17aa8c3af73c5d3153fae6374
 
 ### Linux ###
 *~
@@ -46,6 +51,7 @@ Network Trash Folder
 Temporary Items
 .apdisk
 
+<<<<<<< HEAD
 ### PyCharm ###
 # Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio, WebStorm and Rider
 # Reference: https://intellij-support.jetbrains.com/hc/en-us/articles/206544839
@@ -149,6 +155,8 @@ fabric.properties
 # https://plugins.jetbrains.com/plugin/12206-codestream
 .idea/codestream.xml
 
+=======
+>>>>>>> 6798d2f6f6e91af17aa8c3af73c5d3153fae6374
 ### Python ###
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -215,7 +223,10 @@ db.sqlite3
 db.sqlite3-journal
 my_settings.py
 secrets.json
+<<<<<<< HEAD
 
+=======
+>>>>>>> 6798d2f6f6e91af17aa8c3af73c5d3153fae6374
 # Flask stuff:
 instance/
 .webassets-cache
@@ -348,4 +359,8 @@ zsdoc/data
 /tests/_output/*
 !/tests/_output/.gitkeep
 
+<<<<<<< HEAD
 # End of https://www.toptal.com/developers/gitignore/api/python,pycharm,vscode,vim,linux,macos,zsh
+=======
+# End of https://www.toptal.com/developers/gitignore/api/python,vscode,vim,macos,linux,zsh
+>>>>>>> 6798d2f6f6e91af17aa8c3af73c5d3153fae6374
