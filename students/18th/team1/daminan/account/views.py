@@ -3,7 +3,7 @@ import json
 from django.views import View
 from django.http  import JsonResponse
 
-from .models import User
+from .models import User, Login
 
 class UserView(View):
     def post(self, request):
@@ -22,3 +22,17 @@ class UserView(View):
             return JsonResponse({"message": "KEY_ERROR"}, status=400)
    
 
+class LoginView(View):
+    def post(self, request):
+        data      = json.loads(request.body)
+        try:
+            user = User(
+               email    = User.objects.filter(email=data['email']),
+               password = User.objects.filter(password=data['password'])
+            )
+            if User.objects.all().filter(email=data['email'], password=data['password']).exists() == True:
+                return JsonResponse({"message":"SUCCESS"}, status=200)
+            else:
+                return JsonResponse({"message":"INVALID_USER"}, status=401)
+        except KeyError:
+            return JsonResponse({"message":"KEY_ERROR"}, status=400)
