@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from my_settings import SECRET_KEY
+from my_settings import SECRET_KEY, DATABASES
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -56,17 +56,7 @@ WSGI_APPLICATION = 'project_westagram.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 
-DATABASES = {
-    'default' : {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'westagram',
-        'USER': 'root',
-        'PASSWORD': '1234',
-        'HOST': '127.0.0.1',
-        'PORT': '3306',
-    }
-}
-
+DATABASES = DATABASES
 
 # Password validation
 # https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators
