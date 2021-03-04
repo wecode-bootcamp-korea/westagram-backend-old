@@ -21,7 +21,7 @@ class SignUpView(View):
             if phone:
                 phone = phone.replace('-','')
 
-            if re.search(r'@', email) == None or re.search(r'\.', email) == None:
+            if re.search('@', email) == None or re.search('\.', email) == None:
                 return JsonResponse({'message':'EMAIL VALIDATION ERROR'}, status=400)
             if re.search('\S{8,20}', password) == None:
                 return JsonResponse({'message':'PASSWORD VALIDATION ERROR'}, status=400)
