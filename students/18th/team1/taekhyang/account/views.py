@@ -1,10 +1,9 @@
 import json
 import re
 
-from django.views     import View
-from django.http      import JsonResponse
-
-from .models import User
+from django.views import View
+from django.http  import JsonResponse
+from .models      import User
 
 
 class SignUpView(View):
@@ -18,6 +17,7 @@ class SignUpView(View):
         except KeyError:
             return JsonResponse({'message': 'KEY_ERROR'}, status=400)
 
+        # check empty string
         if not email or not password:
             return JsonResponse({'message': 'EMPTY_VALUE'}, status=400)
 
@@ -32,7 +32,7 @@ class SignUpView(View):
             return JsonResponse({'message': 'INVALID_FORMAT'}, status=400)
 
         # check existing user
-        is_existing_user = True if User.objects.filter(email=email) else False
+        is_existing_user = User.objects.filter(email=email).exists()
         if is_existing_user:
             return JsonResponse({'message': 'EXISTING_USER'}, status=400)
 
