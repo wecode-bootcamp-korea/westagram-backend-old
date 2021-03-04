@@ -1,21 +1,25 @@
-from json
+import json
 
 from django.views import View
+from django.http  import JsonResponse
+
 
 from .models import User
 
 class UserView(View):
     def post(self, request):
         data = json.loads(request.body)
-        email    = User.objects.get(name=data['email'])
-        password = User.objects.get(name=data['password'])
-        user     = User.objects.create(
-            email    = data['email']
+
+        if '@' in data['email'] and '.' in data['email'] and len(data['password']) >= 8:
+            user     = User.objects.create(
+            email    = data['email'],
             password = data['password']
         )
-        if '@' and '.' in email and len(password) >= 8:
-            return JsonResponse({"message": "SUCCESS"}, status_code=200)
+            return JsonResponse({"message": "SUCCESS"}, status=200)
         else:
-            return JsonResponse({"message": "KEY_ERROR"}, status_code=200)
+            return JsonResponse({"message": "KEY_ERROR"}, status=200)
+        
+        
+
         
         
