@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/3.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.1/ref/settings/
 """
-from my_settings import SECRET_KEY
+from my_settings import SECRET_KEY, DATABASES
 
 from pathlib import Path
 
@@ -77,16 +77,7 @@ WSGI_APPLICATION = 'westagram.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 
-DATABASES = {
-    'default' : {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'westagram',
-        'USER': 'root',
-        'PASSWORD': 'dpqudtn14!',
-        'HOST': '127.0.0.1',
-        'PORT': '3306',
-    }
-}
+DATABASES = DATABASES
 
 
 # Password validation
