@@ -1,5 +1,6 @@
 import json
 import re
+from json.decoder import JSONDecodeError
 
 from django.views    import View
 from django.http     import JsonResponse
@@ -9,11 +10,10 @@ from utils.debugger  import debugger
 
 class SignUpView(View):
     def post(self, request):
-        # 예외 처리
-        data      = request.body
-        json_data = json.loads(data)
-
         try:
+            data      = request.body
+            json_data = json.loads(data)
+
             email    = json_data['email']
             password = json_data['password']
             
@@ -37,8 +37,9 @@ class SignUpView(View):
             User.objects.create(email=email, password=password)
 
         except KeyError:
-            debugger.exception('KeyError')
             return JsonResponse({'message': 'KEY_ERROR'}, status=400)
+        except JSONDecodeError:
+            return JsonResponse({'message': 'JSON_DECODE_ERROR'}, status=400)
         except:
             debugger.debug('Unexpected Error inserting user info into User Model')
             return JsonResponse({'message': 'INVALID_FORMAT'}, status=400)
@@ -47,20 +48,22 @@ class SignUpView(View):
 
 class LoginView(View):
     def post(self, request):
-        data      = request.body
-        json_data = json.loads(data)
-
         try:
+            data      = request.body
+            json_data = json.loads(data)
+
             email    = json_data['email']
             password = json_data['password']
+
+            if not email or not password:
+                return JsonResponse({'message': 'EMPTY_VALUE'}, status=400)
+            
+            is_valid_account = User.objects.filter(email=email, password=password).exists()
+            if not is_valid_account:
+                return JsonResponse({'message': 'INVALID_USER'}, status=401)
+
         except KeyError:
-            debugger.exception('KeyError')
             return JsonResponse({'message': 'KEY_ERROR'}, status=400)
-        
-        if not email or not password:
-            return JsonResponse({'message': 'EMPTY_VALUE'}, status=400)
-        
-        is_valid_account = User.objects.filter(email=email, password=password).exists()
-        if not is_valid_account:
-            return JsonResponse({'message': 'INVALID_USER'}, status=401)
+        except JSONDecodeError:
+            return JsonResponse({'message': 'JSON_DECODE_ERROR'}, status=400)
         return JsonResponse({'message': 'SUCCESS'}, status=200)
