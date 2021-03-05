@@ -20,7 +20,7 @@ class PostingView(View):
 
 class ShowView(View):    
     def get(self, request):
-        shows = Posting.objects.all()
+        shows  = Posting.objects.all()
         result = []
     
         for show in shows:
