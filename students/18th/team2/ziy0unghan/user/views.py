@@ -18,7 +18,7 @@ class SignUpView(View):
 
             if username == ''or email == '' or password == '' or phone_number == '':
                 return JsonResponse({'message': 'KEY-ERROR' }, status=400)
-            elif ('@' or '.') not in email:
+            elif ('@' and '.') not in email:
                 return JsonResponse({'message': '잘못된 형식입니다.'}, status=400)
             elif len(password) < 8:
                 return JsonResponse({'message': '비밀번호 8자리 이상 입력해 주세요.'}, status=400)
