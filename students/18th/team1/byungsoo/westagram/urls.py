@@ -1,5 +1,6 @@
 from django.urls import path, include
 
 urlpatterns = [
-    path('westagram', include('user.urls'))
+    path('user', include('user.urls')),
+    # path('post', include('post.urls'))
 ]
