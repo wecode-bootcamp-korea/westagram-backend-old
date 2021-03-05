@@ -14,4 +14,4 @@ class PostingView(View):
             img_url = data["img_url"],
             user    = user
         )
-    return JsonResponse({"message" : "SUCCESS"}, status=200)
+        return JsonResponse({"message" : "SUCCESS"}, status=200)
