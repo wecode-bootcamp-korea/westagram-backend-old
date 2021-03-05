@@ -39,10 +39,26 @@ class UploadView(View):
             return JsonResponse({'message': 'JSON_DECODE_ERROR'}, status=400)
         return JsonResponse({'message': 'SUCCESS'}, status=200)
 
-    def get(self, request):
-        try:
-            data      = request.body
-            json_data = json.loads(data)
 
-        except:
-            pass 
+class ShowAllPostingView(View):
+    def get(self, request):
+        postings      = Posting.objects.all()
+        postings_info = list()
+        for posting in postings:
+            user_email   = posting.user.email
+            images       = posting.postingimage_set.all()
+            
+            image_urls = list()
+            for image in images:
+                image_urls.append(image.image_url)
+
+            content      = posting.content
+            created_time = posting.created_time
+
+            posting_info = dict(user_email=user_email,
+                                image_urls=image_urls,
+                                content=content,
+                                created_time=created_time,
+                                )
+            postings_info.append(posting_info)
+        return JsonResponse(postings_info, status=200, safe=False)
