@@ -8,7 +8,15 @@ class Post(models.Model):
     image_url   = models.URLField(max_length=2000)
     content     = models.TextField()
     user_name   = models.ForeignKey(User, on_delete=models.CASCADE)
-
+    
     class Meta:
         db_table = 'posts'
 
+class Comment(models.Model):
+    content     = models.CharField(max_length=300)
+    create_date = models.DateTimeField(auto_now_add=True)
+    user_name   = models.ForeignKey(User, on_delete=models.CASCADE)
+    post        = models.ForeignKey(Post, on_delete=models.CASCADE)
+    
+    class Meta:
+        db_table = 'comments'

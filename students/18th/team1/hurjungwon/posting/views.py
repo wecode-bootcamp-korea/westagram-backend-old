@@ -4,15 +4,18 @@ from django.views import View
 from django.http  import JsonResponse
 
 from account.models import User
-from .models        import Post
+from .models        import Post, Comment
 
 
 class PostView(View):
     def post(self, request):
+        
+        if not request.body:
+            return JsonResponse({'message': 'Empty Value'}, status=400)
+        
         data = json.loads(request.body)
 
         try:
-
             user_name = User.objects.get(user_name=data['user_name'])
             user_id   = user_name.id
 
@@ -46,3 +49,26 @@ class PostView(View):
             result.append(post_dict)
 
         return JsonResponse({'result': result}, status=200)
+
+class CommentView(View):
+    def post(self, request):
+        
+        if not request.body:
+                return JsonResponse({'message': 'Empty Value'}, status=400)
+        
+        data = json.loads(request.body)
+
+        try:
+            user_name = User.objects.get(user_name=data['user_name']).id
+            
+            Comment.objects.create(
+                content      = data['content'],
+                post_id      = data['post_id'],
+                user_name_id = user_name,
+            )
+
+            return JsonResponse({'result': 'SUCCSESS'}, status=200)
+        
+        except KeyError:
+            return JsonResponse({'message': 'KEY_ERROR'}, status=400)
+
