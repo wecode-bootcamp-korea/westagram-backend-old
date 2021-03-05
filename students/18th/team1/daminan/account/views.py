@@ -27,7 +27,6 @@ class LoginView(View):
     def post(self, request):
         try:
             data = json.loads(request.body)
-            user = User.objects.filter(email=data['email'],password=data['password'])
             if User.objects.all().filter(email=data['email'], password=data['password']).exists() == True:
                 return JsonResponse({"message":"SUCCESS"}, status=200)
             else:
