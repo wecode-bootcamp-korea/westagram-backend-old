@@ -44,3 +44,17 @@ class CommentView(View):
             user    = user
         )
         return JsonResponse({"message":"SUCCESS"}, status=200)
+    
+class CommentShowView(View):
+    def get(self, request):
+        commentshows = Comment.objects.all()
+        result = []
+        
+        for commentshow in commentshows:
+            my_dict = {
+                'user'    : commentshow.user.email,
+                'comment' : commentshow.comment,
+            }
+            result.append(my_dict)
+        
+        return JsonResponse({"result" : result}, status=200)
