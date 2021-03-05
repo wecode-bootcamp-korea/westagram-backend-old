@@ -11,14 +11,18 @@ class UserSignUp(View):
         
         if "email" not in data or "password" not in data:
             return JsonResponse({"message":"KEY_ERROR"}, status = 400)
-
+        
         email    = data["email"]
         password = data["password"]
 
-        
+        if '@' not in email or '.' not in password:
+            return errrror                                  #error 
         
         if len(password) < 8:
-            pass
+            return errrrror                                   #error
+        
+        user_email_list = User.objects.all()
+        if email in 
 
 
 
