@@ -10,8 +10,12 @@ from .models import User
 
 class SignUpView(View):
     def post(self, request):
+        
+        if not request.body:
+            return JsonResponse({'message': 'Empty Value'}, status=400)
+        
         data = json.loads(request.body)
-
+        
         try:
             user_name    = data['user_name']
             email        = data['email']
@@ -20,13 +24,13 @@ class SignUpView(View):
             phone_number = data.get('phone_number', None)
             
             email_match = re.match('[a-zA-Z0-9]+@[a-zA-Z0-9]+\.[a-zA-Z0-9.]+', email)
-            
-            if not (email_match):
-                return JsonResponse({'message': 'invalid email'}, status=400)
-
             password_match = re.match('\S{8,}', password)
             
-            if not(password_match):
+            if not email_match:
+                return JsonResponse({'message': 'invalid email'}, status=400)
+
+            
+            if not password_match:
                 return JsonResponse({'message': 'invalid password'}, status=400)
 
             if User.objects.filter(user_name = user_name).exists():
@@ -39,35 +43,40 @@ class SignUpView(View):
                 name         = name,
                 phone_number = phone_number,
             )
+            return JsonResponse({'message': 'SUCCESS'}, status=200)
 
         except KeyError:
             return JsonResponse({'message': 'KEY_ERROR'}, status=400)
-
-        else:
-            return JsonResponse({'message': 'SUCCESS'}, status=200)
 
 class SignInView(View):
     def post(self, request):
+
+        if not request.body:
+            return JsonResponse({'message': 'Empty Value'}, status=400)
+        
         data = json.loads(request.body)
         
         try:
-            user_name     = data.get('user_name')
-            phone_number  = data.get('phone_number')
-            email         = data.get('email')
+            user_name     = data.get('user_name', '')
+            phone_number  = data.get('phone_number', '')
+            email         = data.get('email', '')
             password      = data['password']
-
-            if not (user_name or phone_number or email):
-                raise KeyError
             
-            valid_user = User.objects.filter(
-                (Q(user_name=user_name) | Q(email=email) | Q(phone_number=phone_number)) & Q(password=password)
+            if not (user_name or phone_number or email):
+                return JsonResponse({'message': 'Type at least one value'}, status=400)
+            
+            valid_user_id = User.objects.filter(
+                Q(user_name=user_name) | Q(email=email) | Q(phone_number=phone_number)
             )
+            valid_user_password = User.objects.filter(password=password)
+            
+            if not valid_user_id:
+                return JsonResponse({'message': 'INVALID USER_ID'}, status=401)
+            
+            if not valid_user_password:
+                return JsonResponse({'message': 'INVALID USER_PASSWORD'}, status=401)
 
-            if not valid_user:
-                return JsonResponse({'message': 'INVALID_USER'}, status=401)
+            return JsonResponse({'message': 'SUCCSESS'}, status=200)
 
         except KeyError:
             return JsonResponse({'message': 'KEY_ERROR'}, status=400)
-        
-        else:
-            return JsonResponse({'message': 'SUCCSESS'}, status=200)
