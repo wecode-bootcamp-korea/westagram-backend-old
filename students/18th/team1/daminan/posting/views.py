@@ -47,7 +47,8 @@ class CommentView(View):
     
 class CommentShowView(View):
     def get(self, request):
-        commentshows = Comment.objects.all()
+        commentshows = Comment.objects.filter(img_url=1)
+        # id 값이 1번인 게시글의 등록된 댓글들만(그래서 filter, get아님) 출력
         result = []
         
         for commentshow in commentshows:
