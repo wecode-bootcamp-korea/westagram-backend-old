@@ -10,4 +10,4 @@ class Posting(models.Model):
     # 외부 폴더에서 받아온 클래스는 ''를 붙이지 않는다
 
     class Meta:
-        db_table = "postings"
+        db_table = "postings"    

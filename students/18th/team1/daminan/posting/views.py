@@ -17,3 +17,18 @@ class PostingView(View):
             #Time은 알아서 import, 입력 필요 없음.
         )
         return JsonResponse({"message" : "SUCCESS"}, status=200)
+
+class ShowView(View):    
+    def get(self, request):
+        shows = Posting.objects.all()
+        result = []
+    
+        for show in shows:
+            my_dict = {
+                'update_time' : show.upload_time,
+                'img_url'     : show.img_url,
+                'user'        : show.user.email,
+            }
+            result.append(my_dict)
+            
+        return JsonResponse({"result" : result}, status=200)
