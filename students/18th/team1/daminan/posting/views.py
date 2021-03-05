@@ -3,7 +3,7 @@ import json
 from django.views import View
 from django.http  import JsonResponse
 
-from .models        import Posting
+from .models        import Posting, Comment
 from account.models import User
 
 class PostingView(View):
@@ -32,3 +32,15 @@ class ShowView(View):
             result.append(my_dict)
             
         return JsonResponse({"result" : result}, status=200)
+
+class CommentView(View):
+    def post(self, request):
+        data = json.loads(request.body)
+        img_url = Posting.objects.get(img_url=data['img_url'])
+        user    = User.objects.get(email=data['email'])
+        comment = Comment.objects.create(
+            comment = data["comment"],
+            img_url = img_url,
+            user    = user
+        )
+        return JsonResponse({"message":"SUCCESS"}, status=200)

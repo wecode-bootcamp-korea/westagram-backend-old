@@ -17,3 +17,6 @@ class Comment(models.Model):
     comment     = models.CharField(max_length=2000)    
     img_url     = models.ForeignKey(Posting, on_delete=models.CASCADE)
     user        = models.ForeignKey(User, on_delete=models.CASCADE)
+    
+    class Meta:
+        db_table = "comments"
