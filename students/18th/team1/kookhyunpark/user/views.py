@@ -1,8 +1,9 @@
 import json
 import re
 
-from django.views     import View
-from django.http      import JsonResponse, request
+from django.views                 import View
+from django.http                  import JsonResponse, request
+from django.db.models.query_utils import Q
 
 from user.models import User
 
@@ -61,14 +62,14 @@ class LoginView(View):
             user_id = data['user_id']
             password  = data['password']
 
-            if User.objects.filter(user_name=user_id) or User.objects.filter(email=user_id) or User.objects.filter(phone=user_id):
+            if User.objects.filter(Q(user_name=user_id) | Q(email=user_id)|Q(phone=user_id)):
                 if not User.objects.filter(password=password):
                     return JsonResponse({"message":"INVALID_USER"}, status=401)                
             else:
                 return JsonResponse({"message":"INVALID_USER"}, status=401)
 
             return JsonResponse({"message":"SUCCESS"}, status=200)
-            
+
         except KeyError:
             return JsonResponse({"message":"KEY_ERROR"}, status=400)
         except Exception as e:
