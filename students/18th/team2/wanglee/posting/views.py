@@ -1,7 +1,7 @@
 import json
 from django.views    import View
 from django.http     import JsonResponse
-from .models         import Post, Reply
+from .models         import Post, Reply, Like
 from account.models  import User
 
 class PostManage(View):
@@ -25,7 +25,8 @@ class PostManage(View):
                 'time' :post.time,
                 'head' :post.head,
                 'body' :post.body,
-                'image':post.image
+                'image':post.image,
+                'likes':post.like_count
             }
             results.append(result)
         return JsonResponse({'result': results}, status=200)
@@ -58,3 +59,35 @@ class ReplyManage(View):
             }
             results.append(result)
         return JsonResponse({'result': results}, status=200)
+
+class LikeManage(View):
+    def post(self, request):
+        data     = json.loads(request.body)
+        postinfo = data['post']
+        userinfo = data['user']
+        post     = Post.objects.get(pk=postinfo)
+        user     = User.objects.get(username=userinfo)
+        likeds   = Like.objects.filter(post=post, user=user)
+
+        print('****************************')
+        print(data, postinfo, userinfo, post, user, likeds)
+        print('****************************')
+
+        for liked in likeds:
+            count = Post.objects.get(pk=postinfo).like_count
+            Post.objects.filter(pk=postinfo).update(like_count=count-1)
+            Like.objects.get(post=post, user=user).delete()
+            return JsonResponse({'result': "unliked"}, status=200)
+
+        count = Post.objects.get(pk=postinfo).like_count
+        Post.objects.filter(pk=postinfo).update(like_count=count+1)
+        Like.objects.create(post=post, user=user)
+        return JsonResponse({'result': "liked"}, status=200)
+
+
+        
+
+
+
+
+        
