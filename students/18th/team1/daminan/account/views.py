@@ -19,6 +19,7 @@ class SignupView(View):
                 password = data['password']
             )
                 return JsonResponse({"message": "SUCCESS"}, status=200)
+            return JsonResponse({"message":"MAKE_FAIL"}, status=400)
         except KeyError:
             return JsonResponse({"message": "KEY_ERROR"}, status=400)
    
