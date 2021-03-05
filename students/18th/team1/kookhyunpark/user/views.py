@@ -22,16 +22,19 @@ class SignUpView(View):
             if phone:
                 phone = phone.replace('-','')
 
-            if re.search('@', email) == None or re.search('\.', email) == None:
+            REGEX_EMAIL    = '^[a-zA-Z0-9+-_.]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
+            REGEX_PASSWORD = '\S{8,20}'
+
+            if re.match(REGEX_EMAIL,email) == None:
                 return JsonResponse({'message':'EMAIL VALIDATION ERROR'}, status=400)
-            if re.search('\S{8,20}', password) == None:
+            if re.match(REGEX_PASSWORD,password) == None:
                 return JsonResponse({'message':'PASSWORD VALIDATION ERROR'}, status=400)
 
             if not User.objects.filter(email=email):
                 if phone and User.objects.filter(phone=phone):
                     return JsonResponse({'message':'PHONE ALREADY EXISTS'}, status=400)
                 elif user_name and User.objects.filter(user_name=user_name):
-                    return JsonResponse({'message':'USER_NAME ALREADY EXISTS'}, status=400))
+                    return JsonResponse({'message':'USER_NAME ALREADY EXISTS'}, status=400)
             else:
                 return JsonResponse({'message':'EMAIL ALREADY EXISTS'}, status=400)
 
