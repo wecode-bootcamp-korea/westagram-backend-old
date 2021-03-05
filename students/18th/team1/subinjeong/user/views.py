@@ -54,11 +54,10 @@ class SignupView(View):
             # key error
             return JsonResponse({'message': 'KEY_ERROR'}, status = 400)
 
+
 class LoginView(View):
 
     def post(self,request):   
-
-        #reqeust 에서  body 만 필요해서 가져오고, 파이썬으로 loads 해서 변수저장.
         login_data = json.loads(request.body)
 
         '''
@@ -85,4 +84,3 @@ class LoginView(View):
         except:
             # key error
             return JsonResponse({'message': 'INVALID_USER'}, status = 401)
-
