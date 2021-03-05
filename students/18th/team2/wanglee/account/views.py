@@ -32,3 +32,26 @@ class UserSignup(View):
             User.objects.create(username=username, email=email, password=password, phone=phone)
             return JsonResponse({'result': 'SUCCESS'}, status=200)
         
+class UserSignin(View):
+    def post(self, request):
+        users    = User.objects.all()
+        data     = json.loads(request.body)
+        email    = data['email']
+        password = data['password']
+        username = data['username']
+        phone    = data['phone']
+
+        if password == '':
+            return JsonResponse({"message":"KEY_ERROR"}, status=400)
+
+        elif email == '' and username == '' and phone == '':
+            return JsonResponse({"message":"KEY_ERROR"}, status=400)
+        
+        else:
+            for user in users:
+                if username == user.username or email == user.email or phone == user.phone:
+                    if password == user.password:
+                        return JsonResponse({'result': 'SUCCESS'}, status=200)
+            return JsonResponse({"message":"INVALID_USER"}, status=401)
+
+                
