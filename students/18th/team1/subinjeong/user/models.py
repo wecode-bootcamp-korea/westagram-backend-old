@@ -7,9 +7,7 @@ class User(models.Model):
     password  = models.CharField(max_length=45)
 
     class Meta(object):
-        db_table = "usernames"  
-        db_table = "emails"
-        db_table = "passwords"
+        db_table = "users"
 
 
         
