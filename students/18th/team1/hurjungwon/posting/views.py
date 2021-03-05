@@ -2,6 +2,7 @@ import json
 
 from django.views import View
 from django.http  import JsonResponse
+from django.core  import exceptions
 
 from account.models import User
 from .models        import Post, Comment
@@ -25,12 +26,11 @@ class PostView(View):
                 user_name_id = user_id
             )
             
+            return JsonResponse({'message': 'SUCCSESS'}, status=200)
+
         except KeyError:
             return JsonResponse({'message': 'KEY_ERROR'}, status=400)
         
-        else:
-            return JsonResponse({'message': 'SUCCSESS'}, status=200)
-            
     def get(self, request):
         posts = Post.objects.all()
         
@@ -59,8 +59,12 @@ class CommentView(View):
         data = json.loads(request.body)
 
         try:
+            post_id   = data['post_id']
             user_name = User.objects.get(user_name=data['user_name']).id
             
+            if not Post.objects.filter(id=post_id):
+                return JsonResponse({'massage': 'Invalid Post_ID'}, status=400)
+                
             Comment.objects.create(
                 content      = data['content'],
                 post_id      = data['post_id'],
@@ -71,7 +75,10 @@ class CommentView(View):
         
         except KeyError:
             return JsonResponse({'message': 'KEY_ERROR'}, status=400)
-
+        
+        except User.DoesNotExist:
+            return JsonResponse({'message': 'INVALID USER'}, status=400)
+            
     def get(self, request):
 
         if not request.body:
