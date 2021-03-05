@@ -9,7 +9,6 @@ class SignupView(View):
     def post(self, request):
         try:
             data = json.loads(request.body)
-            user = User.objects.filter(email=data['email'],password=data['password'])
             if User.objects.filter(email=data['email']).exists():
                 return JsonResponse({"message": "EMAIL_ERROR"}, status=400)
             if User.objects.filter(password=data['password']).exists():
