@@ -2,7 +2,6 @@ import json
 import re
 
 from django.views     import View
-from django.db.models import Q
 from django.http      import JsonResponse, request
 
 from user.models import User
@@ -71,5 +70,5 @@ class LoginView(View):
             return JsonResponse({"message":"SUCCESS"}, status=200)
         except KeyError:
             return JsonResponse({"message":"KEY_ERROR"}, status=400)
-        except:
-            return JsonResponse({"message":"RESPONSE_ERROR"}, status=400)
+        except Exception as e:
+            return JsonResponse({"message":"RESPONSE_ERROR"+e}, status=400)
