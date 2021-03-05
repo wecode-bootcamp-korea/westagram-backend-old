@@ -33,11 +33,12 @@ class UploadView(View):
                     PostingImage.objects.create(image_url=img, posting=posting)
             else:
                 PostingImage.objects.create(image_url=image_url, posting=posting)
+            return JsonResponse({'message': 'SUCCESS'}, status=200)
+            
         except KeyError:
             return JsonResponse({'message': 'KEY_ERROR'}, status=400)            
         except JSONDecodeError:
             return JsonResponse({'message': 'JSON_DECODE_ERROR'}, status=400)
-        return JsonResponse({'message': 'SUCCESS'}, status=200)
 
 
 class ShowAllPostingView(View):

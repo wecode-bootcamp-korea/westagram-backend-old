@@ -4,5 +4,5 @@ class User(models.Model):
     email    = models.EmailField(max_length=256)
     password = models.CharField(max_length=50)
     
-    class Meta(object):
+    class Meta:
         db_table = 'users'

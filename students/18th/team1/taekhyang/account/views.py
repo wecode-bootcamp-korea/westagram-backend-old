@@ -35,6 +35,7 @@ class SignUpView(View):
                 return JsonResponse({'message': 'EXISTING_USER'}, status=400)
 
             User.objects.create(email=email, password=password)
+            return JsonResponse({'message': 'SUCCESS'}, status=200)
 
         except KeyError:
             return JsonResponse({'message': 'KEY_ERROR'}, status=400)
@@ -43,7 +44,6 @@ class SignUpView(View):
         except:
             debugger.debug('Unexpected Error inserting user info into User Model')
             return JsonResponse({'message': 'INVALID_FORMAT'}, status=400)
-        return JsonResponse({'message': 'SUCCESS'}, status=200)
 
 
 class LoginView(View):
@@ -61,9 +61,9 @@ class LoginView(View):
             is_valid_account = User.objects.filter(email=email, password=password).exists()
             if not is_valid_account:
                 return JsonResponse({'message': 'INVALID_USER'}, status=401)
-
+            return JsonResponse({'message': 'SUCCESS'}, status=200)
+            
         except KeyError:
             return JsonResponse({'message': 'KEY_ERROR'}, status=400)
         except JSONDecodeError:
             return JsonResponse({'message': 'JSON_DECODE_ERROR'}, status=400)
-        return JsonResponse({'message': 'SUCCESS'}, status=200)
