@@ -10,4 +10,10 @@ class Posting(models.Model):
     # 외부 폴더에서 받아온 클래스는 ''를 붙이지 않는다
 
     class Meta:
-        db_table = "postings"    
+        db_table = "postings"
+        
+class Comment(models.Model):
+    update_time = models.DateTimeField(auto_now_add=True)
+    comment     = models.CharField(max_length=2000)    
+    img_url     = models.ForeignKey(Posting, on_delete=models.CASCADE)
+    user        = models.ForeignKey(User, on_delete=models.CASCADE)
