@@ -42,4 +42,38 @@ class UserSignUp(View):
         
         return JsonResponse({'message':'SUCESS'}, status = 200)
 
+class UserSignIn(View):
+    def post(self, request):
+        data = json.loads(request.body)
+        if ("email" not in data) or ("password" not in data):
+            return JsonResponse({"message":"KEY_ERROR"}, status = 400)
+        
+        email    = data["email"]
+        password = data["password"]
 
+        users = User.objects.all()
+        user_list = []
+        for user in users:
+            user_dict = {
+                'email'    : user.email,
+                'password' : user.password,
+            }
+            user_list.append(user_dict)
+        
+        user_email    = []
+        user_password = []
+
+        for user_information in user_list:
+            user_email.append(user_information["email"])
+            user_password.append(user_information["password"])
+        
+        if email in user_email:
+            email_password = User.objects.get(email=email)
+            if password == email_password.password:
+                return JsonResponse({"message":"SUCCESS"}, status = 200)
+            else:
+                return JsonResponse({"message":"INVALID_USER"}, status = 401)
+        else:
+            return JsonResponse({"message":"INVALID_USER"}, status = 401)
+        
+        
