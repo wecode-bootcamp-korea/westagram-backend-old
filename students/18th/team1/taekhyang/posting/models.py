@@ -5,6 +5,10 @@ class Posting(models.Model):
     created_time = models.DateTimeField(auto_now_add=True)
     content      = models.CharField(max_length=2000)
     user         = models.ForeignKey('account.User', on_delete=models.CASCADE)
+    liked_users  = models.ManyToManyField('account.User',
+                                          through='PostingLike',
+                                          related_name='liked_postings'
+                                          )
 
     class Meta:
         db_table = 'postings'
@@ -26,3 +30,12 @@ class Comment(models.Model):
 
     class Meta:
         db_table = 'comments'
+
+
+class PostingLike(models.Model):
+    created_time = models.DateTimeField(auto_now_add=True)
+    user         = models.ForeignKey('account.User', on_delete=models.CASCADE)
+    posting      = models.ForeignKey('Posting', on_delete=models.CASCADE)
+
+    class Meta:
+        db_table = 'posting_likes'

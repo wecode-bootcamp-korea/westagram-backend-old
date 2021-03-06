@@ -4,7 +4,7 @@ from json.decoder import JSONDecodeError
 
 from django.views    import View
 from django.http     import JsonResponse
-from .models         import Posting, PostingImage, Comment
+from .models         import Posting, PostingImage, Comment, PostingLike
 from account.models  import User
 
 from utils.debugger  import debugger
@@ -121,3 +121,33 @@ class ShowCommentView(View):
 
             comments_dict['results'].append(comment_info)
         return JsonResponse(comments_dict, status=200)
+
+
+class PostingLikeView(View):
+    def post(self, request):
+        try:
+            data = json.loads(request.body)
+
+            # TODO: get posting_id and user_id from 'data'
+            posting_id = POSTING_ID
+            user_id    = TEST_USER_ID
+            like       = data['like']
+
+            user = User.objects.filter(id=user_id).first()
+            if not user:
+                return JsonResponse({'message': 'INVALID_USER'}, status=400)
+
+            posting = Posting.objects.filter(id=posting_id).first()
+            if not posting:
+                return JsonResponse({'message': 'INVALID_POSTING'}, status=400)
+
+            if like == 'like':
+                posting.liked_users.add(user)
+            elif like == 'unlike':
+                posting.liked_users.remove(user)
+            return JsonResponse({'message': 'SUCCESS'}, status=201)
+
+        except KeyError:
+            return JsonResponse({'message': 'KEY_ERROR'}, status=400)            
+        except JSONDecodeError:
+            return JsonResponse({'message': 'JSON_DECODE_ERROR'}, status=400)
