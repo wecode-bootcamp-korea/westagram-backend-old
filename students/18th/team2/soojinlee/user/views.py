@@ -36,7 +36,7 @@ class UserSignup(View):
 
 
 class UserLogin(View):
-    def get(self, request):
+    def post(self, request):
         data = json.loads(request.body)
         email = data['email']
         user_name = data['user_name']
@@ -44,24 +44,16 @@ class UserLogin(View):
         pw = data['pw']
         user = User.objects.all()
 
-        if user_name == '' and phone_number == '' and email == '':
-            print('==========================')
-            print('here')
-            print('=========================')
+        if user_name == '' or phone_number == '' or email == '':
             return JsonResponse({"message": "KEY_ERROR"}, status=400)
         elif pw == '':
             return JsonResponse({"message": "KEY_ERROR"}, status=400)
 
-        # for users in user:
-        #     if user_name == users.user_name or phone_number == user.phone_number or email == user.email:
-        #         if pw == users.pw:
-        #             print('===============')
-        #             print(user_name, pw)
-        #             print('===============')
-        #             return JsonResponse({'message': 'SUCCESS'}, status=200)
+        for users in user:
+            if user_name == users.user_name or phone_number == users.phone_number or email == users.email:
+                if pw == users.pw:
+                    return JsonResponse({'message': 'SUCCESS'}, status=200)
+            continue
 
-        #     if user_name != users.user_name or pw != users.pw:
-        #         print('===============')
-        #         print(user_name, pw)
-        #         print('===============')
-        #         return JsonResponse({'message': "INVALID_USER"}, status=401)
+            if user_name != users.user_name or phone_number != users.phone_number or email != users.email:
+                return JsonResponse({'message': "INVALID_USER"}, status=401)
