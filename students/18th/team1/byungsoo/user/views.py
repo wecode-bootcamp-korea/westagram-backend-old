@@ -5,6 +5,7 @@ from django.http  import JsonResponse
 
 from .models import User
 
+
 class SignUpView(View):
     def post(self, request):
         
@@ -43,9 +44,6 @@ class SignUpView(View):
 
         
 
-        
-            
-
 class LogInView(View): 
     def post(self, request):
         try:
@@ -64,9 +62,11 @@ class LogInView(View):
             return JsonResponse({"message": "SUCCESS"}, status=200)
             
         except json.decoder.JSONDecodeError:
+            # http POST http://127.0.0.1:8000/user/login
             return JsonResponse({"message": "데이터가 없거나 Key값이 적절하지 않습니다."})
         
         except KeyError:
+            # ex) http POST http://127.0.0.1:8000/user/signup email=""
             return JsonResponse({"message": "하나 이상의 Key값이 적절하지 않거나 존재하지 않습니다."})
         
 
