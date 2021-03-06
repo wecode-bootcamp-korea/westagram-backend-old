@@ -1,8 +1,10 @@
 from django.urls import path, include
-from .views import UploadView, ShowAllPostingView
+from .views import PostingUploadView, ShowAllPostingView, CommentRegisterView, ShowCommentView
 
 
 urlpatterns = [
-    path('/upload', UploadView.as_view()),
-    path('/show-all', ShowAllPostingView.as_view())
+    path('/upload', PostingUploadView.as_view()),
+    path('/show-all', ShowAllPostingView.as_view()),
+    path('/comment', CommentRegisterView.as_view()),
+    path('/show-comment', ShowCommentView.as_view())
 ]

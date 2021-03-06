@@ -4,25 +4,28 @@ from json.decoder import JSONDecodeError
 
 from django.views    import View
 from django.http     import JsonResponse
-from .models         import Posting, PostingImage
+from .models         import Posting, PostingImage, Comment
 from account.models  import User
 
 from utils.debugger  import debugger
 
 
 TEST_USER_ID = 5
+POSTING_ID = 3
 
-class UploadView(View):
+class PostingUploadView(View):
     def post(self, request):
         try:
             data      = request.body
             json_data = json.loads(data)
 
+            # TODO : get user_id from frontend side
+            user_id   = TEST_USER_ID
             image_url = json_data['image_url']
             content   = json_data['content']
 
             # temporary test User object
-            user = User.objects.filter(id=TEST_USER_ID).first()
+            user = User.objects.filter(id=user_id).first()
             if not user:
                 return JsonResponse({'message': 'INVALID_USER'}, status=400)
 
@@ -63,3 +66,56 @@ class ShowAllPostingView(View):
                                 )
             postings_info.append(posting_info)
         return JsonResponse(postings_info, status=200, safe=False)
+
+
+class CommentRegisterView(View):
+    def post(self, request):
+        try:
+            data = json.loads(request.body)
+
+            # TODO : get posting_id, user_id from frontend side
+            posting_id = POSTING_ID
+            user_id    = TEST_USER_ID
+            content    = data['content']
+
+            user = User.objects.filter(id=user_id).first()
+            if not user:
+                return JsonResponse({'message': 'INVALID_USER'}, status=400)
+
+            posting = Posting.objects.filter(id=posting_id).first()
+            if not posting:
+                return JsonResponse({'message': 'INVALID_POSTING'}, status=400)
+
+            Comment.objects.create(content=content, user=user, posting=posting)
+            return JsonResponse({'message': 'SUCCESS'}, status=201)
+            
+        except KeyError:
+            return JsonResponse({'message': 'KEY_ERROR'}, status=400)            
+        except JSONDecodeError:
+            return JsonResponse({'message': 'JSON_DECODE_ERROR'}, status=400)
+
+
+class ShowCommentView(View):
+    def get(self, request):
+        posting_id = POSTING_ID
+
+        posting = Posting.objects.get(id=posting_id)
+        
+        comments = Comment.objects.filter(posting=posting)
+        if not comments:
+            return JsonResponse({'message': 'NO_COMMENT'}, status=400)
+
+        comments_list = dict()
+        comments_list.setdefault('result', list())
+
+        for comment in comments:
+            user         = comment.user.email
+            created_time = comment.created_time
+            content      = comment.content
+            
+            comment_info = dict(user=user,
+                                created_time=created_time,
+                                content=content)
+
+            comments_list['result'].append(comment_info)
+        return JsonResponse(comments_list, status=200)
