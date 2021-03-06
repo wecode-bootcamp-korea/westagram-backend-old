@@ -9,9 +9,9 @@ class UserSignup(View):
     def post(self, request):
         data = json.loads(request.body)
         email = data['email']
-        pw = data['pw']
         user_name = data['user_name']
         phone_number = data['phone_number']
+        pw = data['pw']
 
         if email == '' and pw == '':
             return JsonResponse({'message': 'KEY_ERROR'}, status=400)
@@ -33,3 +33,35 @@ class UserSignup(View):
             User.objects.create(email=data['email'], pw=data['pw'],
                                 user_name=data['user_name'], phone_number=data['phone_number'])
             return JsonResponse({'message': 'SUCCESS'}, status=200)
+
+
+class UserLogin(View):
+    def get(self, request):
+        data = json.loads(request.body)
+        email = data['email']
+        user_name = data['user_name']
+        phone_number = data['phone_number']
+        pw = data['pw']
+        user = User.objects.all()
+
+        if user_name == '' and phone_number == '' and email == '':
+            print('==========================')
+            print('here')
+            print('=========================')
+            return JsonResponse({"message": "KEY_ERROR"}, status=400)
+        elif pw == '':
+            return JsonResponse({"message": "KEY_ERROR"}, status=400)
+
+        # for users in user:
+        #     if user_name == users.user_name or phone_number == user.phone_number or email == user.email:
+        #         if pw == users.pw:
+        #             print('===============')
+        #             print(user_name, pw)
+        #             print('===============')
+        #             return JsonResponse({'message': 'SUCCESS'}, status=200)
+
+        #     if user_name != users.user_name or pw != users.pw:
+        #         print('===============')
+        #         print(user_name, pw)
+        #         print('===============')
+        #         return JsonResponse({'message': "INVALID_USER"}, status=401)
