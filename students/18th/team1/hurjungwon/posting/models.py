@@ -8,7 +8,7 @@ class Post(models.Model):
     image_url   = models.URLField(max_length=2000)
     content     = models.TextField()
     user_name   = models.ForeignKey(User, on_delete=models.CASCADE)
-    
+    likes       = models.ManyToManyField(User, through='Like', related_name='liked_user')
     class Meta:
         db_table = 'posts'
 
@@ -20,3 +20,10 @@ class Comment(models.Model):
     
     class Meta:
         db_table = 'comments'
+
+class Like(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    post = models.ForeignKey(Post, on_delete=models.CASCADE)
+
+    class Meta:
+        db_table = 'likes'
