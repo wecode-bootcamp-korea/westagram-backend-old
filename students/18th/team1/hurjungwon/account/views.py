@@ -10,25 +10,20 @@ from .models import User
 
 class SignUpView(View):
     def post(self, request):
-        
-        if not request.body:
-            return JsonResponse({'message': 'Empty Value'}, status=400)
-        
-        data = json.loads(request.body)
-        
         try:
+            data = json.loads(request.body)
+
             user_name    = data['user_name']
             email        = data['email']
             password     = data['password']
             name         = data.get('name', None)
             phone_number = data.get('phone_number', None)
             
-            email_match = re.match('[a-zA-Z0-9]+@[a-zA-Z0-9]+\.[a-zA-Z0-9.]+', email)
+            email_match    = re.match('[a-zA-Z0-9]+@[a-zA-Z0-9]+\.[a-zA-Z0-9.]+', email)
             password_match = re.match('\S{8,}', password)
             
             if not email_match:
                 return JsonResponse({'message': 'invalid email'}, status=400)
-
             
             if not password_match:
                 return JsonResponse({'message': 'invalid password'}, status=400)
@@ -48,15 +43,14 @@ class SignUpView(View):
         except KeyError:
             return JsonResponse({'message': 'KEY_ERROR'}, status=400)
 
+        except json.JSONDecodeError:
+            return JsonResponse({'message' : 'JSON_DECODE_ERROR'}, status=400)
+
 class SignInView(View):
     def post(self, request):
-
-        if not request.body:
-            return JsonResponse({'message': 'Empty Value'}, status=400)
-        
-        data = json.loads(request.body)
-        
         try:
+            data = json.loads(request.body)
+
             user_name     = data.get('user_name', '')
             phone_number  = data.get('phone_number', '')
             email         = data.get('email', '')
@@ -80,3 +74,6 @@ class SignInView(View):
 
         except KeyError:
             return JsonResponse({'message': 'KEY_ERROR'}, status=400)
+            
+        except json.JSONDecodeError:
+            return JsonResponse({'message' : 'JSON_DECODE_ERROR'}, status=400)
