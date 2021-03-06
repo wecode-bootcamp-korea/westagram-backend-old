@@ -107,8 +107,8 @@ class ShowCommentView(View):
         if not comments:
             return JsonResponse({'message': 'NO_COMMENT'}, status=400)
 
-        comments_list = dict()
-        comments_list.setdefault('result', list())
+        comments_dict = dict()
+        comments_dict.setdefault('results', list())
 
         for comment in comments:
             user         = comment.user.email
@@ -119,5 +119,5 @@ class ShowCommentView(View):
                                 created_time=created_time,
                                 content=content)
 
-            comments_list['result'].append(comment_info)
-        return JsonResponse(comments_list, status=200)
+            comments_dict['results'].append(comment_info)
+        return JsonResponse(comments_dict, status=200)
