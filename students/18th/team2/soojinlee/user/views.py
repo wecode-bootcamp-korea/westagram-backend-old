@@ -1,17 +1,18 @@
 import json
-from django.http import JsonResponse
+from django.http  import JsonResponse
 
 from django.views import View
-from .models import User
+from .models      import User
 
 
 class UserSignup(View):
     def post(self, request):
-        data = json.loads(request.body)
-        email = data['email']
-        user_name = data['user_name']
+        data         = json.loads(request.body)
+        pw           = data['pw']
+        email        = data['email']
+        user_name    = data['user_name']
         phone_number = data['phone_number']
-        pw = data['pw']
+        
 
         if email == '' and pw == '':
             return JsonResponse({'message': 'KEY_ERROR'}, status=400)
@@ -38,12 +39,13 @@ class UserSignup(View):
 class UserLogin(View):
     def post(self, request):
         data = json.loads(request.body)
-        email = data['email']
-        user_name = data['user_name']
-        phone_number = data['phone_number']
-        pw = data['pw']
         user = User.objects.all()
 
+        pw           = data['pw']
+        email        = data['email']
+        user_name    = data['user_name']
+        phone_number = data['phone_number']
+        
         if user_name == '' or phone_number == '' or email == '':
             return JsonResponse({"message": "KEY_ERROR"}, status=400)
         elif pw == '':
