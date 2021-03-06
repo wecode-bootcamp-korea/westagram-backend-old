@@ -53,6 +53,8 @@ class UserLogin(View):
             if user_name == users.user_name or phone_number == users.phone_number or email == users.email:
                 if pw == users.pw:
                     return JsonResponse({'message': 'SUCCESS'}, status=200)
+                else:
+                    return JsonResponse({'message': "INVALID_USER"}, status=401)
             continue
 
             if user_name != users.user_name or phone_number != users.phone_number or email != users.email:
