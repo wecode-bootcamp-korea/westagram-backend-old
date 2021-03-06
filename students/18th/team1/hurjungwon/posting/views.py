@@ -135,13 +135,16 @@ class LikeView(View):
             data = json.loads(request.body)
 
             user_id = User.objects.get(user_name=data['user_name']).id
-            post_id = Post.objects.get(id=data['post_id']).id
+            post = Post.objects.get(id=data['post_id'])
 
             Like.objects.create(
                 user_id = user_id,
-                post_id = post_id,
+                post_id = post.id
             )
 
+            post.likes += 1
+            post.save()
+            
             return JsonResponse({'message' : 'SUCCESS'}, status=200)
         
         except KeyError:

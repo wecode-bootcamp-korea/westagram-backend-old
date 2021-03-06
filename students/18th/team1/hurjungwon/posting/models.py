@@ -9,7 +9,8 @@ class Post(models.Model):
     content     = models.TextField()
     user        = models.ForeignKey(User, on_delete=models.CASCADE)
     liked_user  = models.ManyToManyField(User, through='Like', related_name='liked_user')
-    
+    likes       = models.IntegerField(default=0)
+
     class Meta:
         db_table = 'posts'
 
