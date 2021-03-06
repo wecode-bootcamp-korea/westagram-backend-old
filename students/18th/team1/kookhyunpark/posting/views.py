@@ -32,3 +32,18 @@ class PostUploadView(View):
             return JsonResponse({'message':'INVALID_USER'}, status=400)
         except Exception as e:
             print(e)
+
+    def get(self, request):
+        posts   = Post.objects.all()
+        results = []
+
+        for post in posts:
+            results.append(
+                {
+                    'user'       : post.user.email,
+                    'img_url'    : post.img_url,
+                    'create_date': post.create_date
+                }
+            )
+            
+        return JsonResponse({'results':results}, status=200)
