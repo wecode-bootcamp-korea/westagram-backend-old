@@ -47,7 +47,9 @@ class PostingUploadView(View):
 class ShowAllPostingView(View):
     def get(self, request):
         postings      = Posting.objects.all()
-        postings_info = list()
+        postings_dict = dict()
+        postings_dict.setdefault('results', list())
+
         for posting in postings:
             user_email   = posting.user.email
             images       = posting.postingimage_set.all()
@@ -64,8 +66,8 @@ class ShowAllPostingView(View):
                                 content=content,
                                 created_time=created_time,
                                 )
-            postings_info.append(posting_info)
-        return JsonResponse(postings_info, status=200, safe=False)
+            postings_dict['results'].append(posting_info)
+        return JsonResponse(postings_dict, status=200)
 
 
 class CommentRegisterView(View):
