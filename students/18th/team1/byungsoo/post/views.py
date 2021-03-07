@@ -4,7 +4,7 @@ from django.views import View
 from django.http  import JsonResponse
 
 from user.models import User
-from .models     import Post
+from .models     import Post, Comment
 
 
 class GetPostView(View):
@@ -60,3 +60,60 @@ class PostingView(View):
         
         except AttributeError:
             return JsonResponse({"message": "값을 입력해주세요."}, status=500)
+
+
+class CommentView(View):
+    def post(self, request):
+        
+        try:
+            data = json.loads(request.body)
+
+            user_email = data["user"]
+            post_id    = data["post_id"]
+            comment    = data["comment"]
+            
+            if not user_email:
+                return JsonResponse({"message": "로그인을 해야 댓글을 작성할 수 있습니다."}, status=401)
+            
+            if User.objects.filter(email=user_email).exists() == False:
+                return JsonResponse({"message": "당신에 대한 회원정보가 존재하지 않습니다."}, status=401)
+
+            if not comment:
+                return JsonResponse({"message": "댓글을 작성해주세요."}, status=401)
+
+            if Post.objects.filter(id=post_id).exists() == False:
+                return JsonResponse({"message": "게시물이 존재하지 않습니다."}, status=404)
+            
+
+            user = User.objects.get(email=user_email)
+            post = Post.objects.get(id=post_id)
+
+            Comment.objects.create(user=user, post=post, comment=comment)
+        
+        except KeyError:
+            return JsonResponse({"message": "KEY_ERROR"}, status=400)
+
+        return JsonResponse({"results": "Success"}, status=200)
+
+
+class ShowCommentsView(View):
+    def get(self, request, post_id):
+        try:            
+            post     = Post.objects.get(id=post_id)
+            comments = Post.objects.get(id=post_id).comment_set.all()
+            
+            comment_list = []
+            for i, comment in enumerate(comments):
+                comment_info = {
+                    "comment_writer": comment.user.email,
+                    "post_image"    : post.image_url,
+                    "post_content"  : post.content,
+                    f"comment_{i+1}": comment.comment,
+                    "created_at"    : comment.created_at,
+                }    
+
+                comment_list.append(comment_info)
+
+            return JsonResponse({"results": comment_list})
+        except:
+            return JsonResponse({"message": "존재하지 않는 게시물입니다."}, status=400)
