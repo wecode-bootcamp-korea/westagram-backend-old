@@ -9,4 +9,4 @@ from account.models import User
 
 class FollowView(View):
     def post(self, request):
-        return
+        data = json.loads(request.body)
