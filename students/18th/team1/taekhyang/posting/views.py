@@ -48,7 +48,8 @@ class ShowAllPostingView(View):
     def get(self, request):
         postings      = Posting.objects.all()
         postings_dict = dict()
-        postings_dict.setdefault('results', list())
+
+        postings_dict['results'] = list()
 
         for posting in postings:
             user_email   = posting.user.email
@@ -60,7 +61,8 @@ class ShowAllPostingView(View):
 
             content      = posting.content
             created_time = posting.created_time
-
+            
+            # TODO: 좋아요 수, 로그인되어있는 유저라면 해당 유저의 좋아요 여부
             posting_info = dict(user_email=user_email,
                                 image_urls=image_urls,
                                 content=content,
@@ -146,6 +148,27 @@ class PostingLikeView(View):
             elif like == 'unlike':
                 posting.liked_users.remove(user)
             return JsonResponse({'message': 'SUCCESS'}, status=201)
+
+        except KeyError:
+            return JsonResponse({'message': 'KEY_ERROR'}, status=400)            
+        except JSONDecodeError:
+            return JsonResponse({'message': 'JSON_DECODE_ERROR'}, status=400)
+
+
+class ShowPostingLikeCountView(View):
+    def get(self, request):
+        try:
+            data = json.loads(request.body)
+            
+            posting_id = POSTING_ID
+            posting    = Posting.objects.filter(id=posting_id).first()
+
+            if not posting:
+                return JsonResponse({'message': 'INVALID_POSTING'}, status=400)
+            
+            like_count = posting.liked_users.count()
+            result     = dict(like_count=like_count)
+            return JsonResponse(result, status=200)
 
         except KeyError:
             return JsonResponse({'message': 'KEY_ERROR'}, status=400)            
