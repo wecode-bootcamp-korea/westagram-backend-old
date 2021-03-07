@@ -61,12 +61,14 @@ class ShowAllPostingView(View):
 
             content      = posting.content
             created_time = posting.created_time
-            
+            like_count   = posting.liked_users.count()
+
             # TODO: 좋아요 수, 로그인되어있는 유저라면 해당 유저의 좋아요 여부
             posting_info = dict(user_email=user_email,
                                 image_urls=image_urls,
                                 content=content,
                                 created_time=created_time,
+                                like_count=like_count
                                 )
             postings_dict['results'].append(posting_info)
         return JsonResponse(postings_dict, status=200)
