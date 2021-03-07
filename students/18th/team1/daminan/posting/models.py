@@ -15,8 +15,15 @@ class Posting(models.Model):
 class Comment(models.Model):
     update_time = models.DateTimeField(auto_now_add=True)
     comment     = models.CharField(max_length=2000)    
-    img_url     = models.ForeignKey(Posting, on_delete=models.CASCADE)
+    image       = models.ForeignKey('Posting', on_delete=models.CASCADE)
     user        = models.ForeignKey(User, on_delete=models.CASCADE)
     
     class Meta:
         db_table = "comments"
+        
+class Like(models.Model):
+    user_like = models.ForeignKey(User, on_delete=models.CASCADE)
+    image     = models.ForeignKey('Posting', on_delete=models.CASCADE)    
+    
+    class Meta:
+        db_table = "likes"

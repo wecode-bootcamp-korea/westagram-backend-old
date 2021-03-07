@@ -3,7 +3,7 @@ import json
 from django.views import View
 from django.http  import JsonResponse
 
-from .models        import Posting, Comment
+from .models        import Posting, Comment, Like
 from account.models import User
 
 class PostingView(View):
