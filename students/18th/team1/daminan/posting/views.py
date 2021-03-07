@@ -69,5 +69,5 @@ class LikeView(View):
         like = Like.objects.create(
         user = user,
         image = image,
-        user_like = data["user_like"]
-    )    
+    )
+        return JsonResponse({"message" : "SUCCESS"}, status=200)
