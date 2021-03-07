@@ -11,24 +11,31 @@ from utils.debugger  import debugger
 class SignUpView(View):
     def post(self, request):
         try:
-            data      = request.body
-            json_data = json.loads(data)
+            data      = json.loads(request.body)
 
-            email    = json_data['email']
-            password = json_data['password']
-            
-            if not email or not password:
+            email        = data['email']
+            password     = data['password']
+            username     = data['username']
+            phone_number = data.get('phone_number', None)
+
+            if not email or not password or not username:
                 return JsonResponse({'message': 'EMPTY_VALUE'}, status=400)
 
             p_email    = re.compile(r'^[a-zA-Z0-9+-_.]+@[a-zA-Z0-9_-]+\.[a-zA-Z-.]+$')
             p_password = re.compile(r'.{8,45}')
+            p_username = re.compile(r'^[a-zA-Z0-9_-]{3,50}$')
 
             # TODO : modify password validation check
             is_valid_email    = True if p_email.match(email) else False 
             is_valid_password = True if p_password.match(password) else False
+            is_valid_username = True if p_username.match(username) else False
 
-            if not is_valid_email or not is_valid_password:
-                return JsonResponse({'message': 'INVALID_FORMAT'}, status=400)
+            if not is_valid_email:
+                return JsonResponse({'message': 'INVALID_EMAIL_FORMAT'}, status=400)
+            if not is_valid_username:
+                return JsonResponse({'message': 'INVALID_USERNAME_FORMAT'}, status=400)
+            if not is_valid_password:
+                return JsonResponse({'message': 'INVALID_PASSWORD_FORMAT'}, status=400)
 
             is_existing_user = User.objects.filter(email=email).exists()
             if is_existing_user:
