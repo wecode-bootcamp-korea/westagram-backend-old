@@ -19,10 +19,8 @@ class SignUpView(View):
         db_phone = User.objects.filter(phone=phone).exists()
         db_name  = User.objects.filter(name=name).exists()
 
-        # or 조건들 ()로 묶으면 안되는 이유?
-        if name or email or phone is None:
-            return JsonResponse({'ERROR':'feild_empty'}, status = 401)            
-
+        # 조건들 ()로 묶으면 안되는 이유?
+      
         if ('@' or '.') not in list(email):
             return JsonResponse({'ERROR':'email_form'}, status = 401)            
 
@@ -37,10 +35,12 @@ class SignUpView(View):
         
         if db_phone is True:
             return JsonResponse({'ERROR':'phone_exist'}, status = 401)            
+        
+        if name or email or phone is None:
+            return JsonResponse({'ERROR':'feild_empty'}, status = 401)            
 
-        else:
-            User.objects.create(name=name, email=email, phone=phone, pswd=pswd)
-            return JsonResponse({'SUCCESS':'signup'}, status = 201)
+        User.objects.create(name=name, email=email, phone=phone, pswd=pswd)
+        return JsonResponse({'SUCCESS':'signup'}, status = 201)
         
 
 class SignInView(View):
@@ -55,18 +55,16 @@ class SignInView(View):
         db_name  = User.objects.filter(name=id).exists()
         db_pswd  = User.objects.filter(pswd=pswd).exists()
 
-        #위에서는 none 일때 작동하는데 여기선 ''으로 해야 빈데이터로 인식하는이유?
-        if id or pswd is '':
-            return JsonResponse({'ERROR':'feild_empty'}, status = 401)  
-
-        if (db_email or db_phone or db_name) is False:
+        if db_email or db_phone or db_name is False:
             return JsonResponse({'ERROR':'id_not_match'}, status = 401)   
+
+        if id or pswd is None:
+            return JsonResponse({'ERROR':'feild_empty'}, status = 401)  
 
         if db_email or db_phone or db_name is True:
             if db_pswd is False:
                 return JsonResponse({'ERROR':'pswd_not_match'}, status = 401) 
-            else:
-                return JsonResponse({'SUCCESS':'signin'}, status = 201)
+            return JsonResponse({'SUCCESS':'signin'}, status = 201)
    
 
 
