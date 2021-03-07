@@ -14,8 +14,11 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.urls    import path
-from user.views     import SignUpView
+from user.views     import SignUpView, SignInView
 
 urlpatterns = [
-    path('', SignUpView.as_view())
+    path('/signup', SignUpView.as_view()),
+    path('/signin', SignInView.as_view())
 ]
+
+#westagram/url에서 분기하여 이곳에서 view로 분기하면 안되는 이유?

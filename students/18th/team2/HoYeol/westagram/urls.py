@@ -16,7 +16,7 @@ Including another URLconf
 from django.urls import path, include
 
 urlpatterns = [
-        #user
-    path('signup', include('user.urls'))
-]
+    path('user', include('user.urls')),
+    ]
 
+#이곳에서 url을 나누면 안되는 이유?
