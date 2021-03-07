@@ -47,7 +47,7 @@ class CommentView(View):
     
 class CommentShowView(View):
     def get(self, request):
-        commentshows = Comment.objects.filter(img_url=1)
+        commentshows = Comment.objects.filter(image=1)
         # id 값이 1번인 게시글의 등록된 댓글들만(그래서 filter, get아님) 출력
         result = []
         
@@ -59,3 +59,15 @@ class CommentShowView(View):
             result.append(my_dict)
         
         return JsonResponse({"result" : result}, status=200)
+    
+
+class LikeView(View):
+    def post(self,request):
+        data  = json.loads(request.body)
+        user  = User.objects.get(email=data['email'])
+        image = Posting.objects.get(img_url=data['img_url'])
+        like = Like.objects.create(
+        user = user,
+        image = image,
+        user_like = data["user_like"]
+    )    
