@@ -19,7 +19,7 @@ class SignupView(View):
             if '@' in data['email'] and '.' in data['email'] and len(data['password']) >= 8:
                 byted_password = data['password'].encode('utf-8')
                 hash_password = bcrypt.hashpw(byted_password, bcrypt.gensalt())
-                password = hash_password.decode('utf-8')
+                password = hash_password
                 user     = User.objects.create(
                 email    = data['email'],
                 password = password
@@ -38,8 +38,6 @@ class LoginView(View):
             if bcrypt.checkpw(data['password'].encode('utf-8'), user.password.encode('utf-8')):
                  
                 token = jwt.encode({'email' : data['email']}, SECRET_KEY, algorithm="HS256")
-                    #token = token.decode('utf-8')
-                    # h5yp 버전 문제로 디코드 안 해도 됨.
                 
                 return JsonResponse({"message":"SUCCESS"}, status=200)
             else:
