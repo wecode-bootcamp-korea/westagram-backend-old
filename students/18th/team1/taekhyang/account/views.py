@@ -21,14 +21,20 @@ class SignUpView(View):
             if not email or not password or not username:
                 return JsonResponse({'message': 'EMPTY_VALUE'}, status=400)
 
-            p_email    = re.compile(r'^[a-zA-Z0-9+-_.]+@[a-zA-Z0-9_-]+\.[a-zA-Z-.]+$')
-            p_password = re.compile(r'.{8,45}')
-            p_username = re.compile(r'^[a-zA-Z0-9_-]{3,50}$')
+            p_email        = re.compile(r'^[a-zA-Z0-9+-_.]+@[a-zA-Z0-9_-]+\.[a-zA-Z-.]+$')
+            p_password     = re.compile(r'.{8,45}')
+            p_username     = re.compile(r'^[a-zA-Z0-9_-]{3,50}$')
+            p_phone_number = re.compile(r'^[0-9]{3}-[0-9]{4}-[0-9]{4}$')
 
             # TODO : modify password validation check
-            is_valid_email    = True if p_email.match(email) else False 
-            is_valid_password = True if p_password.match(password) else False
-            is_valid_username = True if p_username.match(username) else False
+            is_valid_email        = True if p_email.match(email) else False 
+            is_valid_password     = True if p_password.match(password) else False
+            is_valid_username     = True if p_username.match(username) else False
+
+            if phone_number:
+                is_valid_phone_number = True if p_phone_number.match(phone_number) else False
+            else:
+                is_valid_phone_number = True
 
             if not is_valid_email:
                 return JsonResponse({'message': 'INVALID_EMAIL_FORMAT'}, status=400)
@@ -36,12 +42,24 @@ class SignUpView(View):
                 return JsonResponse({'message': 'INVALID_USERNAME_FORMAT'}, status=400)
             if not is_valid_password:
                 return JsonResponse({'message': 'INVALID_PASSWORD_FORMAT'}, status=400)
+            if not is_valid_phone_number:
+                return JsonResponse({'message': 'INVALID_PHONE_NUMBER_FORMAT'}, status=400)
 
-            is_existing_user = User.objects.filter(email=email).exists()
-            if is_existing_user:
-                return JsonResponse({'message': 'EXISTING_USER'}, status=400)
+            # this logic has to change if front-end is going to specify
+            # which one alreday exists (email, username)
+            is_existing_email = User.objects.filter(email=email).exists()
+            if is_existing_email:
+                return JsonResponse({'message': 'EXISTING_EMAIL'}, status=400)
 
-            User.objects.create(email=email, password=password)
+            is_existing_username = User.objects.filter(username=username).exists()
+            if is_existing_username:
+                return JsonResponse({'message': 'EXISTING_USERNAME'}, status=400)
+
+            is_existing_phone_number = User.objects.filter(phone_number=phone_number).exists()
+            if is_existing_phone_number:
+                return JsonResponse({'message': 'EXISTING_PHONE_NUMBER'}, status=400)
+ 
+            User.objects.create(email=email, username=username, phone_number=phone_number, password=password)
             return JsonResponse({'message': 'SUCCESS'}, status=200)
 
         except KeyError:
@@ -49,7 +67,7 @@ class SignUpView(View):
         except JSONDecodeError:
             return JsonResponse({'message': 'JSON_DECODE_ERROR'}, status=400)
         except:
-            debugger.debug('Unexpected Error inserting user info into User Model')
+            debugger.exception('Unexpected Error inserting user info into User Model')
             return JsonResponse({'message': 'INVALID_FORMAT'}, status=400)
 
 
