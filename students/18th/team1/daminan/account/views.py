@@ -34,11 +34,11 @@ class LoginView(View):
     def post(self, request):
         try:
             data = json.loads(request.body)
-            if User.objects.filter(email=data['email']).exists():
-                user = User.objects.get(email=data['email'])
-                if bcrypt.checkpw(data['password'].encode('utf-8'), user.password.encode('utf-8')):
+            #if User.objects.filter(email=data['email']).exists():
+            user = User.objects.get(email=data['email'])
+            if bcrypt.checkpw(data['password'].encode('utf-8'), user.password.encode('utf-8')):
                  
-                    token = jwt.encode({'email' : data['email']}, SECRET_KEY, algorithm="HS256")
+                token = jwt.encode({'email' : data['email']}, SECRET_KEY, algorithm="HS256")
                     #token = token.decode('utf-8')
                     # h5yp 버전 문제로 디코드 안 해도 됨.
                 
