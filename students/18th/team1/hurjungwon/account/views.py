@@ -1,18 +1,29 @@
 import json
 import re
+import bcrypt
+import jwt
 
 from django.views     import View
 from django.http      import JsonResponse
 from django.db.models import Q
 
 from .models import User
-
+from my_settings import SECRET_KEY, ALGORITHM
 
 class SignUpView(View):
     def post(self, request):
         try:
             data = json.loads(request.body)
 
+            if not data.get('user_name'):
+                return JsonResponse({'message': 'Type user_name'}, status=400)
+            
+            if not data.get('password'):
+                return JsonResponse({'message': 'Type password'}, status=400)
+            
+            if not data.get('email'):
+                return JsonResponse({'message': 'Type email'}, status=400)
+            
             user_name    = data['user_name']
             email        = data['email']
             password     = data['password']
@@ -31,13 +42,17 @@ class SignUpView(View):
             if User.objects.filter(user_name = user_name).exists():
                 return JsonResponse({'message': 'user_name already exists'}, status=400)
 
+            hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+            decode_password = hashed_password.decode('utf-8')
+            
             User.objects.create(
                 user_name    = user_name,
                 email        = email,
-                password     = password,
+                password     = decode_password,
                 name         = name,
                 phone_number = phone_number,
             )
+
             return JsonResponse({'message': 'SUCCESS'}, status=200)
 
         except KeyError:
@@ -59,17 +74,23 @@ class SignInView(View):
             if not (user_name or phone_number or email):
                 return JsonResponse({'message': 'Type at least one value'}, status=400)
             
-            valid_user_id = User.objects.filter(
+            valid_user = User.objects.get(
                 Q(user_name=user_name) | Q(email=email) | Q(phone_number=phone_number)
             )
-            valid_user_password = User.objects.filter(password=password)
-            
-            if not valid_user_id:
+
+            if not valid_user:
                 return JsonResponse({'message': 'INVALID USER_ID'}, status=401)
             
-            if not valid_user_password:
+            encode_password = valid_user.password.encode('utf-8')
+            
+            if not bcrypt.checkpw(password.encode('utf-8'), encode_password):
                 return JsonResponse({'message': 'INVALID USER_PASSWORD'}, status=401)
 
+            playload = {'user-id': valid_user.id}
+            token    = jwt.encode(playload, SECRET_KEY, algorithm=ALGORITHM)
+            
+            # dict_id = jwt.decode(token, SECRET_KEY, algorithms=ALGORITHM)
+            
             return JsonResponse({'message': 'SUCCSESS'}, status=200)
 
         except KeyError:
@@ -77,3 +98,15 @@ class SignInView(View):
             
         except json.JSONDecodeError:
             return JsonResponse({'message' : 'JSON_DECODE_ERROR'}, status=400)
+
+# class FollowView(View):
+#     def post(self, request):
+#         try:
+#             data = json.loads(request.body)
+#             follower = data.get('follower')
+#             followee = data.get('followee')
+
+#             return JsonResponse({'message': 'SUCCSESS'}, status=200)
+        
+#         except json.JSONDecodeError:
+#             return JsonResponse({'message' : 'JSON_DECODE_ERROR'}, status=400)
