@@ -8,45 +8,50 @@ from .models import User
 class SignUpView(View):
     def post(self, request):
 
-        data         = json.loads(request.body)
-        username     = data['username']
-        email        = data['email']
-        password     = data['password']
-        phone_number = data['phone_number']
+        try:
+            data         = json.loads(request.body)
+            username     = data['username']
+            email        = data['email']
+            password     = data['password']
+            phone_number = data['phone_number']
 
-        if username == ''or email == '' or password == '' or phone_number == '':
-            return JsonResponse({'message': 'KEY_ERROR' }, status=400)
-        elif ('@' and '.') not in email:
-            return JsonResponse({'message': '잘못된 형식입니다.'}, status=400)
-        elif len(password) < 8:
-            return JsonResponse({'message': '비밀번호 8자리 이상 입력해 주세요.'}, status=400)
-        elif data in User.objects.filter(email=email) or User.objects.filter(password=password):
-            return JsonResponse({'message' : '이미 가입된 계정입니다.'}, status=401)
-        else:
+            if email == '' or password == '' :
+                return JsonResponse({'message': '이메일과 패스워드를 채워주세요' }, status=400)
+            elif ('@' and '.') not in email:
+                return JsonResponse({'message': '잘못된 형식입니다. 이메일을 다시한번 확인해 주세요'}, status=400)
+            elif User.objects.filter(email=email).exists() or User.objects.filter(username=username).exists():
+                return JsonResponse({'message' : '이미 가입되어 있습니다.'}, status=400)
+            elif len(password) < 8:
+                return JsonResponse({'message': '비밀번호 8자리 이상 입력해 주세요.'}, status=400)
             User.objects.create(username=username, email=email, password=password, phone_number=phone_number)
             return JsonResponse({'message': '회원가입 되었습니다.'}, status=200)
+        except :
+            return JsonResponse({'message': 'KEY_ERROR'}, status=400)
 
 class SignInView(View):
     def post(self, request):
 
-        data          = json.loads(request.body)
-        user_email    = data['email']
-        user_password = data['password']
-        user_name     = data['username']
-        user_phone    = data['phone_number']
+        try:
+            data          = json.loads(request.body)
+            user_email    = data['email']
+            user_password = data['password']
+            user_name     = data['username']
+            user_phone    = data['phone_number']
 
-        #이메일,유저네임,핸드폰번호 중 하나라도 기입, 기입안하면 키에러
-        #패스워드 입력 안하면 키에러
-        if user_email == '' and user_name =='' and user_phone == '':
-            if user_password == '':
-                return JsonResponse({'message':'KEY_ERROR'}, status=400)
-        else: # 가입된 유저 확인
-            user_data     = User.objects.all()
-            for user in user_data:
-                if user_name == user.username or user_email == user.email or user_phone == user.phone_number:
-                    if user_password == user.password:
-                        return JsonResponse({'message': 'SUCCESS'}, status=200)
+            if user_email == '' and user_name =='' and user_phone == '':
+                return JsonResponse({'message':'이메일, 사용자 이름, 핸드폰 번호중 하나를 입력해 주세요.'}, status=400)
+            elif user_password == '':
+                return JsonResponse({'message':'비밀번호를 채워주세요.'}, status=400)
+            else:
+                user_data = User.objects.all()
+                for user in user_data:
+                    if User.objects.filter(username=user_name).exists() or User.objects.filter(email=user_email) or User.objects.filter(phone_number=user_phone):
+                        if User.objects.filter(password=user_password):
+                            return JsonResponse({'message': 'SUCCESS'}, status=200)
                 return JsonResponse({'message': 'INVALID_USER'}, status = 401)
+        except:
+            return JsonResponse({'message': 'KEY_ERROR'}, status=400)
+
 
  
             
