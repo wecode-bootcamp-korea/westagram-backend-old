@@ -3,5 +3,5 @@ from .views      import PostFeedView
 
 
 urlpatterns = [
-    path('/posting', PostFeedView.as_view()),
+    path('', PostFeedView.as_view()),
 ]
