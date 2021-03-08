@@ -2,9 +2,11 @@ import json
 import re
 from json.decoder import JSONDecodeError
 
-from django.views    import View
-from django.http     import JsonResponse
-from .models         import User
+from django.views     import View
+from django.http      import JsonResponse
+from .models          import User
+from django.db.models import Q 
+
 from utils.debugger  import debugger
 
 
@@ -74,16 +76,20 @@ class SignUpView(View):
 class LoginView(View):
     def post(self, request):
         try:
-            data      = request.body
-            json_data = json.loads(data)
+            data      = json.loads(request.body)
 
-            email    = json_data['email']
-            password = json_data['password']
+            username     = data.get('username', None)
+            email        = data.get('email', None)
+            phone_number = data.get('phone_number', None)
+            password     = data['password']
 
-            if not email or not password:
+            if not email and not username and not phone_number:
                 return JsonResponse({'message': 'EMPTY_VALUE'}, status=400)
             
-            is_valid_account = User.objects.filter(email=email, password=password).exists()
+            if not password:
+                return JsonResponse({'message': 'EMPTY_PASSWORD'}, status=400)
+            
+            is_valid_account = User.objects.filter((Q(email=email) | Q(username=username) | Q(phone_number=phone_number)) & Q(password=password)).exists()
             if not is_valid_account:
                 return JsonResponse({'message': 'INVALID_USER'}, status=401)
             return JsonResponse({'message': 'SUCCESS'}, status=200)
