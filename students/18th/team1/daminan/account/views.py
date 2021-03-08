@@ -34,7 +34,6 @@ class LoginView(View):
     def post(self, request):
         try:
             data = json.loads(request.body)
-            #if User.objects.filter(email=data['email']).exists():
             user = User.objects.get(email=data['email'])
             if bcrypt.checkpw(data['password'].encode('utf-8'), user.password.encode('utf-8')):
                  
@@ -47,3 +46,13 @@ class LoginView(View):
                 return JsonResponse({"message":"INVALID_USER"}, status=401)
         except KeyError:
             return JsonResponse({"message":"KEY_ERROR"}, status=400)
+        
+class TokenCheckView(View):
+    def post(self,request):
+        data = json.loads(request,body)
+        
+        user_token_info = jwt.decode(data['token'], SECRET_KEY, algorithms='HS256')
+        
+        if User.objects.filter(email=user_token_info['email']).exists():
+            return JsonResponse({"message": "SUCCESS"}, status=200)
+        return JsonResponse({"message":"INVALID_USER"}, status=401)
