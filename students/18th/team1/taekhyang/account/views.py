@@ -47,8 +47,7 @@ class SignUpView(View):
             if not is_valid_phone_number:
                 return JsonResponse({'message': 'INVALID_PHONE_NUMBER_FORMAT'}, status=400)
 
-            # this logic has to change if front-end is going to specify
-            # which one alreday exists (email, username)
+            # duplicate check for input
             is_existing_email = User.objects.filter(email=email).exists()
             if is_existing_email:
                 return JsonResponse({'message': 'EXISTING_EMAIL'}, status=400)
@@ -76,7 +75,7 @@ class SignUpView(View):
 class LoginView(View):
     def post(self, request):
         try:
-            data      = json.loads(request.body)
+            data = json.loads(request.body)
 
             username     = data.get('username', None)
             email        = data.get('email', None)
