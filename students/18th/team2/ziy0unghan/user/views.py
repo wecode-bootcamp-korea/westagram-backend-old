@@ -8,7 +8,7 @@ from .models import User
 class SignUpView(View):
     def post(self, request):
 
-        data = json.loads(request.body)
+        data         = json.loads(request.body)
         username     = data['username']
         email        = data['email']
         password     = data['password']
