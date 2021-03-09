@@ -39,7 +39,7 @@ class SignUpView(View):
 
             return JsonResponse({"message":"SUCCESS"}, status=200)
         
-        except ValueError:
+        except json.decoder.JSONDecodeError:
             # http POST http://127.0.0.1:8000/user/signup
             return JsonResponse({"message": "아무 데이터도 보내지 않았습니다."})
         
@@ -63,8 +63,8 @@ class LogInView(View):
             
             hashed_password_mysql = User.objects.get(email=email).password
 
-            if User.objects.filter(email=email, password=hashed_password_mysql).exists()==False:
-                return JsonResponse({"message": "INVALID_USER"}, status=401)
+            # if not User.objects.filter(email=email, password=hashed_password_mysql).exists():
+            #     return JsonResponse({"message": "INVALID_USER"}, status=401)  --> 필요없어짐...!
             
             
             if bcrypt.checkpw(password.encode('utf-8'), hashed_password_mysql.encode('utf-8')):
@@ -76,12 +76,27 @@ class LogInView(View):
             
         except json.decoder.JSONDecodeError:
             # http POST http://127.0.0.1:8000/user/login
-            return JsonResponse({"message": "데이터가 없거나 Key값이 적절하지 않습니다."})
+            return JsonResponse({"message": "데이터가 없거나 Key값이 적절하지 않습니다."}, status=400)
         
         except KeyError:
             # ex) http POST http://127.0.0.1:8000/user/signup email=""
-            return JsonResponse({"message": "하나 이상의 Key값이 적절하지 않거나 존재하지 않습니다."})
+            return JsonResponse({"message": "하나 이상의 Key값이 적절하지 않거나 존재하지 않습니다."}, status=400)
+
+        except UnboundLocalError:
+            return JsonResponse({"message": "비밀번호가 적절하지 않습니다."}, status=401)
+
+        except User.DoesNotExist:
+            # ex) 회원정보가 적절하지 않을 때, -> 왜 위에서 걸러지지 않을까?
+            # http -v POST http://127.0.0.1:8000/user/login email="dhnp1111@naver.com" password="12341234"
+            return JsonResponse({"message": "INVALID_USER 존재하지 않는 회원입니다."}, status=401)
+    
         
+        
+        
+"""get메소드에서는 2가지 에러가 발생할 수 있다. 
+1. 값이 없을때
+2. 값이 2개 이상 왔을때
+ exception 추가해야됨"""
 
 
   
