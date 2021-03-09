@@ -1,7 +1,10 @@
-import json, re
-from django.http    import JsonResponse
+import json
+import bcrypt
+import re
 
+from django.http    import JsonResponse
 from django.views   import View
+
 from .models        import User
 
 
@@ -16,7 +19,7 @@ class SignupView(View):
             return JsonResponse({'message': 'KEY_ERROR'}, status = 400)
         elif not data['password']:
             return JsonResponse({'message': 'KEY_ERROR'}, status = 400)
-        
+
         if User.objects.filter(email=email):
             return JsonResponse({'message' : 'Already Exists'}, status = 400)
 
@@ -25,7 +28,11 @@ class SignupView(View):
         if not re.match(regex_email, email):
             return JsonResponse({'message' : 'Invalid Email'}, status = 400)
         elif not re.match(regex_password, password):
-            return JsonResponse({'message' : 'Invalid Password'}, status = 400) 
+            return JsonResponse({'message' : 'Invalid Password'}, status = 400)
 
-        User.objects.create(email=email, password=password)
+        password       = data['password'].encode('utf-8')
+        password_crypt = bcrypt.hashpw(password, bcrypt.gensalt())
+        password_crypt = password_crypt.decode('utf-8')
+
+        User.objects.create(email=email, password=password_crypt)
         return JsonResponse({'message': 'Signup Success!'}, status=200)
