@@ -69,10 +69,6 @@ class LikeManage(View):
         user     = User.objects.get(username=userinfo)
         likeds   = Like.objects.filter(post=post, user=user)
 
-        print('****************************')
-        print(data, postinfo, userinfo, post, user, likeds)
-        print('****************************')
-
         for liked in likeds:
             count = Post.objects.get(pk=postinfo).like_count
             Post.objects.filter(pk=postinfo).update(like_count=count-1)
@@ -83,11 +79,3 @@ class LikeManage(View):
         Post.objects.filter(pk=postinfo).update(like_count=count+1)
         Like.objects.create(post=post, user=user)
         return JsonResponse({'result': "liked"}, status=200)
-
-
-        
-
-
-
-
-        
