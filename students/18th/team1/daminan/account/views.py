@@ -22,7 +22,7 @@ class SignupView(View):
                 user     = User.objects.create(
                 email    = data['email'],
                 password = password
-            ).save()
+            )
                 return JsonResponse({"message": "SUCCESS"}, status=200)
             return JsonResponse({"message":"MAKE_FAIL"}, status=400)
         except KeyError:
