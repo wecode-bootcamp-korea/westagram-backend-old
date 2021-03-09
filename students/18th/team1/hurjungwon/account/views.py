@@ -102,20 +102,20 @@ class FollowView(View):
         try:
             data = json.loads(request.body)
 
-            follower = data.get('follower')
-            followee = data.get('followee')
+            from_follow = data.get('from_follow')
+            to_follow   = data.get('to_follow')
 
-            User.objects.get(id=followee)
+            User.objects.get(id=to_follow)
 
-            if follower == followee:
+            if from_follow == to_follow:
                 return JsonResponse({'message': 'CAN NOT FOLLOW YOURSELF'}, status=400)
             
-            if Follow.objects.filter(Q(follower=follower) & Q(followee=followee)).exists():
+            if Follow.objects.filter(Q(from_follow=from_follow) & Q(to_follow=to_follow)).exists():
                 return JsonResponse({'message': 'ALREADY FOLLOWED'}, status=400)
 
             Follow.objects.create(
-                follower_id = follower,
-                followee_id = followee, 
+                from_follow_id = from_follow,
+                to_follow_id   = to_follow, 
             )
 
             return JsonResponse({'message': 'SUCCSESS'}, status=200)
