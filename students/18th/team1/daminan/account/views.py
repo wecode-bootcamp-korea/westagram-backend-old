@@ -5,7 +5,7 @@ import jwt
 from django.views import View
 from django.http  import JsonResponse
 
-from .models     import User
+from .models     import User, Follow
 from my_settings import SECRET_KEY
 
 class SignupView(View):
@@ -17,7 +17,7 @@ class SignupView(View):
             
             if '@' in data['email'] and '.' in data['email'] and len(data['password']) >= 8:
                 byted_password = data['password'].encode('utf-8')
-                hash_password = bcrypt.hashpw(byted_password, bcrypt.gensalt())
+                hash_password = bcrypt.hashpw(byted_password, bcrypt.gensalt()).decode()
                 password = hash_password
                 user     = User.objects.create(
                 email    = data['email'],
@@ -40,9 +40,7 @@ class LoginView(View):
             
             if bcrypt.checkpw(data['password'].encode('utf-8'), user.password.encode('utf-8')):
                 token = jwt.encode({'email' : data['email']}, SECRET_KEY, algorithm="HS256")
-                return JsonResponse({'token' : token}, status=200)
-            
-                return JsonResponse({"message":"SUCCESS"}, status=200)
+                return JsonResponse({'token' : token, "message":"SUCCESS"}, status=200)
             
             return JsonResponse({"message":"INVALID_USER"}, status=401)
             
@@ -58,14 +56,8 @@ class TokenCheckView(View):
         if User.objects.filter(email=user_token_info['email']).exists():
             return JsonResponse({"message": "SUCCESS"}, status=200)
         return JsonResponse({"message":"INVALID_USER"}, status=401)
-    
+ 
 class FollowView(View):
-    def post(self,request):
-        data   = json.loads(request.body)
-        user   = User.objects.get(email=data['email'])
-        Follow = Follow.objects.create(
-            from_user = user,
-            to_user   = user
-        )
-        return JsonResponse({"message" : "SUCCESS"}, status=200)
-        
+    def post(self, request):
+            data      = json.loads(request.body)
+ 
