@@ -8,7 +8,7 @@ from django.views import View
 from django.db.models import Q
 
 from .models      import User
-from westagram.my_settings    import SECRET_KEY, ALGORITHM
+from ..westagram.my_settings    import SECRET_KEY, ALGORITHM
 
 
 class UserSignup(View):
@@ -33,8 +33,8 @@ class UserSignup(View):
                 return JsonResponse({'MESSAGE':'유효한 이메일이 아닙니다'}, status=400)
             
             hashed_password  = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
-
-            User.objects.create(email=data['email'], password=hashed_password, user_name=data['user_name'], phone_number=data['phone_number'])
+            decode_hashed_password = hashed_password.decode('utf-8')
+            User.objects.create(email=data['email'], password=decode_hashed_password, user_name=data['user_name'], phone_number=data['phone_number'])
             return JsonResponse({'message': 'SUCCESS'}, status=200)
             
         except KeyError :
@@ -51,9 +51,17 @@ class UserSignin(View):
             email        = data.get('email')
 
             if User.objects.filter(email=email).exists():
-                if password == User.objects.get(email=email).password:
 
-                    # bcrypt.checkpw(password.encode('utf-8'), hashed_password):
+                bytes_password = password.encode('utf-8')
+                bytes_db_password = User.objects.get(email=email).password.encode('utf-8')
+                bcrypt.checkpw(bytes_password, bytes_db_password)
+                token = jwt.encode(User.objects.get(password=password).id, SECRET_KEY, ALGORITHM)
+
+                if password == token.decode('utf-8'):
+                    
+                    
+                    print('==============')
+                    print('heheheheh')
                     return JsonResponse({'message': 'SUCCESS'}, status=200)
                 else:
                     return JsonResponse({'message' : '비밀번호를 확인하세요'}, status=401)
