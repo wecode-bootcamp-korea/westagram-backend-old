@@ -40,9 +40,10 @@ class LoginView(View):
             
             if bcrypt.checkpw(data['password'].encode('utf-8'), user.password.encode('utf-8')):
                 token = jwt.encode({'email' : data['email']}, SECRET_KEY, algorithm="HS256")
-                #라이브러리에서 만들어줌. 이메일 부분 암호화 클라이언트에게 보내줌.(json body에 담아서 보냄)
-                #프->백 헤더에 토큰을 담아서 보내줘야 함.
+                return JsonResponse({'token' : token}, status=200)
+            
                 return JsonResponse({"message":"SUCCESS"}, status=200)
+            
             return JsonResponse({"message":"INVALID_USER"}, status=401)
             
         except KeyError:
