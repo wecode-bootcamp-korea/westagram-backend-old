@@ -7,7 +7,7 @@ from django.views     import View
 from django.http      import JsonResponse
 from django.db.models import Q
 
-from .models import User
+from .models import User, Follow
 from my_settings import SECRET_KEY, ALGORITHM
 
 class SignUpView(View):
@@ -97,14 +97,31 @@ class SignInView(View):
         except User.DoesNotExist:
             return JsonResponse({'message': 'INVALID USER_ID'}, status=401)
 
-# class FollowView(View):
-#     def post(self, request):
-#         try:
-#             data = json.loads(request.body)
-#             follower = data.get('follower')
-#             followee = data.get('followee')
+class FollowView(View):
+    def post(self, request):
+        try:
+            data = json.loads(request.body)
 
-#             return JsonResponse({'message': 'SUCCSESS'}, status=200)
+            follower = data.get('follower')
+            followee = data.get('followee')
+
+            User.objects.get(id=followee)
+
+            if follower == followee:
+                return JsonResponse({'message': 'CAN NOT FOLLOW YOURSELF'}, status=400)
+            
+            if Follow.objects.filter(Q(follower=follower) & Q(followee=followee)).exists():
+                return JsonResponse({'message': 'ALREADY FOLLOWED'}, status=400)
+
+            Follow.objects.create(
+                follower_id = follower,
+                followee_id = followee, 
+            )
+
+            return JsonResponse({'message': 'SUCCSESS'}, status=200)
         
-#         except json.JSONDecodeError:
-#             return JsonResponse({'message' : 'JSON_DECODE_ERROR'}, status=400)
+        except json.JSONDecodeError:
+            return JsonResponse({'message' : 'JSON_DECODE_ERROR'}, status=400)
+        
+        except User.DoesNotExist:
+            return JsonResponse({'message': 'INVALID USER_ID'}, status=401)

@@ -7,7 +7,7 @@ class User(models.Model):
     phone_number = models.CharField(max_length=25, null=True, unique=True)
     email        = models.EmailField(max_length=245, unique=True)
     password     = models.CharField(max_length=300)
-    follow       = models.ManyToManyField('self', through='Follow')
+    follow       = models.ManyToManyField('self', through='Follow', symmetrical=False)
 
     class Meta:
         db_table = 'users'
