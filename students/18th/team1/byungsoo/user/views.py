@@ -1,9 +1,10 @@
-import json, re
+import json, re, bcrypt, jwt
 
 from django.views import View
 from django.http  import JsonResponse
 
-from .models import User
+from .models     import User
+from my_settings import SECRET_KEY
 
 
 class SignUpView(View):
@@ -30,7 +31,11 @@ class SignUpView(View):
             if User.objects.filter(email=email).exists():
                 return JsonResponse({"message": "이미 존재하는 이메일입니다."}, status=409)
 
-            User.objects.create(email=email, password=password)
+            encoded_password  = password.encode('utf-8')
+            hashed_password   = bcrypt.hashpw(encoded_password, bcrypt.gensalt())
+            decoded_hashed_pw = hashed_password.decode('utf-8') 
+
+            User.objects.create(email=email, password=decoded_hashed_pw)
 
             return JsonResponse({"message":"SUCCESS"}, status=200)
         
@@ -56,10 +61,18 @@ class LogInView(View):
                 """ email="" password=""과 같이 둘 중 하나의 key값에 아무것도 입력되지 않은 값이 왔을 때 KEY_ERROR를 발생시킵니다."""
                 return JsonResponse({"message": "KEY_ERROR"}, status=400)
             
-            if User.objects.filter(email=email, password=password).exists()==False:
+            hashed_password_mysql = User.objects.get(email=email).password
+
+            if User.objects.filter(email=email, password=hashed_password_mysql).exists()==False:
                 return JsonResponse({"message": "INVALID_USER"}, status=401)
             
-            return JsonResponse({"message": "SUCCESS"}, status=200)
+            
+            if bcrypt.checkpw(password.encode('utf-8'), hashed_password_mysql.encode('utf-8')):
+                user_id     = User.objects.get(email=email).id
+                encoded_jwt = jwt.encode( {'user-id': user_id}, SECRET_KEY, algorithm='HS256')
+
+            
+            return JsonResponse({"message": "SUCCESS", 'access-token': encoded_jwt}, status=200)
             
         except json.decoder.JSONDecodeError:
             # http POST http://127.0.0.1:8000/user/login
