@@ -3,6 +3,8 @@ import json
 from django.views           import View
 from django.http            import JsonResponse
 from django.core.exceptions import ObjectDoesNotExist
+from django.db.models       import Q
+
 
 
 from .models      import User
@@ -10,35 +12,38 @@ from .models      import User
 
 class UserSignup(View):
     def post(self, request):
-        data     = json.loads(request.body)
         try:
+            data     = json.loads(request.body)
             email    = data['email']
             password = data['password']
+            username = data['username']
+            phone_num    = data['phone_num']
+            temps = User.objects.filter(Q(username=username) | Q(email=email) | Q(phone_num=phone_num))
+
+            if '@' not in email or '.' not in email:
+                return JsonResponse({"message":"email must contain the '@' symbol and the period'.'"}, status=400)
+            
+            elif len(password) < 8:
+                return JsonResponse({"message":"password must be at least 8 characters"}, status=400)
+            
+            for temp in temps:
+                if username == temp.username:
+                    return JsonResponse({"message":"That username is taken. Try another"}, status=400)
+            
+                elif email == temp.email:
+                    return JsonResponse({"message":"That email is taken. Try another"}, status=400)
+            
+                elif phone_num == temp.phone_num:
+                    return JsonResponse({"message":"That phone is taken. Try another"}, status=400)
+
+            User.objects.create(username=username, email=email, password=password, phone_num=phone_num)
+            return JsonResponse({'result': 'SUCCESS'}, status=200)
+
         except KeyError:
             return JsonResponse({"message":"KEY_ERROR"}, status=400)
-        username = data['username']
-        phone_num    = data['phone_num']
-        temps = User.objects.filter(username=username) | User.objects.filter(email=email) | User.objects.filter(phone_num=phone_num)
 
-        if '@' not in email or '.' not in email:
-            return JsonResponse({"message":"email must contain the '@' symbol and the period'.'"}, status=400)
-        
-        elif len(password) < 8:
-            return JsonResponse({"message":"password must be at least 8 characters"}, status=400)
-        
-        for temp in temps:
-            if username == temp.username:
-                return JsonResponse({"message":"That username is taken. Try another"}, status=400)
-        
-            elif email == temp.email:
-                return JsonResponse({"message":"That email is taken. Try another"}, status=400)
-        
-            elif phone_num == temp.phone_num:
-                return JsonResponse({"message":"That phone is taken. Try another"}, status=400)
-
-        User.objects.create(username=username, email=email, password=password, phone_num=phone_num)
-        return JsonResponse({'result': 'SUCCESS'}, status=200)
-            
+        except ValueError:
+            return JsonResponse({"message":"VAlue_ERROR"}, status=400)
         
 class UserSignin(View):
     def post(self, request):
