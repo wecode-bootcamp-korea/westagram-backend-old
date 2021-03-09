@@ -1,63 +1,64 @@
 import json
-from django.http  import JsonResponse
+import bcrypt
+import jwt
 
+
+from django.http  import JsonResponse
 from django.views import View
+from django.db.models import Q
+
 from .models      import User
+from westagram.my_settings    import SECRET_KEY, ALGORITHM
 
 
 class UserSignup(View):
     def post(self, request):
-        data         = json.loads(request.body)
-        pw           = data['pw']
-        email        = data['email']
-        user_name    = data['user_name']
-        phone_number = data['phone_number']
-        
+        try:
+            data         = json.loads(request.body)
+            email        = data['email']
+            password     = data['password']
+            user_name    = data['user_name']
+            phone_number = data['phone_number']
 
-        if email == '' and pw == '':
-            return JsonResponse({'message': 'KEY_ERROR'}, status=400)
-        elif '@' not in email and '.' not in email:
-            return JsonResponse({'message': 'email을 확인하세요'}, status=400)
-        elif len(pw) < 8:
-            return JsonResponse({'message': 'pw는 8자리 이상으로 해야합니다.'}, status=400)
-        else:
-            repeated_info = User.objects.filter(email=email) | User.objects.filter(
-                user_name=user_name) | User.objects.filter(phone_number=phone_number)
-            for info in repeated_info:
-                if user_name == info.user_name:
-                    return JsonResponse({'message': '이미 있는 user_name입니다.'}, status=400)
-                elif email == info.email:
-                    return JsonResponse({'message': '이미 있는 email입니다.'}, status=400)
-                elif phone_number == info.phone_number:
-                    return JsonResponse({'message': '이미 있는 phone_number'}, status=400)
+            repeated_info = User.objects.filter(Q(email=data['email']) | Q(
+            user_name=data['user_name']) | Q(phone_number=data['phone_number']))
 
-            User.objects.create(email=data['email'], pw=data['pw'],
-                                user_name=data['user_name'], phone_number=data['phone_number'])
+            if repeated_info:
+                return JsonResponse({'message': '이미 있는 정보입니다.'}, status=400)
+
+            if len(password) < 8:
+                return JsonResponse({'message': '패스워드는 8자리 이상으로 해야합니다.'}, status=400)
+
+            if '@' not in email or '.' not in email:
+                return JsonResponse({'MESSAGE':'유효한 이메일이 아닙니다'}, status=400)
+            
+            hashed_password  = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+
+            User.objects.create(email=data['email'], password=hashed_password, user_name=data['user_name'], phone_number=data['phone_number'])
             return JsonResponse({'message': 'SUCCESS'}, status=200)
+            
+        except KeyError :
+            return JsonResponse({"message": "KEY_ERROR"}, status=400)
+        except ValueError :
+            return JsonResponse({"message": "사용자계정과 비밀번호를 다시 확인해주세요"}, status=400)
 
 
-class UserLogin(View):
+class UserSignin(View):
     def post(self, request):
-        data = json.loads(request.body)
-        user = User.objects.all()
+        try:
+            data         = json.loads(request.body)
+            password     = data.get('password')
+            email        = data.get('email')
 
-        pw           = data['pw']
-        email        = data['email']
-        user_name    = data['user_name']
-        phone_number = data['phone_number']
-        
-        if user_name == '' or phone_number == '' or email == '':
-            return JsonResponse({"message": "KEY_ERROR"}, status=400)
-        elif pw == '':
-            return JsonResponse({"message": "KEY_ERROR"}, status=400)
+            if User.objects.filter(email=email).exists():
+                if password == User.objects.get(email=email).password:
 
-        for users in user:
-            if user_name == users.user_name or phone_number == users.phone_number or email == users.email:
-                if pw == users.pw:
+                    # bcrypt.checkpw(password.encode('utf-8'), hashed_password):
                     return JsonResponse({'message': 'SUCCESS'}, status=200)
                 else:
-                    return JsonResponse({'message': "INVALID_USER"}, status=401)
-            continue
-
-            if user_name != users.user_name or phone_number != users.phone_number or email != users.email:
-                return JsonResponse({'message': "INVALID_USER"}, status=401)
+                    return JsonResponse({'message' : '비밀번호를 확인하세요'}, status=401)
+            else:
+                return JsonResponse({"message": "INVALID_USER"}, status=401)
+            
+        except KeyError:
+            return JsonResponse({"message": "KEY_ERROR"}, status=400)
