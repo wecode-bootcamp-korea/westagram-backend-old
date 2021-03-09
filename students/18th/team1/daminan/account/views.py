@@ -60,4 +60,13 @@ class TokenCheckView(View):
 class FollowView(View):
     def post(self, request):
             data      = json.loads(request.body)
+            following = User.objects.get(email=data['following'])
+            follower = User.objects.get(email=data['follower'])
+            if following == follower:
+                return JsonResponse({"message":"SAME_PERSON!"})
+                follow = Follow.objects.create(
+                    following = following,
+                    follower  = follower
+            )
+            return JsonResponse({"message": "SUCCESS"}, status=200)
  
