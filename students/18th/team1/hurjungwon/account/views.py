@@ -89,8 +89,6 @@ class SignInView(View):
             playload = {'user-id': valid_user.id}
             token    = jwt.encode(playload, SECRET_KEY, algorithm=ALGORITHM)
             
-            # dict_id = jwt.decode(token, SECRET_KEY, algorithms=ALGORITHM)
-            
             return JsonResponse({'message': 'SUCCSESS'}, status=200)
 
         except KeyError:
