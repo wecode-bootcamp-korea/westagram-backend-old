@@ -20,10 +20,10 @@ class UserSignup(View):
             phone_num    = data['phone_num']
             temps = User.objects.filter(Q(username=username) | Q(email=email) | Q(phone_num=phone_num))
 
-            if '@' not in email or '.' not in email:
+            if ('@' and '.') not in email:
                 return JsonResponse({"message":"email must contain the '@' symbol and the period'.'"}, status=400)
             
-            elif len(password) < 8:
+            if len(password) < 8:
                 return JsonResponse({"message":"password must be at least 8 characters"}, status=400)
             
             for temp in temps:
