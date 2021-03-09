@@ -1,10 +1,11 @@
-import json
-import re
+import re, json, bcrypt
 
 from django.views                 import View
 from django.http                  import JsonResponse, request
 from django.db.models.query_utils import Q
+from json.decoder                 import JSONDecodeError
 
+from user.utils  import LoginCheck
 from user.models import User
 
 class SignUpView(View):
@@ -25,9 +26,9 @@ class SignUpView(View):
             REGEX_EMAIL    = '^[a-zA-Z0-9+-_.]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
             REGEX_PASSWORD = '\S{8,20}'
 
-            if re.match(REGEX_EMAIL,email) == None:
+            if not re.match(REGEX_EMAIL,email):
                 return JsonResponse({'message':'EMAIL VALIDATION ERROR'}, status=400)
-            if re.match(REGEX_PASSWORD,password) == None:
+            if not re.match(REGEX_PASSWORD,password):
                 return JsonResponse({'message':'PASSWORD VALIDATION ERROR'}, status=400)
 
             if not User.objects.filter(email=email):
@@ -38,12 +39,14 @@ class SignUpView(View):
             else:
                 return JsonResponse({'message':'EMAIL ALREADY EXISTS'}, status=400)
 
+            hashed_password = bcrypt.hashpw(password.encode('UTF-8'), bcrypt.gensalt()).decode()
+
             User.objects.create(
                 email         = email,
                 phone         = phone,
                 full_name     = full_name,
                 user_name     = user_name,
-                password      = password,
+                password      = hashed_password,
                 date_of_birth = date_of_birth,
             )
 
@@ -51,26 +54,34 @@ class SignUpView(View):
 
         except KeyError:
             return JsonResponse({'message':'KEY ERROR'}, status=400)
+        except JSONDecodeError:
+            return JsonResponse({'message':'JSON DECODE ERROR'}, status=400)
         except Exception as e:
             print(e)
 
-class LoginView(View):
+
+class SignInView(View):
     def post(self, request):
         try:
             data = json.loads(request.body)
 
-            user_id = data['user_id']
-            password  = data['password']
+            user_id  = data['user_id']
+            password = data['password']
 
-            if User.objects.filter(Q(user_name=user_id) | Q(email=user_id)|Q(phone=user_id)):
-                if not User.objects.filter(password=password):
-                    return JsonResponse({"message":"INVALID_USER"}, status=401)                
+            user= User.objects.get(Q(user_name=user_id)|Q(email=user_id)|Q(phone=user_id))
+
+            if user:
+                stored_password  = User.objects.get(Q(user_name=user_id)|Q(email=user_id)|Q(phone=user_id)).password
+                if not bcrypt.checkpw(password.encode('UTF-8'), stored_password.encode('UTF-8')):
+                    return JsonResponse({"message":"INVALID_PASSWORD"}, status=401)                
             else:
-                return JsonResponse({"message":"INVALID_USER"}, status=401)
-
-            return JsonResponse({"message":"SUCCESS"}, status=200)
+                return JsonResponse({"message":"INVALID_USER"}, status=401)   
+            
+            return JsonResponse({"message":"SUCCESS", "Authorization":LoginCheck(user.id)}, status=200)
 
         except KeyError:
             return JsonResponse({"message":"KEY_ERROR"}, status=400)
+        except JSONDecodeError:
+            return JsonResponse({'message':'JSON DECODE ERROR'}, status=400)
         except Exception as e:
             print(e)

@@ -1,7 +1,8 @@
 from django.urls import path
 
-from posting.views import PostUploadView
+from posting.views import PostUploadView, CommentUploadView
 
 urlpatterns = [
-    path('/upload', PostUploadView.as_view())
+    path('/post', PostUploadView.as_view()),
+    path('/comment', CommentUploadView.as_view())
 ]
