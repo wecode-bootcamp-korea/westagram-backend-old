@@ -14,8 +14,6 @@ class SignupView(View):
             data = json.loads(request.body)
             if User.objects.filter(email=data['email']).exists():
                 return JsonResponse({"message": "EMAIL_ERROR"}, status=400)
-            if User.objects.filter(password=data['password']).exists():
-                return JsonResponse({"message": "PASSOWRD_ERROR"}, status=400)
             
             if '@' in data['email'] and '.' in data['email'] and len(data['password']) >= 8:
                 byted_password = data['password'].encode('utf-8')
