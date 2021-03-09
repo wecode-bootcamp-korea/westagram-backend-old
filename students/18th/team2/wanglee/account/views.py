@@ -1,14 +1,11 @@
-import json
+import json, bcrypt, jwt
 
 from django.views           import View
 from django.http            import JsonResponse
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models       import Q
 
-
-
 from .models      import User
-
 
 class UserSignup(View):
     def post(self, request):
@@ -33,8 +30,9 @@ class UserSignup(View):
 
             if User.objects.filter(phone_num=phone_num).exists():
                 return JsonResponse({"message":"That phone number is taken. Try another"}, status=400)
-    
-            User.objects.create(username=username, email=email, password=password, phone_num=phone_num)
+
+            hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+            User.objects.create(username=username, email=email, password=hashed_password.decode('utf-8'), phone_num=phone_num)
             return JsonResponse({'result': 'SUCCESS'}, status=200)
 
         except KeyError:
