@@ -78,9 +78,6 @@ class SignInView(View):
                 Q(user_name=user_name) | Q(email=email) | Q(phone_number=phone_number)
             )
 
-            if not valid_user:
-                return JsonResponse({'message': 'INVALID USER_ID'}, status=401)
-            
             encode_password = valid_user.password.encode('utf-8')
             
             if not bcrypt.checkpw(password.encode('utf-8'), encode_password):
@@ -89,13 +86,16 @@ class SignInView(View):
             playload = {'user-id': valid_user.id}
             token    = jwt.encode(playload, SECRET_KEY, algorithm=ALGORITHM)
             
-            return JsonResponse({'message': 'SUCCSESS'}, status=200)
-
+            return JsonResponse({'message': 'SUCCSESS', 'token': token}, status=200)
+            
         except KeyError:
             return JsonResponse({'message': 'KEY_ERROR'}, status=400)
             
         except json.JSONDecodeError:
             return JsonResponse({'message' : 'JSON_DECODE_ERROR'}, status=400)
+        
+        except User.DoesNotExist:
+            return JsonResponse({'message': 'INVALID USER_ID'}, status=401)
 
 # class FollowView(View):
 #     def post(self, request):
