@@ -49,7 +49,7 @@ class SignUpView(View):
                 return JsonResponse({'message': 'EXISTING_USERNAME'}, status=400)
             
             phone_number_in_db = User.objects.filter(phone_number=phone_number).first()
-            if phone_number_in_db.phone_number:
+            if phone_number_in_db:
                 return JsonResponse({'message': 'EXISTING_PHONE_NUMBER'}, status=400)
 
             # hash pw and save it in str format
@@ -86,7 +86,7 @@ class LoginView(View):
             
             user_with_username     = User.objects.filter(username=username).first()
             user_with_email        = User.objects.filter(email=email).first()
-            user_with_phone_number = User.objects.filter(phone_number=phone_number).first()
+            user_with_phone_number = User.objects.filter(phone_number=phone_number).first() if phone_number else False
 
             if user_with_username:
                 user     = user_with_username
@@ -100,6 +100,7 @@ class LoginView(View):
             else:
                 return JsonResponse({'message': 'INVALID_USER'}, status=401)
 
+            print(pw_in_db.encode('utf-8'))
             is_valid_user = bcrypt.checkpw(password.encode('utf-8'), pw_in_db.encode('utf-8'))
             if not is_valid_user:
                 return JsonResponse({'message': 'INVALID_USER'}, status=401)
@@ -111,3 +112,6 @@ class LoginView(View):
             return JsonResponse({'message': 'KEY_ERROR'}, status=400)
         except JSONDecodeError:
             return JsonResponse({'message': 'JSON_DECODE_ERROR'}, status=400)
+        except ValueError:
+            debugger.exception('ValueError')
+            return JsonResponse({'message': 'VALUE_ERROR'}, status=400)
