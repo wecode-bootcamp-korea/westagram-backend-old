@@ -4,14 +4,14 @@ import jwt
 import bcrypt
 from json.decoder import JSONDecodeError
 
-from django.views     import View
-from django.http      import JsonResponse
-from django.db.models import Q 
+from django.views               import View
+from django.http                import JsonResponse
+from django.db.models           import Q 
 from project_westagram.settings import SECRET_KEY
 
-from .models          import User
+from .models import User
 
-from utils.debugger  import debugger
+from utils.debugger import debugger
 
 
 class SignUpView(View):
@@ -73,12 +73,9 @@ class LoginView(View):
         try:
             data = json.loads(request.body)
 
-            # phone_number has unique option but `null` value is allowed.
-            # so if we use None instead of False for phone_number,
-            # it will match all rows that have the `null` value in phone_number column 
             username     = data.get('username', None)
             email        = data.get('email', None)
-            phone_number = data.get('phone_number', False)
+            phone_number = data.get('phone_number', None)
             password     = data['password']
 
             if not email and not username and not phone_number:
@@ -87,11 +84,23 @@ class LoginView(View):
             if not password:
                 return JsonResponse({'message': 'EMPTY_PASSWORD'}, status=400)
             
-            user     = User.objects.filter(Q(email=email) | Q(username=username) | Q(phone_number=phone_number)).first()
-            pw_in_db = user.password
+            user_with_username     = User.objects.filter(username=username).first()
+            user_with_email        = User.objects.filter(email=email).first()
+            user_with_phone_number = User.objects.filter(phone_number=phone_number).first()
+
+            if user_with_username:
+                user     = user_with_username
+                pw_in_db = user.password
+            elif user_with_email: 
+                user     = user_with_email
+                pw_in_db = user.password
+            elif user_with_phone_number:
+                user     = user_with_phone_number
+                pw_in_db = user.password
+            else:
+                return JsonResponse({'message': 'INVALID_USER'}, status=401)
 
             is_valid_user = bcrypt.checkpw(password.encode('utf-8'), pw_in_db.encode('utf-8'))
-
             if not is_valid_user:
                 return JsonResponse({'message': 'INVALID_USER'}, status=401)
             
