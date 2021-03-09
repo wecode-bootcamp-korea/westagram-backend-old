@@ -15,10 +15,11 @@ class PostFeedView(View):
             image   = data['image']
             content = data['content']
 
-            user = User.objects.get(username = user)
+            user = User.objects.get(username=user)
             Posting.objects.create(user=user, image=image, content=content)
             return JsonResponse({'message': 'SUCCESS'}, status=200)
-        except:
+            
+        except KeyError:
             return JsonResponse({'message': 'KEY_ERROR'}, status=400)
 
     def get(self, request):
@@ -34,7 +35,7 @@ class PostFeedView(View):
             }
             result.append(post_feed)
 
-        return JsonResponse({'result': result}, status = 200)
+        return JsonResponse({'result': result}, status=200)
     
 
 
