@@ -33,7 +33,10 @@ class LoginView(View):
     def post(self, request):
         try:
             data = json.loads(request.body)
-            user = User.objects.get(email=data['email'])
+            try:
+                user = User.objects.get(email=data['email'])
+            except User.DoesNotExist:
+                return JsonResponse({"message":"USER_DOES_NOT_EXIST"}, status=400)
             if bcrypt.checkpw(data['password'].encode('utf-8'), user.password.encode('utf-8')):
                  
                 token = jwt.encode({'email' : data['email']}, SECRET_KEY, algorithm="HS256")
