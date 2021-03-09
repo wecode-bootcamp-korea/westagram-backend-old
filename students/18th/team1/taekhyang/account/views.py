@@ -7,6 +7,7 @@ from json.decoder import JSONDecodeError
 from django.views     import View
 from django.http      import JsonResponse
 from django.db.models import Q 
+from project_westagram.settings import SECRET_KEY
 
 from .models          import User
 
@@ -50,8 +51,12 @@ class SignUpView(View):
             phone_number_in_db = User.objects.filter(phone_number=phone_number).first()
             if phone_number_in_db.phone_number:
                 return JsonResponse({'message': 'EXISTING_PHONE_NUMBER'}, status=400)
+
+            # hash pw and save it in str format
+            hashed_pw         = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+            decoded_hashed_pw = hashed_pw.decode('utf-8')
  
-            User.objects.create(email=email, username=username, phone_number=phone_number, password=password)
+            User.objects.create(email=email, username=username, phone_number=phone_number, password=decoded_hashed_pw)
             return JsonResponse({'message': 'SUCCESS'}, status=200)
 
         except KeyError:
@@ -68,9 +73,12 @@ class LoginView(View):
         try:
             data = json.loads(request.body)
 
+            # phone_number has unique option but `null` value is allowed.
+            # so if we use None instead of False for phone_number,
+            # it will match all rows that have the `null` value in phone_number column 
             username     = data.get('username', None)
             email        = data.get('email', None)
-            phone_number = data.get('phone_number', None)
+            phone_number = data.get('phone_number', False)
             password     = data['password']
 
             if not email and not username and not phone_number:
@@ -79,10 +87,16 @@ class LoginView(View):
             if not password:
                 return JsonResponse({'message': 'EMPTY_PASSWORD'}, status=400)
             
-            is_valid_account = User.objects.filter((Q(email=email) | Q(username=username) | Q(phone_number=phone_number)) & Q(password=password)).exists()
-            if not is_valid_account:
+            user     = User.objects.filter(Q(email=email) | Q(username=username) | Q(phone_number=phone_number)).first()
+            pw_in_db = user.password
+
+            is_valid_user = bcrypt.checkpw(password.encode('utf-8'), pw_in_db.encode('utf-8'))
+
+            if not is_valid_user:
                 return JsonResponse({'message': 'INVALID_USER'}, status=401)
-            return JsonResponse({'message': 'SUCCESS'}, status=200)
+            
+            token = jwt.encode({'user_id': user.id}, SECRET_KEY, algorithm='HS256')
+            return JsonResponse({'message': 'SUCCESS', 'token': token}, status=200)
             
         except KeyError:
             return JsonResponse({'message': 'KEY_ERROR'}, status=400)
