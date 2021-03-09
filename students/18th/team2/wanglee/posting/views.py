@@ -7,10 +7,10 @@ from account.models  import User
 class PostManage(View):
     def post(self, request):
         data      = json.loads(request.body)
-        userinfo  = data['user']
-        head      = data['head']
-        body      = data['body']
-        image     = data['image']
+        userinfo  = data.get('user')
+        head      = data.get('head')
+        body      = data.get('body')
+        image     = data.get('image')
         user      = User.objects.get(username=userinfo) 
 
         Post.objects.create(user=user, head = head, body = body,  image=image)
@@ -34,9 +34,9 @@ class PostManage(View):
 class ReplyManage(View):
     def post(self, request):
         data     = json.loads(request.body)
-        postinfo = data['post']
-        userinfo = data['user']
-        body     = data['body']
+        postinfo = data.get('post')
+        userinfo = data.get('user')
+        body     = data.get('body')
         post     = Post.objects.get(pk=postinfo)
         user     = User.objects.get(username=userinfo)
 
@@ -63,8 +63,8 @@ class ReplyManage(View):
 class LikeManage(View):
     def post(self, request):
         data     = json.loads(request.body)
-        postinfo = data['post']
-        userinfo = data['user']
+        postinfo = data.get('post')
+        userinfo = data.get('user')
         post     = Post.objects.get(pk=postinfo)
         user     = User.objects.get(username=userinfo)
         likeds   = Like.objects.filter(post=post, user=user)
