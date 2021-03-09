@@ -1,11 +1,14 @@
 import json
 import re
+import jwt
+import bcrypt
 from json.decoder import JSONDecodeError
 
 from django.views     import View
 from django.http      import JsonResponse
-from .models          import User
 from django.db.models import Q 
+
+from .models          import User
 
 from utils.debugger  import debugger
 
@@ -28,36 +31,24 @@ class SignUpView(View):
             p_username     = re.compile(r'^[a-zA-Z0-9_-]{3,50}$')
             p_phone_number = re.compile(r'^[0-9]{3}-[0-9]{4}-[0-9]{4}$')
 
-            # TODO : modify password validation check
-            is_valid_email        = True if p_email.match(email) else False 
-            is_valid_password     = True if p_password.match(password) else False
-            is_valid_username     = True if p_username.match(username) else False
-
-            if phone_number:
-                is_valid_phone_number = True if p_phone_number.match(phone_number) else False
-            else:
-                is_valid_phone_number = True
-
-            if not is_valid_email:
+            if not p_email.match(email):
                 return JsonResponse({'message': 'INVALID_EMAIL_FORMAT'}, status=400)
-            if not is_valid_username:
+            if not p_username.match(username):
                 return JsonResponse({'message': 'INVALID_USERNAME_FORMAT'}, status=400)
-            if not is_valid_password:
+            if not p_password.match(password):
                 return JsonResponse({'message': 'INVALID_PASSWORD_FORMAT'}, status=400)
-            if not is_valid_phone_number:
+            if phone_number and not p_phone_number.match(phone_number):
                 return JsonResponse({'message': 'INVALID_PHONE_NUMBER_FORMAT'}, status=400)
 
             # duplicate check for input
-            is_existing_email = User.objects.filter(email=email).exists()
-            if is_existing_email:
+            if User.objects.filter(email=email).exists():
                 return JsonResponse({'message': 'EXISTING_EMAIL'}, status=400)
 
-            is_existing_username = User.objects.filter(username=username).exists()
-            if is_existing_username:
+            if User.objects.filter(username=username).exists():
                 return JsonResponse({'message': 'EXISTING_USERNAME'}, status=400)
-
-            is_existing_phone_number = User.objects.filter(phone_number=phone_number).exists()
-            if is_existing_phone_number:
+            
+            phone_number_in_db = User.objects.filter(phone_number=phone_number).first()
+            if phone_number_in_db.phone_number:
                 return JsonResponse({'message': 'EXISTING_PHONE_NUMBER'}, status=400)
  
             User.objects.create(email=email, username=username, phone_number=phone_number, password=password)
