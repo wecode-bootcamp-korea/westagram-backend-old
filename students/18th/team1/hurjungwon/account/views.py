@@ -7,7 +7,7 @@ from django.views     import View
 from django.http      import JsonResponse
 from django.db.models import Q
 
-from .models import User, Follow
+from .models     import User, Follow
 from my_settings import SECRET_KEY, ALGORITHM
 
 class SignUpView(View):
@@ -15,8 +15,8 @@ class SignUpView(View):
         try:
             data = json.loads(request.body)
 
-            if not data.get('user_name'):
-                return JsonResponse({'message': 'Type user_name'}, status=400)
+            # if not data.get('user_name'):
+            #     return JsonResponse({'message': 'Type user_name'}, status=400)
             
             if not data.get('password'):
                 return JsonResponse({'message': 'Type password'}, status=400)
@@ -24,7 +24,7 @@ class SignUpView(View):
             if not data.get('email'):
                 return JsonResponse({'message': 'Type email'}, status=400)
             
-            user_name    = data['user_name']
+            # user_name    = data['user_name']
             email        = data['email']
             password     = data['password']
             name         = data.get('name', None)
@@ -39,14 +39,14 @@ class SignUpView(View):
             if not password_match:
                 return JsonResponse({'message': 'invalid password'}, status=400)
 
-            if User.objects.filter(user_name = user_name).exists():
-                return JsonResponse({'message': 'user_name already exists'}, status=400)
+            if User.objects.filter(email = email).exists():
+                return JsonResponse({'message': 'email already exists'}, status=400)
 
             hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
             decode_password = hashed_password.decode('utf-8')
             
             User.objects.create(
-                user_name    = user_name,
+                # user_name    = user_name,
                 email        = email,
                 password     = decode_password,
                 name         = name,
@@ -68,7 +68,7 @@ class SignInView(View):
 
             user_name     = data.get('user_name', '')
             phone_number  = data.get('phone_number', '')
-            email         = data.get('email', '')
+            email         = data['email']
             password      = data['password']
             
             if not (user_name or phone_number or email):
@@ -81,7 +81,7 @@ class SignInView(View):
             encode_password = valid_user.password.encode('utf-8')
             
             if not bcrypt.checkpw(password.encode('utf-8'), encode_password):
-                return JsonResponse({'message': 'INVALID USER_PASSWORD'}, status=401)
+                return JsonResponse({'message': 'INVALID PASSWORD'}, status=401)
 
             playload = {'user-id': valid_user.id}
             token    = jwt.encode(playload, SECRET_KEY, algorithm=ALGORITHM)

@@ -158,3 +158,25 @@ class LikeView(View):
 
         except User.DoesNotExist:
             return JsonResponse({'message': 'INVALID_USER'}, status=400)
+
+class DeletePostView(View):
+    def delete(self,request):
+            data = json.loads(request.body)
+
+            print(type(data['user_id']))
+
+            user_id = data.get('user_id')
+            post_id = data.get('post_id')
+
+            post = Post.objects.get(id=post_id)
+            
+            print(type(user_id))
+            print(type(post.user_id))
+
+            print(user_id)
+            print(post.user_id)
+
+            if post.user_id != int(user_id):
+                return JsonResponse({'message': 'Unauthorized'}, status=400)
+
+            return JsonResponse({'message': 'SUCCESS'}, status=200)
