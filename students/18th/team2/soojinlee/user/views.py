@@ -20,8 +20,8 @@ class UserSignup(View):
             user_name    = data['user_name']
             phone_number = data['phone_number']
 
-            repeated_info = User.objects.filter(Q(email=data['email']) | Q(
-            user_name=data['user_name']) | Q(phone_number=data['phone_number']))
+            repeated_info = User.objects.filter(Q(email=data['email'])
+            | Q(user_name=data['user_name']) | Q(phone_number=data['phone_number']))
 
             if repeated_info:
                 return JsonResponse({'message': '이미 있는 정보입니다.'}, status=400)
@@ -34,7 +34,7 @@ class UserSignup(View):
             
             hashed_password  = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
             decode_hashed_password = hashed_password.decode('utf-8')
-            User.objects.create(email=data['email'], password=decode_hashed_password, user_name=data['user_name'], phone_number=data['phone_number'])
+            User.objects.create(email=data['email'], password=decode_hashed_password)
             return JsonResponse({'message': 'SUCCESS'}, status=200)
             
         except KeyError :
