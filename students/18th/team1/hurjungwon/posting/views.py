@@ -6,9 +6,12 @@ from django.core  import exceptions
 
 from account.models import User
 from .models        import Post, Comment, Like
+from core.utils     import login_decorator
+
 
 
 class PostView(View):
+    @login_decorator
     def post(self, request):
         try:
             data = json.loads(request.body)
