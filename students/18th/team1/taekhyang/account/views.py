@@ -17,7 +17,7 @@ from utils.debugger import debugger
 class SignUpView(View):
     def post(self, request):
         try:
-            data      = json.loads(request.body)
+            data = json.loads(request.body)
 
             email        = data['email']
             password     = data['password']
