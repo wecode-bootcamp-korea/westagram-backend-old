@@ -3,12 +3,12 @@ import bcrypt
 import jwt
 
 
-from django.http  import JsonResponse
+from django.http  import JsonResponse, HttpResponse
 from django.views import View
 from django.db.models import Q
 
 from .models      import User
-from ..westagram.my_settings    import SECRET_KEY, ALGORITHM
+from my_settings    import SECRET_KEY, ALGORITHM
 
 
 class UserSignup(View):
@@ -54,15 +54,10 @@ class UserSignin(View):
 
                 bytes_password = password.encode('utf-8')
                 bytes_db_password = User.objects.get(email=email).password.encode('utf-8')
-                bcrypt.checkpw(bytes_password, bytes_db_password)
-                token = jwt.encode(User.objects.get(password=password).id, SECRET_KEY, ALGORITHM)
-
-                if password == token.decode('utf-8'):
-                    
-                    
-                    print('==============')
-                    print('heheheheh')
-                    return JsonResponse({'message': 'SUCCESS'}, status=200)
+                
+                if bcrypt.checkpw(bytes_password, bytes_db_password):
+                    token = jwt.encode({'user_id' : User.objects.get(email=email).id}, 'SECRET_KEY', algorithm = 'HS256')
+                    return JsonResponse({'access_token': token},status=200)
                 else:
                     return JsonResponse({'message' : '비밀번호를 확인하세요'}, status=401)
             else:
