@@ -7,20 +7,23 @@ from django.http     import JsonResponse
 from .models         import Posting, PostingImage, Comment, PostingLike
 from account.models  import User
 
-from utils.debugger  import debugger
+from utils.debugger   import debugger
+from utils.decorators import auth_check
 
 
-TEST_USER_ID = 5
+TEST_USER_ID = 26
 POSTING_ID = 3
 
+
 class PostingUploadView(View):
-    def post(self, request):
+    @auth_check
+    def post(self, request, token):
         try:
             data      = request.body
             json_data = json.loads(data)
 
             # TODO : get user_id from frontend side
-            user_id   = TEST_USER_ID
+            user_id   = token['user_id']
             image_url = json_data['image_url']
             content   = json_data['content']
 
@@ -102,7 +105,8 @@ class CommentRegisterView(View):
 
 
 class ShowCommentView(View):
-    def get(self, request):
+    @auth_check
+    def get(self, request, token):
         posting_id = POSTING_ID
 
         posting = Posting.objects.get(id=posting_id)
