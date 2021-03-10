@@ -34,7 +34,7 @@ class UserSignup(View):
             
             hashed_password  = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
             decode_hashed_password = hashed_password.decode('utf-8')
-            User.objects.create(email=data['email'], password=decode_hashed_password)
+            User.objects.create(email=data['email'], password=decode_hashed_password, user_name=data['user_name'], phone_number=data['phone_number'])
             return JsonResponse({'message': 'SUCCESS'}, status=200)
             
         except KeyError :
@@ -48,15 +48,39 @@ class UserSignin(View):
         try:
             data         = json.loads(request.body)
             password     = data.get('password')
-            email        = data.get('email')
+            user         = data.get('user')
 
-            if User.objects.filter(email=email).exists():
+            valid_user = User.objects.filter(Q(email=user)| Q(user_name=user) | Q(phone_number=user))
 
+            if valid_user[0].email == user:
+                email = User.objects.get(email = user)
                 bytes_password = password.encode('utf-8')
-                bytes_db_password = User.objects.get(email=email).password.encode('utf-8')
+                bytes_db_password = User.objects.get(email=user).password.encode('utf-8')
                 
                 if bcrypt.checkpw(bytes_password, bytes_db_password):
-                    token = jwt.encode({'user_id' : User.objects.get(email=email).id}, 'SECRET_KEY', algorithm = 'HS256')
+                    token = jwt.encode({'user_id' : User.objects.get(email=user).id}, 'SECRET_KEY', algorithm = 'HS256')
+                    return JsonResponse({'access_token': token},status=200)
+                else:
+                    return JsonResponse({'message' : '비밀번호를 확인하세요'}, status=401)
+
+            elif valid_user[0].user_name == user:
+                user_name = User.objects.get(user_name = user)
+                bytes_password = password.encode('utf-8')
+                bytes_db_password = User.objects.get(user_name=user).password.encode('utf-8')
+                
+                if bcrypt.checkpw(bytes_password, bytes_db_password):
+                    token = jwt.encode({'user_id' : User.objects.get(user_name=user).id}, 'SECRET_KEY', algorithm = 'HS256')
+                    return JsonResponse({'access_token': token},status=200)
+                else:
+                    return JsonResponse({'message' : '비밀번호를 확인하세요'}, status=401)
+
+            elif valid_user[0].phone_number == user:
+                phone_number = User.objects.get(phone_number = user)
+                bytes_password = password.encode('utf-8')
+                bytes_db_password = User.objects.get(phone_number=user).password.encode('utf-8')
+                
+                if bcrypt.checkpw(bytes_password, bytes_db_password):
+                    token = jwt.encode({'user_id' : User.objects.get(phone_number=user).id}, 'SECRET_KEY', algorithm = 'HS256')
                     return JsonResponse({'access_token': token},status=200)
                 else:
                     return JsonResponse({'message' : '비밀번호를 확인하세요'}, status=401)
