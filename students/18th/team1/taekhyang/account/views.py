@@ -60,6 +60,7 @@ class SignUpView(View):
             return JsonResponse({'message': 'SUCCESS'}, status=200)
 
         except KeyError:
+            print(request.body)
             return JsonResponse({'message': 'KEY_ERROR'}, status=400)
         except JSONDecodeError:
             return JsonResponse({'message': 'JSON_DECODE_ERROR'}, status=400)
