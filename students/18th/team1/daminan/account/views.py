@@ -15,7 +15,10 @@ class SignupView(View):
             if User.objects.filter(email=data['email']).exists():
                 return JsonResponse({"message": "EMAIL_ERROR"}, status=400)
             
-            if '@' in data['email'] and '.' in data['email'] and len(data['password']) >= 8:
+            if not '@' in data['email'] and '.' in data['email']:
+                return JsonResponse({"message":"EMAIL_FAIL"}, status=400)
+            if not len(data['password']) >= 8:
+                return JsonResponse({"message":"PASSWORD_TOO_SHORT"}, status=400)
                 byted_password = data['password'].encode('utf-8')
                 hash_password = bcrypt.hashpw(byted_password, bcrypt.gensalt()).decode()
                 password = hash_password
@@ -23,8 +26,7 @@ class SignupView(View):
                 email    = data['email'],
                 password = password
             )
-                return JsonResponse({"message": "SUCCESS"}, status=200)
-            return JsonResponse({"message":"MAKE_FAIL"}, status=400)
+            return JsonResponse({"message": "SUCCESS"}, status=200)
         except KeyError:
             return JsonResponse({"message": "KEY_ERROR"}, status=400)
    
