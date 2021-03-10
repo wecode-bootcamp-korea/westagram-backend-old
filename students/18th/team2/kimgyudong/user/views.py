@@ -1,10 +1,12 @@
 import json
 import bcrypt
+import jwt
 
 from django.views import View
 from django.http  import JsonResponse
 
-from .models import User
+from .models     import User
+from my_settings import SECRET_KEY, ALGORITHM
 
 class UserSignUp(View):
     def post(self, request):
@@ -14,7 +16,7 @@ class UserSignUp(View):
             email    = data["email"]
             password = data["password"]
 
-            if ('@' or '.') not in email:
+            if ('@' not in email) or ('.' not in email):
                 return JsonResponse({"message":"Put @ and . in email PLEASE."}, status = 400)
 
             if len(password) < 8:
@@ -65,9 +67,10 @@ class UserSignIn(View):
 
             if User.objects.filter(email = email).exists():
                 user_password = User.objects.get(email = email).password
-                
+                user_id       = User.objects.get(email = email).id
                 if bcrypt.checkpw(password.encode('utf-8'), user_password.encode('utf-8')):
-                    return JsonResponse({"message":"SUCCESS"}, status = 200)
+                    access_token = jwt.encode({'id': user_id}, SECRET_KEY, ALGORITHM)
+                    return JsonResponse({"message":"SUCCESS", 'access_token':access_token}, status = 200)
                 else:
                     return JsonResponse({"message":"INVALID_USER"}, status = 401)    
             else:
