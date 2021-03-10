@@ -9,6 +9,7 @@ from django.db.models import Q
 
 from .models     import User, Follow
 from my_settings import SECRET_KEY, ALGORITHM
+from core.utils  import login_decorator
 
 class SignUpView(View):
     def post(self, request):
@@ -98,11 +99,12 @@ class SignInView(View):
             return JsonResponse({'message': 'INVALID USER_ID'}, status=401)
 
 class FollowView(View):
+    @login_decorator
     def post(self, request):
         try:
             data = json.loads(request.body)
 
-            from_follow = data.get('from_follow')
+            from_follow = request.user.id
             to_follow   = data.get('to_follow')
 
             User.objects.get(id=to_follow)

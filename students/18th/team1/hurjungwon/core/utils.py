@@ -10,7 +10,7 @@ def login_decorator(func):
         try:
             token    = request.headers.get('Authorization')
             playload = jwt.decode(token, SECRET_KEY, algorithms=ALGORITHM)
-            user     = User.objects.get(id=playload['user_id'])
+            user     = User.objects.get(id=playload['user-id'])
             
             request.user = user
         

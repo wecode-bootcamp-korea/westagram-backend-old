@@ -22,7 +22,7 @@ class PostView(View):
             if not data.get('content'):
                 return JsonResponse({'message': 'TYPE CONTENT'}, status=400)
 
-            user_id = User.objects.get(user_name=data['user_name']).id
+            user_id = request.user.id
 
             Post.objects.create(
                 image_url    = data['img_url'],
@@ -37,9 +37,6 @@ class PostView(View):
         
         except json.JSONDecodeError:
             return JsonResponse({'message' : 'JSON_DECODE_ERROR'}, status=400)
-        
-        except User.DoesNotExist:
-            return JsonResponse({'message': 'INVALID_USER'}, status=400)
         
     def get(self, request):
         posts  = Post.objects.all()
@@ -59,6 +56,7 @@ class PostView(View):
         return JsonResponse({'result': result}, status=200)
 
 class CommentView(View):
+    @login_decorator
     def post(self, request):
         try:
             data = json.loads(request.body)
@@ -69,7 +67,7 @@ class CommentView(View):
             if not data.get('post_id'):
                 return JsonResponse({'message': 'TYPE POST_ID'}, status=400)
 
-            user_id = User.objects.get(user_name=data['user_name']).id
+            user_id = request.user.id
             post_id = Post.objects.get(id=data['post_id']).id
 
             Comment.objects.create(
@@ -79,9 +77,6 @@ class CommentView(View):
             )
 
             return JsonResponse({'result': 'SUCCSESS'}, status=200)
-        
-        except User.DoesNotExist:
-            return JsonResponse({'message': 'INVALID USER'}, status=400)
         
         except Post.DoesNotExist:
             return JsonResponse({'message': 'INVALID POST'}, status=400)
@@ -133,11 +128,12 @@ class CommentView(View):
             return JsonResponse({'message': 'INVALID POST'}, status=400)
 
 class LikeView(View):
+    @login_decorator
     def post(self, request):
         try:
             data = json.loads(request.body)
 
-            user_id = User.objects.get(user_name=data['user_name']).id
+            user_id = request.user.id
             post = Post.objects.get(id=data['post_id'])
 
             Like.objects.create(
@@ -159,27 +155,26 @@ class LikeView(View):
         except Post.DoesNotExist:
             return JsonResponse({'message': 'INVALID_POST'}, status=400)
 
-        except User.DoesNotExist:
-            return JsonResponse({'message': 'INVALID_USER'}, status=400)
-
 class DeletePostView(View):
+    @login_decorator
     def delete(self,request):
+        try:
             data = json.loads(request.body)
 
-            print(type(data['user_id']))
-
-            user_id = data.get('user_id')
+            user_id = request.user.id
             post_id = data.get('post_id')
 
             post = Post.objects.get(id=post_id)
             
-            print(type(user_id))
-            print(type(post.user_id))
-
-            print(user_id)
-            print(post.user_id)
-
-            if post.user_id != int(user_id):
+            if post.user_id != user_id:
                 return JsonResponse({'message': 'Unauthorized'}, status=400)
+            
+            post.delete()
 
             return JsonResponse({'message': 'SUCCESS'}, status=200)
+        
+        except json.JSONDecodeError:
+            return JsonResponse({'message' : 'JSON_DECODE_ERROR'}, status=400)
+        
+        except Post.DoesNotExist:
+            return JsonResponse({'message': 'INVALID_POST'}, status=400)
