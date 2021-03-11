@@ -56,7 +56,7 @@ class TokenCheckView(View):
         
         user_token_info = jwt.decode(data['token'], SECRET_KEY, algorithms='HS256')
         
-        if User.objects.filter(email=user_token_info['email']).exists():
+        if User.objects.filter(user_id=user_token_info['id']).exists():
             return JsonResponse({"message": "SUCCESS"}, status=200)
         return JsonResponse({"message":"INVALID_USER"}, status=401)
  
