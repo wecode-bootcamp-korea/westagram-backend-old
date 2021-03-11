@@ -139,7 +139,7 @@ class FollowView(View):
             return JsonResponse({'message': 'USER_TO_FOLLOW_DOES_NOT_EXIST'}, status=400)
 
 
-class ShowRecommendedUsers(View):
+class ShowRecommendedUser(View):
     @auth_check
     def get(self, request):
         try:

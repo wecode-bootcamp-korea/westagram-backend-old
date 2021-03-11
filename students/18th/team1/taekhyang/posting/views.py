@@ -59,7 +59,7 @@ class ShowAllPostingView(View):
             posting_id   = posting.id
 
             # if the user already did like the posting, it returns 1
-            already_like = 1 if PostingLike.objects.filter(user_id=user_id).exists() else 0
+            already_like = 1 if PostingLike.objects.filter(user_id=user_id, posting_id=posting_id).exists() else 0
 
             # image_url list
             images   = posting.postingimage_set.all()            
