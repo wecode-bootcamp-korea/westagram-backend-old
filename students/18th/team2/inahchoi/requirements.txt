@@ -1,0 +1,11 @@
+asgiref==3.3.1
+certifi==2020.12.5
+config==0.5.0.post0
+Django==3.1.7
+django-cors-headers==3.7.0
+djangorestframework==3.12.2
+djangorestframework-jwt==1.11.0
+mysqlclient==2.0.3
+PyJWT==1.7.1
+pytz==2021.1
+sqlparse==0.4.1
