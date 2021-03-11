@@ -5,8 +5,10 @@ from django.http  import JsonResponse
 
 from .models        import Posting, Comment, Like
 from account.models import User
+from account.views  import TokenCheck
 
 class PostingView(View):
+    @TokenCheck    
     def post(self, request):
         #딕셔너리 모양으로 받아들여진 정보(httpie에 입력한 정보)
         data    = json.loads(request.body)
@@ -18,7 +20,8 @@ class PostingView(View):
         )
         return JsonResponse({"message" : "SUCCESS"}, status=200)
 
-class ShowView(View):    
+class ShowView(View):
+    @TokenCheck    
     def get(self, request):
         shows  = Posting.objects.all()
         result = []
@@ -30,10 +33,11 @@ class ShowView(View):
                 'user'        : show.user.email,
             }
             result.append(my_dict)
-            
+            # 게시물과 시간, 유저 보기
         return JsonResponse({"result" : result}, status=200)
 
 class CommentView(View):
+    @TokenCheck    
     def post(self, request):
         data = json.loads(request.body)
         img_url = Posting.objects.get(img_url=data['img_url'])
@@ -46,6 +50,7 @@ class CommentView(View):
         return JsonResponse({"message":"SUCCESS"}, status=200)
     
 class CommentShowView(View):
+    @TokenCheck    
     def get(self, request):
         commentshows = Comment.objects.filter(image=1)
         # id 값이 1번인 게시글의 등록된 댓글들만(그래서 filter, get아님) 출력
@@ -62,6 +67,7 @@ class CommentShowView(View):
     
 
 class LikeView(View):
+    @TokenCheck    
     def post(self,request):
         data  = json.loads(request.body)
         user  = User.objects.get(email=data['email'])

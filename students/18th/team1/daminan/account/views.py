@@ -42,7 +42,7 @@ class LoginView(View):
                 return JsonResponse({"message":"USER_DOES_NOT_EXIST"}, status=400)
             
             if bcrypt.checkpw(data['password'].encode('utf-8'), user.password.encode('utf-8')):
-                token = jwt.encode({'email' : data['email']}, SECRET_KEY, algorithm="HS256")
+                token = jwt.encode({'user_id' : data['id']}, SECRET_KEY, algorithm="HS256")#수정하기 : 토큰에서 중요한 정보가 디코드 되면 안 됨.
                 return JsonResponse({'token' : token, "message":"SUCCESS"}, status=200)
             
             return JsonResponse({"message":"INVALID_USER"}, status=401)
@@ -72,4 +72,20 @@ class FollowView(View):
                     follower  = follower
             )
             return JsonResponse({"message": "SUCCESS"}, status=200)
- 
+
+def TokenCheck(func):
+    def wrapper(self, request, *args, **kwargs):
+    # 리퀘스트해서 토큰 까는 애
+        token = request.headers.get('Authorization')
+        # 토큰의 핵심은 공개가 되어도 된다 -> 그래서 예제가 user_id였던 것.
+        print(token)
+        try:
+            if token:
+                user_token_info = jwt.decode(token['token'], SECRET_KEY, algorithms='HS256')
+                if User.objects.get(email=data['email']).exists():
+                    return JsonResponse({"message":"SUCCESS"}, status=200)
+            # 토큰 존재 유무 -> 존재하면 까서 유저 가져오고 아니면 에러
+        except TypeError:
+            return JsonResponse({"message":"I_CANT_CHECK_YOU"}, status=400)
+        return func(self, request, *args, **kwargs)
+    return wrapper
