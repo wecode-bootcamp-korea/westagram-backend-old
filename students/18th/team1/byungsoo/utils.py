@@ -1,9 +1,10 @@
 import jwt
 
 from jwt.exceptions import InvalidSignatureError, DecodeError
+
 from django.http  import JsonResponse
 
-from user.models     import User
+from user.models import User
 from my_settings import SECRET_KEY
 
 
@@ -33,7 +34,6 @@ def login_required(func):
         
         except DecodeError:
             return JsonResponse({"message": "Invalid header string"})
-
 
     return wrapper
 
