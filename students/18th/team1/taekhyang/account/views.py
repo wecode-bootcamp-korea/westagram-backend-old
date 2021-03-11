@@ -6,13 +6,14 @@ from json.decoder import JSONDecodeError
 
 from django.views               import View
 from django.http                import JsonResponse
-from django.db.models           import Q 
+from django.db.models           import Q
+from django.db.utils            import IntegrityError
 from project_westagram.settings import SECRET_KEY
 
 from .models import User
 
-from utils.debugger import debugger
-
+from utils.debugger   import debugger
+from utils.decorators import auth_check
 
 class SignUpView(View):
     def post(self, request):
@@ -114,3 +115,30 @@ class LoginView(View):
         except ValueError:
             debugger.exception('ValueError')
             return JsonResponse({'message': 'VALUE_ERROR'}, status=400)
+
+
+class FollowView(View):
+    @auth_check
+    def post(self, request, token):
+        try:
+            data  = json.loads(request.body)
+            
+            user_id        = token['user_id']
+            user_to_follow = data['username']
+
+            from_user = User.objects.filter(id=user_id).fisrt()
+            if not from_user:
+                return JsonResponse({'message': 'INVALID_USER'})
+            to_user = User.objects.get(username=user_to_follow)
+
+            FOLLOW.objects.create(from_user=from_user, to_user=to_user)
+            return JsonResponse({'message': 'SUCCESS'})
+
+        except IntegrityError:
+            return JsonResponse({'message': 'ALREADY_FOLLOWING_USER'}, status=400)
+        except KeyError:
+            return JsonResponse({'message': 'KEY_ERROR'}, status=400)            
+        except JSONDecodeError:
+            return JsonResponse({'message': 'JSON_DECODE_ERROR'}, status=400)
+        except User.DoesNotExist:
+            return JsonResponse({'message': 'USER_TO_FOLLOW_DOES_NOT_EXIST'}, status=400)

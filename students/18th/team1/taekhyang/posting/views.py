@@ -48,43 +48,64 @@ class PostingUploadView(View):
 
 
 class ShowAllPostingView(View):
-    def get(self, request):
+    @auth_check
+    def get(self, request, token):
         postings      = Posting.objects.all()
         postings_dict = dict()
+        user_id       = token['user_id']
 
         postings_dict['results'] = list()
 
         for posting in postings:
-            user_email   = posting.user.email
-            images       = posting.postingimage_set.all()
-            
+            username     = posting.user.username
+            content      = posting.content
+            created_time = posting.created_time
+            like_count   = posting.liked_users.count()
+            posting_id   = posting.id
+
+            # if the user already did like the posting, it returns 1
+            already_like = 1 if PostingLike.objects.filter(user_id=user_id).exists() else 0
+
+            # image_url list
+            images   = posting.postingimage_set.all()            
             image_urls = list()
             for image in images:
                 image_urls.append(image.image_url)
 
-            content      = posting.content
-            created_time = posting.created_time
-            like_count   = posting.liked_users.count()
+            # comments list
+            comments = Comment.objects.filter(posting=posting)
+            comments_list = list()
+            for comment in comments:
+                user         = comment.user.email
+                created_time = comment.created_time
+                content      = comment.content
+                
+                comment_info = dict(user=user,
+                                    created_time=created_time,
+                                    content=content)
+                comments_list.append(comment_info)
 
-            # TODO: 좋아요 수, 로그인되어있는 유저라면 해당 유저의 좋아요 여부
-            posting_info = dict(user_email=user_email,
+            posting_info = dict(username=username,
                                 image_urls=image_urls,
                                 content=content,
                                 created_time=created_time,
-                                like_count=like_count
+                                like_count=like_count,
+                                posting_id=posting_id,
+                                already_like=already_like,
+                                comments=comments_list
                                 )
             postings_dict['results'].append(posting_info)
         return JsonResponse(postings_dict, status=200)
 
 
 class CommentRegisterView(View):
-    def post(self, request):
+    @auth_check
+    def post(self, request, token):
         try:
             data = json.loads(request.body)
 
-            # TODO : get posting_id, user_id from frontend side
-            posting_id = POSTING_ID
-            user_id    = TEST_USER_ID
+            user_id    = token['user_id']
+            posting_id = data['posting_id']
             content    = data['content']
 
             user = User.objects.filter(id=user_id).first()
@@ -105,10 +126,14 @@ class CommentRegisterView(View):
 
 
 class ShowCommentView(View):
+    """
+    comments per single posting  
+    """
     @auth_check
     def get(self, request, token):
-        posting_id = POSTING_ID
+        data = json.loads(request.body)
 
+        posting_id = data['posting_id']
         posting = Posting.objects.get(id=posting_id)
         
         comments = Comment.objects.filter(posting=posting)
