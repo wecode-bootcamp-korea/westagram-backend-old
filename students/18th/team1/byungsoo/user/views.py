@@ -12,6 +12,7 @@ class SignUpView(View):
         
         try:
             data = json.loads(request.body)
+            print(data)
 
             email    = data['email']
             password = data['password']
@@ -37,14 +38,14 @@ class SignUpView(View):
 
             User.objects.create(email=email, password=decoded_hashed_pw)
 
-            return JsonResponse({"message":"SUCCESS"}, status=200)
+            return JsonResponse({"message":"누구냐 넌", "status":200}, status=200)
         
         except json.decoder.JSONDecodeError:
             # http POST http://127.0.0.1:8000/user/signup
             return JsonResponse({"message": "아무 데이터도 보내지 않았습니다."})
         
         except KeyError:
-            # ex) http POST http://127.0.0.1:8000/user/signup email=""
+            # ex) http POST http://127.0.0.1:8000/user/signup email=  
             return JsonResponse({"message": "Key가 존재하지 않습니다."})
 
         
@@ -53,6 +54,7 @@ class LogInView(View):
     def post(self, request):
         try:
             data = json.loads(request.body)
+            print(data)
 
             email    = data["email"]
             password = data["password"]
@@ -69,10 +71,10 @@ class LogInView(View):
             
             if bcrypt.checkpw(password.encode('utf-8'), hashed_password_mysql.encode('utf-8')):
                 user_id     = User.objects.get(email=email).id
-                encoded_jwt = jwt.encode( {'user-id': user_id}, SECRET_KEY, algorithm='HS256')
+                encoded_jwt = jwt.encode( {'user_id': user_id}  , SECRET_KEY, algorithm='HS256')
 
             
-            return JsonResponse({"message": "SUCCESS", 'access-token': encoded_jwt}, status=200)
+            return JsonResponse({"message": "SUCCESS", 'access-token': encoded_jwt, 'status':200}, status=200)
             
         except json.decoder.JSONDecodeError:
             # http POST http://127.0.0.1:8000/user/login
