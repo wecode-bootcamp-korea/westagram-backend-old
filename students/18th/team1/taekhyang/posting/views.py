@@ -156,14 +156,14 @@ class ShowCommentView(View):
 
 
 class PostingLikeView(View):
+    @auth_check
     def post(self, request):
         try:
             data = json.loads(request.body)
 
-            # TODO: get posting_id and user_id from 'data'
-            posting_id = POSTING_ID
-            user_id    = TEST_USER_ID
+            posting_id = data['posting_id']
             like       = data['like']
+            user_id    = request.user.id
 
             user = User.objects.filter(id=user_id).first()
             if not user:
@@ -223,3 +223,22 @@ class DeletePosingCommentView(View):
             return JsonResponse({'message': 'JSON_DECODE_ERROR'}, status=400)
         except Comment.DoesNotExist:
             return JsonResponse({'message': 'COMMENT_DOES_NOT_EXIST'}, status=400)
+
+
+class DeletePostingView(View):
+    @auth_check
+    def post(self, request):
+        try:
+            data = json.loads(request.body)
+
+            posting_id = data.get('posting_id')
+            posting    = Posting.objects.get(id=posting_id)
+            posting.delete()
+            return JsonResponse({'message': 'SUCCESS'}, status=200)
+
+        except KeyError:
+            return JsonResponse({'message': 'KEY_ERROR'}, status=400)            
+        except JSONDecodeError:
+            return JsonResponse({'message': 'JSON_DECODE_ERROR'}, status=400)
+        except Posting.DoesNotExist:
+            return JsonResponse({'message': 'POSTING_DOES_NOT_EXIST'}, status=400)

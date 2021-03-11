@@ -114,11 +114,11 @@ class LoginView(View):
 
 class FollowView(View):
     @auth_check
-    def post(self, request, token):
+    def post(self, request):
         try:
-            data  = json.loads(request.body)
+            data = json.loads(request.body)
             
-            user_id        = token['user_id']
+            user_id        = request.user.id
             user_to_follow = data['username']
 
             from_user = User.objects.filter(id=user_id).fisrt()
@@ -131,6 +131,28 @@ class FollowView(View):
 
         except IntegrityError:
             return JsonResponse({'message': 'ALREADY_FOLLOWING_USER'}, status=400)
+        except KeyError:
+            return JsonResponse({'message': 'KEY_ERROR'}, status=400)            
+        except JSONDecodeError:
+            return JsonResponse({'message': 'JSON_DECODE_ERROR'}, status=400)
+        except User.DoesNotExist:
+            return JsonResponse({'message': 'USER_TO_FOLLOW_DOES_NOT_EXIST'}, status=400)
+
+
+class ShowRecommendedUsers(View):
+    @auth_check
+    def get(self, request):
+        try:
+            user_id = request.user.id
+            user    = User.objects.get(id=user_id)
+
+            # get 4 random users who the user dosen't follow
+            followings   = user.follow_by_from_user.all()
+            random_users = User.objects.exclude(id__in=[o.id for o in followings]).order_by('?')[:4]
+            
+            random_usernames = [user.username for user in random_users]
+            return JsonResponse(random_usernames, safe=False, status=200)
+
         except KeyError:
             return JsonResponse({'message': 'KEY_ERROR'}, status=400)            
         except JSONDecodeError:
