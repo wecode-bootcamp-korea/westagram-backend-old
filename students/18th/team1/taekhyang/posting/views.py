@@ -75,13 +75,15 @@ class ShowAllPostingView(View):
             comments = Comment.objects.filter(posting=posting)
             comments_list = list()
             for comment in comments:
-                user         = comment.user.email
+                username     = comment.user.username
                 created_time = comment.created_time
                 content      = comment.content
-                
-                comment_info = dict(user=user,
+                comment_id   = comment.id
+
+                comment_info = dict(username=username,
                                     created_time=created_time,
-                                    content=content)
+                                    content=content,
+                                    comment_id=comment_id)
                 comments_list.append(comment_info)
 
             posting_info = dict(username=username,
@@ -115,8 +117,8 @@ class CommentRegisterView(View):
             if not posting:
                 return JsonResponse({'message': 'INVALID_POSTING'}, status=400)
 
-            Comment.objects.create(content=content, user=user, posting=posting)
-            return JsonResponse({'message': 'SUCCESS'}, status=201)
+            comment = Comment.objects.create(content=content, user=user, posting=posting)
+            return JsonResponse({'message': 'SUCCESS', 'comment_id': comment.id}, status=201)
             
         except KeyError:
             return JsonResponse({'message': 'KEY_ERROR'}, status=400)            
@@ -146,10 +148,12 @@ class ShowCommentView(View):
             user         = comment.user.email
             created_time = comment.created_time
             content      = comment.content
+            comment_id   = comment.id
             
             comment_info = dict(user=user,
                                 created_time=created_time,
-                                content=content)
+                                content=content,
+                                content_id=content_id)
 
             comments_dict['results'].append(comment_info)
         return JsonResponse(comments_dict, status=200)

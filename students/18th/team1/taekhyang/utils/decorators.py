@@ -1,5 +1,4 @@
 import jwt
-import sys, os
 import json
 from jwt.exceptions import InvalidSignatureError, DecodeError
 
@@ -30,4 +29,6 @@ def auth_check(func):
         except DecodeError:
             debugger.exception('DecodeError')
             return JsonResponse({'message': 'DECODE_ERROR'})
+        except User.DoesNotExist:
+            return JsonResponse({'message': 'USER_DOES_NOT_EXIST'})
     return wrapper

@@ -15,6 +15,7 @@ from .models import User
 from utils.debugger   import debugger
 from utils.decorators import auth_check
 
+
 class SignUpView(View):
     def post(self, request):
         try:
@@ -79,34 +80,25 @@ class LoginView(View):
             phone_number = data.get('phone_number', None)
             password     = data['password']
 
-            if not email and not username and not phone_number:
+            if username:
+                user = User.objects.get(username=username)
+            elif email:
+                user = User.objects.get(email=email)
+            elif phone_number:
+                user = User.objects.get(phone_number=phone_number)
+            else:
                 return JsonResponse({'message': 'EMPTY_VALUE'}, status=400)
             
             if not password:
                 return JsonResponse({'message': 'EMPTY_PASSWORD'}, status=400)
             
-            user_with_username     = User.objects.filter(username=username).first()
-            user_with_email        = User.objects.filter(email=email).first()
-            user_with_phone_number = User.objects.filter(phone_number=phone_number).first() if phone_number else False
-
-            if user_with_username:
-                user     = user_with_username
-                pw_in_db = user.password
-            elif user_with_email: 
-                user     = user_with_email
-                pw_in_db = user.password
-            elif user_with_phone_number:
-                user     = user_with_phone_number
-                pw_in_db = user.password
-            else:
-                return JsonResponse({'message': 'INVALID_USER'}, status=401)
-
+            pw_in_db      = user.password 
             is_valid_user = bcrypt.checkpw(password.encode('utf-8'), pw_in_db.encode('utf-8'))
             if not is_valid_user:
                 return JsonResponse({'message': 'INVALID_USER'}, status=401)
             
             token = jwt.encode({'user_id': user.id}, SECRET_KEY, algorithm='HS256')
-            return JsonResponse({'message': 'SUCCESS', 'token': token}, status=200)
+            return JsonResponse({'message': 'SUCCESS', 'token': token, 'username': user.username}, status=200)
             
         except KeyError:
             return JsonResponse({'message': 'KEY_ERROR'}, status=400)
@@ -115,6 +107,9 @@ class LoginView(View):
         except ValueError:
             debugger.exception('ValueError')
             return JsonResponse({'message': 'VALUE_ERROR'}, status=400)
+        except User.DoesNotExist:
+            return JsonResponse({'message': 'USER_DOES_NOT_EXIST'}, status=400)
+
 
 
 class FollowView(View):
