@@ -5,17 +5,23 @@ from jwt.exceptions import InvalidSignatureError, DecodeError
 
 from django.http import JsonResponse
 
+from account.models             import User
 from project_westagram.settings import SECRET_KEY
-from utils.debugger import debugger
+from utils.debugger             import debugger
 
 
 def auth_check(func):
     def wrapper(self, request):
         data = request.headers
         try:
-            encoded_auth_token = data['Authorization']
+            encoded_auth_token = data.get('Authorization')
             decoded_auth_token = jwt.decode(encoded_auth_token, SECRET_KEY, algorithms='HS256')
-            return func(self, request, decoded_auth_token)
+            
+            user_id = decoded_auth_token['user_id']
+            user    = User.objects.get(id=user_id)
+
+            request.user = user
+            return func(self, request)
 
         except KeyError:
             return JsonResponse({'message': 'AUTHORIZATION_KEY_ERROR'})

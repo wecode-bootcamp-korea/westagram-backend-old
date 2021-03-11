@@ -17,13 +17,12 @@ POSTING_ID = 3
 
 class PostingUploadView(View):
     @auth_check
-    def post(self, request, token):
+    def post(self, request):
         try:
             data      = request.body
             json_data = json.loads(data)
 
-            # TODO : get user_id from frontend side
-            user_id   = token['user_id']
+            user_id   = request.user.id
             image_url = json_data['image_url']
             content   = json_data['content']
 
@@ -49,11 +48,11 @@ class PostingUploadView(View):
 
 class ShowAllPostingView(View):
     @auth_check
-    def get(self, request, token):
+    def get(self, request):
+        user_id       = request.user.id
         postings      = Posting.objects.all()
-        postings_dict = dict()
-        user_id       = token['user_id']
 
+        postings_dict = dict()
         postings_dict['results'] = list()
 
         for posting in postings:
@@ -100,11 +99,11 @@ class ShowAllPostingView(View):
 
 class CommentRegisterView(View):
     @auth_check
-    def post(self, request, token):
+    def post(self, request):
         try:
             data = json.loads(request.body)
 
-            user_id    = token['user_id']
+            user_id    = request.user.id
             posting_id = data['posting_id']
             content    = data['content']
 
@@ -130,7 +129,7 @@ class ShowCommentView(View):
     comments per single posting  
     """
     @auth_check
-    def get(self, request, token):
+    def get(self, request):
         data = json.loads(request.body)
 
         posting_id = data['posting_id']
