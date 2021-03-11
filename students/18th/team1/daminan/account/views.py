@@ -80,13 +80,19 @@ class FollowView(View):
 def TokenCheck(func):
     def wrapper(self, request, *args, **kwargs):
     # 리퀘스트해서 토큰 까는 애
-        token = request.headers.get('Authorization')
         # 토큰의 핵심은 공개가 되어도 된다 -> 그래서 예제가 user_id였던 것.
         try:
+            token = request.headers.get('Authorization')
             if token:
                 payload = jwt.decode(token, SECRET_KEY, algorithms="HS256")
-                print(payload)
-        except TypeError:
-            return JsonResponse({"message":"I_CANT_CHECK_YOU"}, status=400)
-        return func(self, request, *args, **kwargs)
+                user_id = payload['user_id']
+                User.objects.get(id=user_id)
+                return func(self, request, *args, **kwargs)
+            return JsonResponse({"message":"GIVE_ME_TOKEN"}, status=400)
+        except jwt.InvalidTokenError:
+            return JsonResponse({"message":"YOUR_TOKEN_ERROR"}, status=400)
+        
+        # 지금은 숫자만 확인 상황(id값만 받아서 확인한 상황) 
+        # 추가 : 토큰을 다시 안 갖다준 상황(리퀘스트에 정보를 넣어준다.) ; 리퀘스트의 인스턴스를 만들어준다.(아이디값을 넣어준다.->이걸 꺼내 쓴다.)
+
     return wrapper

@@ -39,7 +39,7 @@ class ShowView(View):
 class CommentView(View):
     @TokenCheck    
     def post(self, request):
-        data = json.loads(request.body)
+        data    = json.loads(request.body)
         img_url = Posting.objects.get(img_url=data['img_url'])
         user    = User.objects.get(email=data['email'])
         comment = Comment.objects.create(
@@ -72,8 +72,8 @@ class LikeView(View):
         data  = json.loads(request.body)
         user  = User.objects.get(email=data['email'])
         image = Posting.objects.get(img_url=data['img_url'])
-        like = Like.objects.create(
-        user = user,
+        like  = Like.objects.create(
+        user  = user,
         image = image,
     )
         return JsonResponse({"message" : "SUCCESS"}, status=200)
