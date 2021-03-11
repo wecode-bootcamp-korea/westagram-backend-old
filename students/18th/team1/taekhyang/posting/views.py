@@ -11,10 +11,6 @@ from utils.debugger   import debugger
 from utils.decorators import auth_check
 
 
-TEST_USER_ID = 26
-POSTING_ID = 3
-
-
 class PostingUploadView(View):
     @auth_check
     def post(self, request):
@@ -208,3 +204,22 @@ class ShowPostingLikeCountView(View):
             return JsonResponse({'message': 'KEY_ERROR'}, status=400)            
         except JSONDecodeError:
             return JsonResponse({'message': 'JSON_DECODE_ERROR'}, status=400)
+
+
+class DeletePosingCommentView(View):
+    @auth_check
+    def post(self, request):
+        try:
+            data = json.loads(request.body)
+
+            comment_id = data.get('comment_id')
+            comment    = Comment.objects.get(id=comment_id)
+            comment.delete()
+            return JsonResponse({'message': 'SUCCESS'}, status=200)
+        
+        except KeyError:
+            return JsonResponse({'message': 'KEY_ERROR'}, status=400)            
+        except JSONDecodeError:
+            return JsonResponse({'message': 'JSON_DECODE_ERROR'}, status=400)
+        except Comment.DoesNotExist:
+            return JsonResponse({'message': 'COMMENT_DOES_NOT_EXIST'}, status=400)

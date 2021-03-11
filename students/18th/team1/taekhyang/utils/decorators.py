@@ -13,8 +13,10 @@ def auth_check(func):
     def wrapper(self, request):
         data = request.headers
         try:
-            encoded_auth_token = data.get('Authorization')
-            decoded_auth_token = jwt.decode(encoded_auth_token, SECRET_KEY, algorithms='HS256')
+            token = data.get('Authorization')
+            if not token:
+                return JsonResponse({'message': 'TOKEN_DOSE_NOT_EXIST'})
+            decoded_auth_token = jwt.decode(token, SECRET_KEY, algorithms='HS256')
             
             user_id = decoded_auth_token['user_id']
             user    = User.objects.get(id=user_id)
