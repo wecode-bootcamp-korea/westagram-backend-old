@@ -63,7 +63,7 @@ class UserSignin(View):
                 bytes_db_password = valid_user.password.encode('utf-8')
 
                 if bcrypt.checkpw(bytes_password, bytes_db_password):
-                    token = jwt.encode({'user_id' : valid_user.id}, 'SECRET_KEY', algorithm = 'HS256')
+                    token = jwt.encode({'user_id' : valid_user.id}, SECRET_KEY, ALGORITHM)
                     return JsonResponse({'access_token': token, 'status':200}, status=200)
                 
                 else:
