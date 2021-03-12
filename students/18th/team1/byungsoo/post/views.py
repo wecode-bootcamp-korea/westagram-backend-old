@@ -68,14 +68,15 @@ class CommentView(View):
         try:
             data = json.loads(request.body)
 
-            user_email = data["user"]
+            user       = request.user
             post_id    = data["post_id"]
             comment    = data["comment"]
             
-            if not user_email:
-                return JsonResponse({"message": "로그인을 해야 댓글을 작성할 수 있습니다."}, status=401)
+            # if not user_email:
+            #     return JsonResponse({"message": "로그인을 해야 댓글을 작성할 수 있습니다."}, status=401)
             
-            if User.objects.filter(email=user_email).exists() == False:
+            # 이거 안해도 되나..?
+            if User.objects.filter(id=user.id).exists() == False:
                 return JsonResponse({"message": "당신에 대한 회원정보가 존재하지 않습니다."}, status=401)
 
             if not comment:
@@ -83,9 +84,7 @@ class CommentView(View):
 
             if Post.objects.filter(id=post_id).exists() == False:
                 return JsonResponse({"message": "게시물이 존재하지 않습니다."}, status=404)
-            
-
-            user = User.objects.get(email=user_email)
+               
             post = Post.objects.get(id=post_id)
 
             Comment.objects.create(user=user, post=post, comment=comment)
