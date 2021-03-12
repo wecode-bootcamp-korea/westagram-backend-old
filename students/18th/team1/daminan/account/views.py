@@ -86,8 +86,13 @@ def TokenCheck(func):
             if token:
                 payload = jwt.decode(token, SECRET_KEY, algorithms="HS256")
                 user_id = payload['user_id']
-                User.objects.get(id=user_id)
+                user = User.objects.get(id=user_id)
+                # user_id 가져온 것을 user라는 변수에 담고
+                
+                request.user = user
+                # 변수에 담은 것을 뒤에서 부를 request.user에 또 담아준다.
                 return func(self, request, *args, **kwargs)
+                # 얘는 return하면서 request를 posting에서 사용할 예정(.user 만 붙이면 이제 자동 완성)
             return JsonResponse({"message":"GIVE_ME_TOKEN"}, status=400)
         except jwt.InvalidTokenError:
             return JsonResponse({"message":"YOUR_TOKEN_ERROR"}, status=400)
