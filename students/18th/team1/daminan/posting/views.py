@@ -21,7 +21,8 @@ class PostingView(View):
         return JsonResponse({"message" : "SUCCESS"}, status=200)
 
 class ShowView(View):
-    @TokenCheck    
+    @TokenCheck
+    # httpie, postman 기준으로 토큰 안 들어가면 에러남    
     def get(self, request):
         shows  = Posting.objects.all()
         result = []
@@ -40,11 +41,12 @@ class CommentView(View):
     @TokenCheck    
     def post(self, request):
         data    = json.loads(request.body)
-        img_url = Posting.objects.get(img_url=data['img_url'])
-        user    = User.objects.get(email=data['email'])
+        img_url = Posting.objects.get(img_url=data['image'])
+        user    = request.user
         comment = Comment.objects.create(
             comment = data["comment"],
-            img_url = img_url,
+            image   = img_url,
+            # models.py에서 가져와야 하는 것.
             user    = user
         )
         return JsonResponse({"message":"SUCCESS"}, status=200)
@@ -70,7 +72,7 @@ class LikeView(View):
     @TokenCheck    
     def post(self,request):
         data  = json.loads(request.body)
-        user  = User.objects.get(email=data['email'])
+        user  = request.user
         image = Posting.objects.get(img_url=data['img_url'])
         like  = Like.objects.create(
         user  = user,
