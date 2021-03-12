@@ -73,9 +73,9 @@ class LikeView(View):
     def post(self,request):
         data  = json.loads(request.body)
         user  = request.user
-        image = Posting.objects.get(img_url=data['img_url'])
+        img_url = Posting.objects.get(img_url=data['image'])
         like  = Like.objects.create(
         user  = user,
-        image = image,
+        image = img_url,
     )
         return JsonResponse({"message" : "SUCCESS"}, status=200)
