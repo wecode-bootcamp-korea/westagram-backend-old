@@ -6,7 +6,7 @@ chardet @ file:///tmp/build/80754af9/chardet_1607706746162/work
 conda==4.9.2
 conda-package-handling @ file:///tmp/build/80754af9/conda-package-handling_1603018141399/work
 cryptography @ file:///tmp/build/80754af9/cryptography_1607635341180/work
-Django==3.1.5
+Django==3.1.8
 django-cors-headers==3.6.0
 idna @ file:///tmp/build/80754af9/idna_1593446292537/work
 mysqlclient==2.0.3
