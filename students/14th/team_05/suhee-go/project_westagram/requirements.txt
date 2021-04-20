@@ -15,7 +15,7 @@ mysqlclient==2.0.1
 packaging==20.4
 phonenumbers==8.12.12
 pluggy==0.13.1
-py==1.9.0
+py==1.10.0
 pycparser==2.20
 Pygments==2.7.2
 PyJWT==1.7.1
