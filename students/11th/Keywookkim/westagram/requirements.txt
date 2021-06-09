@@ -6,7 +6,7 @@ chardet==3.0.4
 conda==4.8.3
 conda-package-handling==1.7.0
 cryptography==3.2
-Django==3.1
+Django==3.1.10
 django-rest-auth==0.9.5
 djangorestframework==3.11.1
 djangorestframework-jwt==1.11.0
