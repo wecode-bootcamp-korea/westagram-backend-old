@@ -5,4 +5,4 @@ django-cors-headers==3.5.0
 mysql==0.0.2
 mysqlclient==2.0.1
 pytz==2020.4
-sqlparse==0.4.1
+sqlparse==0.4.2
