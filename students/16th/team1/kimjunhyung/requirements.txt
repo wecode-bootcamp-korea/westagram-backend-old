@@ -16,7 +16,7 @@ PyJWT==2.0.0
 pytz==2020.4
 regex @ file:///opt/concourse/worker/volumes/live/c84a6349-3315-46e4-634b-b5582dea058b/volume/regex_1606691109605/work
 six==1.15.0
-sqlparse==0.4.1
+sqlparse==0.4.2
 toml==0.10.2
 typed-ast==1.4.1
 typing-extensions @ file:///tmp/build/80754af9/typing_extensions_1598376058250/work
