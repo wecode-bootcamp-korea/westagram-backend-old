@@ -18,6 +18,6 @@ pytz==2020.5
 requests @ file:///tmp/build/80754af9/requests_1608241421344/work
 ruamel-yaml==0.15.87
 six @ file:///tmp/build/80754af9/six_1605205327372/work
-sqlparse==0.4.1
+sqlparse==0.4.2
 tqdm @ file:///tmp/build/80754af9/tqdm_1608922753628/work
 urllib3 @ file:///tmp/build/80754af9/urllib3_1606938623459/work
