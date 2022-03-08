@@ -5,7 +5,7 @@ cffi==1.14.4
 chardet==3.0.4
 Django==3.1.4
 django-cors-headers==3.5.0
-httpie==2.3.0
+httpie==3.1.0
 idna==2.10
 mysqlclient==2.0.1
 pycparser==2.20
