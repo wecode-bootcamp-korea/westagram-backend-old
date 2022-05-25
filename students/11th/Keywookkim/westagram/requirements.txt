@@ -18,7 +18,7 @@ numpy==1.18.5
 pandas==1.0.5
 pycosat==0.6.3
 pycparser==2.20
-PyJWT==1.7.1
+PyJWT==2.4.0
 pyOpenSSL==19.1.0
 PySocks==1.7.1
 python-dateutil==2.8.1
