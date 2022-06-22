@@ -14,7 +14,7 @@ idna==2.9
 mkl-fft==1.1.0
 mkl-random==1.1.1
 mkl-service==2.3.0
-numpy==1.18.5
+numpy==1.22.0
 pandas==1.0.5
 pycosat==0.6.3
 pycparser==2.20
